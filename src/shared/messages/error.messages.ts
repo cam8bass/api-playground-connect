@@ -11,6 +11,9 @@ export const ACCOUNT_LOCKED =
 
 export const USER_PROTECT =
   "Veuillez vous connecter à votre compte pour accéder à cette page.";
-  
+
 export const USER_RESTRICT =
   "Vous ne disposez pas des droits d'accès nécessaires pour accéder à cette page.";
+
+export const USER_EXPIRE =
+  "Votre session a expiré. Veuillez vous connecter à votre compte.";

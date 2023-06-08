@@ -5,6 +5,8 @@ import {
   handleDuplicateError,
   handleErrorDev,
   handleErrorProd,
+  handleJsonWebTokenError,
+  handleTokenExpiredError,
   handleValidationError,
 } from "../models/error.model";
 
@@ -28,6 +30,13 @@ export default async (
     if (error.name === "ValidationError") error = handleValidationError(error);
     // DUPLICATE ERROR
     if (error.code === 11000) error = handleDuplicateError(error);
+    // JWT SIGNATURE ERROR
+    if (error.name === "JsonWebTokenError")
+      error = handleJsonWebTokenError(error);
+    // JWT EXPIRE ERROR
+    if (error.name === "TokenExpiredError")
+      error = handleTokenExpiredError(error);
+
     handleErrorProd(error, res);
   }
 };
