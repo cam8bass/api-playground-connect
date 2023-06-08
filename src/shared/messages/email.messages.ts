@@ -1,5 +1,11 @@
 import { emailType } from "../types/types";
 
+export const EMAIL_ACTIVATION_ERROR =
+  "Une erreur est survenue lors de l'activation de votre compte. Veuillez vérifier votre mot de passe. Si le problème persiste, veuillez vous rendre sur la page de connexion et tenter de vous connecter, ce qui générera un nouvel email d'activation.";
+
+export const EMAIL_SEND_ERROR =
+  "Une erreur est survenue lors de l'envoi de l'email d'activation de compte. Veuillez vous rendre sur la page de connexion et tenter de vous connecter, ce qui générera un nouvel email d'activation. Si le problème persiste, veuillez contacter l'équipe de support.";
+
 export const emailSubject = (options: emailType): string => {
   let message: string | undefined;
   if (options === "signup") {

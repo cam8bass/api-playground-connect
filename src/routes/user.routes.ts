@@ -7,14 +7,14 @@ const router = Router();
 // SIGNUP
 router.post("/signup", userController.signUp);
 // ACTIVATION ACCOUNT
-router.post("/activationAccount/:token", userController.activationAccount);
+router.patch("/activationAccount/:token", userController.activationAccount);
 // LOGIN
-router.post("/login", userController.login);
+router.post("/login", userController.accountIsLocked, userController.login);
 
 router.route("/").get(adminController.getAllUsers);
 
 router
-  .route(":id")
+  .route("/:id")
   .get(adminController.getUser)
   .patch(userController.updateUser)
   .delete(adminController.deleteUser);

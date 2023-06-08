@@ -1,8 +1,11 @@
-import { Schema, model } from "mongoose";
+import { ObjectId, Schema, model } from "mongoose";
 import { UserInterface } from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import jwt from "jsonwebtoken";
+import { nodeEnv, userRoleType } from "../shared/types/types";
+import { CookieOptions, Response } from "express";
 
 const userSchema = new Schema<UserInterface>({
   // USER
@@ -103,7 +106,9 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.createResetRandomToken = function (this: UserInterface): string {
+userSchema.methods.createResetRandomToken = function (
+  this: UserInterface
+): string {
   const resetToken = crypto.randomBytes(32).toString("hex");
   const resetHashToken = crypto
     .createHash("sha256")
@@ -113,6 +118,54 @@ userSchema.methods.createResetRandomToken = function (this: UserInterface): stri
   this.activationAccountToken = resetHashToken;
   this.activationAccountTokenExpire = new Date(Date.now() + 10 * 60 * 1000);
   return resetToken;
+};
+
+userSchema.methods.activeUserAccount = function (this: UserInterface) {
+  this.active = true;
+  this.activationAccountToken = undefined;
+  this.activationAccountTokenExpire = undefined;
+};
+
+userSchema.methods.createAndSendToken = function (
+  res: Response,
+  userId: ObjectId,
+  role: userRoleType
+): string {
+  const nodeEnv = process.env.NODE_ENV as nodeEnv;
+
+  const token = jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRE,
+  });
+
+  const cookieOptions: CookieOptions = {
+    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    httpOnly: true,
+    secure: false,
+  };
+
+  if (nodeEnv === "production") {
+    cookieOptions.secure = true;
+  }
+
+  res.cookie("jwt", token, cookieOptions);
+  return token;
+};
+
+userSchema.methods.checkUserPassword = async function (
+  inputPassword: string,
+  userPassword: string
+): Promise<boolean> {
+  return await bcrypt.compare(inputPassword, userPassword);
+};
+
+userSchema.methods.enterWrongPassword = function (this: UserInterface): void {
+  this.loginFailures++;
+  if (this.loginFailures >= 3) {
+    // this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
+    this.accountLockedExpire = new Date(Date.now() + 20 * 1000);
+
+    this.loginFailures = undefined;
+  }
 };
 
 const User = model<UserInterface>("User", userSchema);

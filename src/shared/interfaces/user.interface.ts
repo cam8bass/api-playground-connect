@@ -1,5 +1,6 @@
-import { Document } from "mongoose";
+import { Document, ObjectId } from "mongoose";
 import { userRoleType } from "../types/types";
+import { Response } from "express";
 
 export interface UserInterface extends Document {
   firstname: string;
@@ -25,5 +26,17 @@ export interface UserInterface extends Document {
   loginFailures: number;
   // apiKeys
 
+  // METHODS
   createResetRandomToken: () => string;
+  activeUserAccount: () => void;
+  createAndSendToken: (
+    res: Response,
+    userId: ObjectId,
+    role: userRoleType
+  ) => string;
+  checkUserPassword: (
+    inputPassword: string,
+    userPassword: string
+  ) => Promise<boolean>;
+  enterWrongPassword: () => void;
 }
