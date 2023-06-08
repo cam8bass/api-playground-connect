@@ -39,4 +39,5 @@ export interface UserInterface extends Document {
     userPassword: string
   ) => Promise<boolean>;
   enterWrongPassword: () => void;
+  checkPasswordChangedAfterToken:(timestampToken:number)=>boolean
 }

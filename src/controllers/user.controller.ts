@@ -9,29 +9,10 @@ import {
   EMAIL_SEND_ERROR,
   EMPTY_LOGIN,
   WRONG_LOGIN,
-  ACCOUNT_LOCKED,
 } from "../shared/messages";
 import crypto from "crypto";
 import AppError from "../shared/utils/AppError.utils";
 import { UserInterface } from "../shared/interfaces";
-
-export const accountIsLocked = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const { email } = req.body;
-
-    const user = await User.findOne({ email });
-
-    if (!user.accountLockedExpire) return next();
-
-    if (Date.now() > Date.parse(user.accountLockedExpire.toString())) {
-      user.accountLockedExpire = undefined;
-      await user.save({ validateBeforeSave: false });
-      next();
-    } else {
-      return next(new AppError(ACCOUNT_LOCKED, 401));
-    }
-  }
-);
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -101,6 +82,8 @@ export const activationAccount = catchAsync(
   }
 );
 
+// TODO:
+// Voir si il est possible d'effectuer moins de sauvegarder dans la phase login pour améliorer les performances
 export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -119,8 +102,13 @@ export const login = catchAsync(
 
     if (!(await user.checkUserPassword(password, user.password))) {
       user.enterWrongPassword();
-      await user.save({ validateBeforeSave: false }); //# a voir
+      await user.save({ validateBeforeSave: false });
       return next(new AppError(WRONG_LOGIN, 404));
+    }
+
+    if (user.loginFailures) {
+      user.loginFailures = undefined;
+      await user.save({ validateBeforeSave: false });
     }
 
     const token = user.createAndSendToken(res, user.id, user.role);

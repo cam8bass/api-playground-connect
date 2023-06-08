@@ -80,7 +80,7 @@ const userSchema = new Schema<UserInterface>({
         "Le mot de passe de confirmation doit être identique au mot de passe",
     },
   },
-  // passwordChangeAt: {},
+  passwordChangeAt: { type: Date },
   // passwordResetToken: {},
   // passwordRestTokenExpire: {},
   // ACCOUNT
@@ -166,6 +166,16 @@ userSchema.methods.enterWrongPassword = function (this: UserInterface): void {
 
     this.loginFailures = undefined;
   }
+};
+
+userSchema.methods.checkPasswordChangedAfterToken = function (
+  this: UserInterface,
+  tokenTimestamp: number
+): boolean {
+  if (this.passwordChangeAt) {
+    return Date.parse(this.passwordChangeAt.toString()) / 1000 > tokenTimestamp;
+  }
+  return false;
 };
 
 const User = model<UserInterface>("User", userSchema);
