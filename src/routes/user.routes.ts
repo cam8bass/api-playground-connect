@@ -5,6 +5,9 @@ import * as authController from "./../controllers/auth.controller";
 
 const router = Router();
 
+// USER ROUTES
+// ====================================
+
 // SIGNUP
 router.post("/signup", userController.signUp);
 
@@ -14,19 +17,43 @@ router.patch("/activationAccount/:token", userController.activationAccount);
 // LOGIN
 router.post("/login", authController.accountIsLocked, userController.login);
 
-// USER ROUTES
-router.use(
-  authController.protect,
-  authController.accountIsLocked,
-  authController.restrictTo("admin")
-);
+// FORGOT PASSWORD
+router.post("/forgotPassword", userController.forgotPassword);
+
+// RESET PASSWORD
+router.patch("/resetPassword/:token", userController.resetPassword);
+
+// RESET EMAIL
+router.patch("/resetEmail/:token", userController.changeEmail);
+
+// ====================================
+router.use(authController.protect, authController.accountIsLocked);
+
+// UPDATE PASSWORD
+router.patch("/updatePassword", userController.updatePassword);
+
+// GET ME
+router.get("/me", userController.getMe);
+
+// UPDATE USER PROFILE
+router.patch("/updateProfile", userController.updateUserProfile);
+
+// CHANGE EMAIL
+router.post("/changeEmail", userController.resetEmail);
+
+// DISABLE ACCOUNT
+router.delete("/disableAccount", userController.disableUserAccount);
+
+// ADMIN ROUTES
+// ====================================
+router.use(authController.restrictTo("admin"));
 
 router.route("/").get(adminController.getAllUsers);
 
 router
   .route("/:id")
   .get(adminController.getUser)
-  .patch(userController.updateUser)
+  .patch(adminController.updateUser)
   .delete(adminController.deleteUser);
 
 export default router;

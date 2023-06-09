@@ -17,3 +17,17 @@ export const USER_RESTRICT =
 
 export const USER_EXPIRE =
   "Votre session a expiré. Veuillez vous connecter à votre compte.";
+
+export const EMPTY_EMAIL = "Veuillez saisir votre adresse e-mail.";
+
+export const WRONG_EMAIL = "Veuillez saisir une adresse e-mail valide.";
+
+export const ERROR_RESET_TOKEN =
+  "Votre demande a expiré. Veuillez la renouveler.";
+
+export const EMPTY_PASSWORD = "Veuillez saisir votre mot de passe actuel.";
+
+export const WRONG_PASSWORD_ROUTE =
+  "Pour modifier votre mot de passe, veuillez vous rendre dans la section prévue à cet effet.";
+
+export const EMAIL_NEW_EMPTY = "Veuillez saisir votre nouvelle adresse email";

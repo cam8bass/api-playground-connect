@@ -1,6 +1,6 @@
 import { Document, ObjectId } from "mongoose";
-import { userRoleType } from "../types/types";
-import { Response } from "express";
+import { resetType, userRoleType } from "../types/types";
+import { Response, Request } from "express";
 
 export interface UserInterface extends Document {
   firstname: string;
@@ -14,7 +14,7 @@ export interface UserInterface extends Document {
   passwordConfirm: string;
   passwordChangeAt: Date;
   passwordResetToken: string;
-  passwordRestTokenExpire: Date;
+  passwordResetTokenExpire: Date;
 
   active: boolean;
   activationAccountToken: string;
@@ -24,10 +24,11 @@ export interface UserInterface extends Document {
 
   role: userRoleType;
   loginFailures: number;
+  disableAccountAt: Date;
   // apiKeys
 
   // METHODS
-  createResetRandomToken: () => string;
+  createResetRandomToken: (resetType: resetType) => string;
   activeUserAccount: () => void;
   createAndSendToken: (
     res: Response,
@@ -39,5 +40,13 @@ export interface UserInterface extends Document {
     userPassword: string
   ) => Promise<boolean>;
   enterWrongPassword: () => void;
-  checkPasswordChangedAfterToken:(timestampToken:number)=>boolean
+  checkPasswordChangedAfterToken: (timestampToken: number) => boolean;
+  createResetUrl: (
+    req: Request,
+    resetToken: string,
+    resetType: resetType
+  ) => string;
+  changeUserPassword: (newPassword: string, newPasswordConfirm: string) => void;
+  changeUserEmail: (this: UserInterface, newEmail: string) => void;
+  disableAccount: () => void;
 }

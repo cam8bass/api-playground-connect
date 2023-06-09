@@ -4,8 +4,8 @@ import validator from "validator";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
-import { nodeEnv, userRoleType } from "../shared/types/types";
-import { CookieOptions, Response } from "express";
+import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
+import { CookieOptions, Request, Response } from "express";
 
 const userSchema = new Schema<UserInterface>({
   // USER
@@ -50,9 +50,9 @@ const userSchema = new Schema<UserInterface>({
       "Veuillez renseigner une adresse email valide",
     ],
   },
-  // emailChangeAt: {},
-  // emailResetToken: {},
-  // emailResetTokenExpire: {},
+  emailChangeAt: { type: Date },
+  emailResetToken: { type: String },
+  emailResetTokenExpire: { type: Date },
   // PASSWORD
   password: {
     type: String,
@@ -81,8 +81,8 @@ const userSchema = new Schema<UserInterface>({
     },
   },
   passwordChangeAt: { type: Date },
-  // passwordResetToken: {},
-  // passwordRestTokenExpire: {},
+  passwordResetToken: { type: String },
+  passwordResetTokenExpire: { type: Date },
   // ACCOUNT
   active: {
     type: Boolean,
@@ -97,6 +97,7 @@ const userSchema = new Schema<UserInterface>({
     type: Number,
     default: 0,
   },
+  disableAccountAt: { type: Date },
 });
 
 userSchema.pre("save", async function (next) {
@@ -107,7 +108,8 @@ userSchema.pre("save", async function (next) {
 });
 
 userSchema.methods.createResetRandomToken = function (
-  this: UserInterface
+  this: UserInterface,
+  resetType: resetType
 ): string {
   const resetToken = crypto.randomBytes(32).toString("hex");
   const resetHashToken = crypto
@@ -115,8 +117,19 @@ userSchema.methods.createResetRandomToken = function (
     .update(resetToken)
     .digest("hex");
 
-  this.activationAccountToken = resetHashToken;
-  this.activationAccountTokenExpire = new Date(Date.now() + 10 * 60 * 1000);
+  const dateExpire = new Date(Date.now() + 10 * 60 * 1000);
+
+  if (resetType === "activation") {
+    this.activationAccountToken = resetHashToken;
+    this.activationAccountTokenExpire = dateExpire;
+  } else if (resetType === "password") {
+    this.passwordResetToken = resetHashToken;
+    this.passwordResetTokenExpire = dateExpire;
+  } else if (resetType === "email") {
+    this.emailResetToken = resetHashToken;
+    this.emailResetTokenExpire = dateExpire;
+  }
+
   return resetToken;
 };
 
@@ -176,6 +189,49 @@ userSchema.methods.checkPasswordChangedAfterToken = function (
     return Date.parse(this.passwordChangeAt.toString()) / 1000 > tokenTimestamp;
   }
   return false;
+};
+
+userSchema.methods.createResetUrl = (
+  req: Request,
+  resetToken: string,
+  resetType: resetType
+): string => {
+  let path: string | undefined;
+  if (resetType === "activation") {
+    path = "activationAccount";
+  } else if (resetType === "password") {
+    path = "resetPassword";
+  } else if (resetType === "email") {
+    path = "resetEmail";
+  }
+  return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;
+};
+
+userSchema.methods.changeUserPassword = function (
+  this: UserInterface,
+  newPassword: string,
+  newPasswordConfirm: string
+) {
+  this.password = newPassword;
+  this.passwordConfirm = newPasswordConfirm;
+  this.passwordChangeAt = new Date(Date.now());
+  this.passwordResetToken = undefined;
+  this.passwordResetTokenExpire = undefined;
+};
+
+userSchema.methods.changeUserEmail = function (
+  this: UserInterface,
+  newEmail: string
+): void {
+  this.email = newEmail;
+  this.emailResetToken = undefined;
+  this.emailResetTokenExpire = undefined;
+  this.emailChangeAt = new Date(Date.now());
+};
+
+userSchema.methods.disableAccount = function (this: UserInterface) {
+  this.active = false;
+  this.disableAccountAt = new Date(Date.now());
 };
 
 const User = model<UserInterface>("User", userSchema);
