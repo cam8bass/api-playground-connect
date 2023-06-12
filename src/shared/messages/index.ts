@@ -1,2 +1,2 @@
-export * from "./email.messages";
-export * from "./error.messages";
+export * from "./messages.message";
+export * from "./email.message";

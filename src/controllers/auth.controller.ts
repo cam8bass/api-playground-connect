@@ -1,21 +1,15 @@
 import catchAsync from "../shared/utils/catchAsync.utils";
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import User from "../models/user.model";
-import {
-  ACCOUNT_LOCKED,
-  USER_PROTECT,
-  USER_RESTRICT,
-} from "../shared/messages";
 import AppError from "../shared/utils/AppError.utils";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { userRequestInterface } from "../shared/interfaces";
 import { userRoleType } from "../shared/types/types";
+import { AppMessage } from "../shared/messages";
 
 export const accountIsLocked = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    if (!req.body.email) req.body.email = req.user.email;
-
-    const { email } = req.body;
+    const email = req.body.email ? req.body.email : req.user.email;
 
     const user = await User.findOne({ email });
 
@@ -26,7 +20,9 @@ export const accountIsLocked = catchAsync(
       await user.save({ validateBeforeSave: false });
       next();
     } else {
-      return next(new AppError(ACCOUNT_LOCKED, 401));
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_ACCOUNT_LOCKED, 401)
+      );
     }
   }
 );
@@ -41,7 +37,9 @@ export const protect = catchAsync(
       token = req.headers.authorization.split("Bearer ").at(1);
     }
     if (!token) {
-      return next(new AppError(USER_PROTECT, 401));
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
+      );
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
@@ -51,7 +49,15 @@ export const protect = catchAsync(
     });
 
     if (!user || user.checkPasswordChangedAfterToken(decoded.iat)) {
-      return next(new AppError(USER_PROTECT, 401));
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
+      );
+    }
+
+    if (!user.active) {
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_ACCOUNT_LOCKED, 401)
+      );
     }
 
     req.user = user;
@@ -64,7 +70,9 @@ export const restrictTo = (...userRole: userRoleType[]) =>
   catchAsync(
     async (req: userRequestInterface, res: Response, next: NextFunction) => {
       if (!userRole.includes(req.user.role)) {
-        return next(new AppError(USER_RESTRICT, 401));
+        return next(
+          new AppError(AppMessage.errorMessage.ERROR_ACCESS_DENIED, 401)
+        );
       }
 
       next();
