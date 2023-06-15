@@ -1,22 +1,39 @@
-import { SendEmailOptionsInterface } from "../interfaces";
+import { SendEmailOptionsInterface, userRequestInterface } from "../interfaces";
 import nodemailer, { TransportOptions, Transporter } from "nodemailer";
 import { MailOptions } from "nodemailer/lib/stream-transport";
+import client from "../../infisical";
 
 export default class EmailManager {
   private transporter: Transporter;
+  private emailUsername: string;
+  private emailPassword: string;
 
-  constructor() {
+  private async setupTransporter() {
+    if (!this.emailUsername) {
+      const { secretValue } = await client.getSecret("EMAIL_USERNAME");
+      this.emailUsername = secretValue;
+    }
+
+    if (!this.emailPassword) {
+      const { secretValue } = await client.getSecret("EMAIL_PASSWORD");
+      this.emailPassword = secretValue;
+    }
+
     this.transporter = nodemailer.createTransport<Transporter>({
       host: process.env.EMAIL_HOST,
       port: process.env.EMAIL_PORT,
       auth: {
-        user: process.env.EMAIL_USERNAME,
-        pass: process.env.EMAIL_PASSWORD,
+        user: this.emailUsername,
+        pass: this.emailPassword,
       },
     } as TransportOptions);
   }
 
   private async sendEmail(options: SendEmailOptionsInterface) {
+    if (!this.transporter) {
+      await this.setupTransporter();
+    }
+
     const mailOptions: MailOptions = {
       from: '"cam" <cam@email.com>',
       to: options.to,
@@ -49,6 +66,7 @@ export default class EmailManager {
   ): Promise<boolean> {
     return new Promise<boolean>(async (resolve) => {
       const emailManager = new EmailManager();
+      await emailManager.setupTransporter();
       emailManager
         .sendEmail(options)
         .then(() => resolve(true))

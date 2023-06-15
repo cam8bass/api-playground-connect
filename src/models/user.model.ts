@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
+import client from "../infisical";
 
 const userSchema = new Schema<UserInterface>({
   // USER
@@ -162,14 +163,15 @@ userSchema.methods.activeUserAccount = function (this: UserInterface) {
   this.activationAccountTokenExpire = undefined;
 };
 
-userSchema.methods.createAndSendToken = function (
+userSchema.methods.createAndSendToken = async function (
   res: Response,
   userId: ObjectId,
   role: userRoleType
-): string {
+): Promise<string> {
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
+  const {secretValue:jwtSecret} = await client.getSecret("JWT_SECRET");
 
-  const token = jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: userId, role }, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 

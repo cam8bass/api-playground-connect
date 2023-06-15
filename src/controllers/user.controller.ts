@@ -78,17 +78,22 @@ export const activationAccount = catchAsync(
 
     user.activeUserAccount();
     await user.save({ validateBeforeSave: false });
-    
+
     const sendEmail = await EmailManager.send({
       to: user.email,
       subject: emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
       text: emailMessages.bodyEmail.ACCOUNT_ACTIVATED,
     });
 
-    if(!sendEmail){
-      return next(new AppError(AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_ACTIVATION_ACCOUNT,500))
+    if (!sendEmail) {
+      return next(
+        new AppError(
+          AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_ACTIVATION_ACCOUNT,
+          500
+        )
+      );
     }
-    const token = user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(res, user.id, user.role);
 
     res.status(200).json({
       status: "success",
@@ -131,7 +136,7 @@ export const login = catchAsync(
     }
 
     await user.save({ validateBeforeSave: false });
-    const token = user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(res, user.id, user.role);
 
     res.status(200).json({
       status: "success",
@@ -208,7 +213,7 @@ export const resetPassword = catchAsync(
     user.changeUserPassword(password, passwordConfirm);
     await user.save();
 
-    const token = user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(res, user.id, user.role);
 
     res.status(200).json({
       status: "success",
@@ -239,7 +244,7 @@ export const updatePassword = catchAsync(
     user.changeUserPassword(newPassword, newPasswordConfirm);
     await user.save();
 
-    const token = user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(res, user.id, user.role);
 
     res.status(200).json({
       status: "success",

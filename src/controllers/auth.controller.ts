@@ -6,6 +6,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { userRequestInterface } from "../shared/interfaces";
 import { userRoleType } from "../shared/types/types";
 import { AppMessage } from "../shared/messages";
+import client from "../infisical";
 
 export const accountIsLocked = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
@@ -41,8 +42,9 @@ export const protect = catchAsync(
         new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
       );
     }
+    const {secretValue:jwtSecret} = await client.getSecret("JWT_SECRET");
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 
     const user = await User.findOne({
       _id: decoded.id,

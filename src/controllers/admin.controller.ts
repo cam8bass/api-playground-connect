@@ -74,6 +74,7 @@ export const deleteUser = catchAsync(
         )
       );
     }
+    
     res.status(200).json({
       status: "success",
       message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(user.id),
