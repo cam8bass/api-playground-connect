@@ -9,119 +9,137 @@ import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
 import client from "../infisical";
 
-const userSchema = new Schema<UserInterface>({
-  // USER
-  firstname: {
-    type: String,
-    lowercase: true,
-    trim: true,
-    required: [
-      true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
-    ],
-    minlength: [
-      3,
-      AppMessage.validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
-    ],
-    maxlength: [
-      15,
-      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
-    ],
-    validate: [
-      validator.isAlpha,
-      AppMessage.validationMessage.VALIDATE_ONLY_STRING("prénom"),
-    ],
-  },
-  lastname: {
-    type: String,
-    lowercase: true,
-    trim: true,
-    required: [
-      true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
-    ],
-    minlength: [3, AppMessage.validationMessage.VALIDATE_MIN_LENGTH("nom", 3)],
-    maxlength: [
-      15,
-      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
-    ],
-    validate: [
-      validator.isAlpha,
-      AppMessage.validationMessage.VALIDATE_ONLY_STRING("nom"),
-    ],
-  },
-  role: {
-    type: String,
-    enum: ["user", "admin"],
-    default: "user",
-  },
-  // EMAIL
-  email: {
-    type: String,
-    trim: true,
-    lowercase: true,
-    required: [
-      true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("email"),
-    ],
-    unique: true,
-    validate: [validator.isEmail, AppMessage.validationMessage.VALIDATE_EMAIL],
-  },
-  emailChangeAt: { type: Date },
-  emailResetToken: { type: String },
-  emailResetTokenExpire: { type: Date },
-  // PASSWORD
-  password: {
-    type: String,
-    trim: true,
-    required: [
-      true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("mot de passe"),
-    ],
-    validate: [
-      validator.isStrongPassword,
-      AppMessage.validationMessage.VALIDATE_PASSWORD,
-    ],
-    maxlength: [
-      30,
-      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("mot de passe", 30),
-    ],
-    select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    trim: true,
-    required: [
-      true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD(
-        "mot de passe de confirmation"
-      ),
-    ],
-    validate: {
-      validator: function (this: UserInterface): boolean {
-        return this.password === this.passwordConfirm;
-      },
-      message: AppMessage.validationMessage.VALIDATE_PASSWORD_CONFIRM,
+const userSchema = new Schema<UserInterface>(
+  {
+    // USER
+    firstname: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      required: [
+        true,
+        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
+      ],
+      minlength: [
+        3,
+        AppMessage.validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
+      ],
+      maxlength: [
+        15,
+        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
+      ],
+      validate: [
+        validator.isAlpha,
+        AppMessage.validationMessage.VALIDATE_ONLY_STRING("prénom"),
+      ],
     },
+    lastname: {
+      type: String,
+      lowercase: true,
+      trim: true,
+      required: [
+        true,
+        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
+      ],
+      minlength: [
+        3,
+        AppMessage.validationMessage.VALIDATE_MIN_LENGTH("nom", 3),
+      ],
+      maxlength: [
+        15,
+        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
+      ],
+      validate: [
+        validator.isAlpha,
+        AppMessage.validationMessage.VALIDATE_ONLY_STRING("nom"),
+      ],
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
+    // EMAIL
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      required: [
+        true,
+        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("email"),
+      ],
+      unique: true,
+      validate: [
+        validator.isEmail,
+        AppMessage.validationMessage.VALIDATE_EMAIL,
+      ],
+    },
+    emailChangeAt: { type: Date },
+    emailResetToken: { type: String },
+    emailResetTokenExpire: { type: Date },
+    // PASSWORD
+    password: {
+      type: String,
+      trim: true,
+      required: [
+        true,
+        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("mot de passe"),
+      ],
+      validate: [
+        validator.isStrongPassword,
+        AppMessage.validationMessage.VALIDATE_PASSWORD,
+      ],
+      maxlength: [
+        30,
+        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("mot de passe", 30),
+      ],
+      select: false,
+    },
+    passwordConfirm: {
+      type: String,
+      trim: true,
+      required: [
+        true,
+        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD(
+          "mot de passe de confirmation"
+        ),
+      ],
+      validate: {
+        validator: function (this: UserInterface): boolean {
+          return this.password === this.passwordConfirm;
+        },
+        message: AppMessage.validationMessage.VALIDATE_PASSWORD_CONFIRM,
+      },
+    },
+    passwordChangeAt: { type: Date },
+    passwordResetToken: { type: String },
+    passwordResetTokenExpire: { type: Date },
+    // ACCOUNT
+    active: {
+      type: Boolean,
+      default: false,
+    },
+    activationAccountToken: { type: String },
+    activationAccountTokenExpire: { type: Date },
+    activationAccountAt: { type: Date },
+    accountLockedExpire: { type: Date },
+    // OTHERS
+    loginFailures: {
+      type: Number,
+      default: 0,
+    },
+    disableAccountAt: { type: Date },
   },
-  passwordChangeAt: { type: Date },
-  passwordResetToken: { type: String },
-  passwordResetTokenExpire: { type: Date },
-  // ACCOUNT
-  active: {
-    type: Boolean,
-    default: false,
-  },
-  activationAccountToken: { type: String },
-  activationAccountTokenExpire: { type: Date },
-  activationAccountAt: { type: Date },
-  accountLockedExpire: { type: Date },
-  // OTHERS
-  loginFailures: {
-    type: Number,
-    default: 0,
-  },
-  disableAccountAt: { type: Date },
+  {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  }
+);
+
+userSchema.virtual("apiKeys", {
+  ref: "ApiKey",
+  foreignField: "user",
+  localField: "_id",
 });
 
 userSchema.pre("save", async function (next) {
@@ -169,7 +187,7 @@ userSchema.methods.createAndSendToken = async function (
   role: userRoleType
 ): Promise<string> {
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
-  const {secretValue:jwtSecret} = await client.getSecret("JWT_SECRET");
+  const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
 
   const token = jwt.sign({ id: userId, role }, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRE,
@@ -198,9 +216,9 @@ userSchema.methods.checkUserPassword = async function (
 
 userSchema.methods.enterWrongPassword = function (this: UserInterface): void {
   this.loginFailures++;
-  if (this.loginFailures >= 3) {
-    // this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
-    this.accountLockedExpire = new Date(Date.now() + 20 * 1000);
+  if (this.loginFailures >= 10) {
+    this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
+    // this.accountLockedExpire = new Date(Date.now() + 20 * 1000);
 
     this.loginFailures = undefined;
   }

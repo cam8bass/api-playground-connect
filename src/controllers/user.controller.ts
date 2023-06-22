@@ -8,6 +8,7 @@ import bodyFilter from "../shared/utils/filterBodyRequest.utils";
 import { AppMessage } from "../shared/messages";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import { emailMessages } from "../shared/messages";
+import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -150,7 +151,12 @@ export const forgotPassword = catchAsync(
     const { email } = req.body;
 
     if (!email) {
-      return next(new AppError(AppMessage.errorMessage.ERROR_EMPTY_EMAIL, 400));
+      return next(
+        new AppError(
+          AppMessage.errorMessage.ERROR_EMPTY_FIELD("adresse email"),
+          400
+        )
+      );
     }
 
     const user = await User.findOne({ email });
@@ -256,9 +262,13 @@ export const updatePassword = catchAsync(
 
 export const getMe = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    const user = await User.findById(req.user.id).select(
-      "firstname lastname email role"
-    );
+    const user = await User.findOne({ _id: req.user.id })
+      .select("firstname lastname email role ")
+      .populate({
+        path: "apiKeys",
+        select:
+          "apiKeys.apiName apiKeys.apiKey apiKeys.apiKeyExpire apiKeys._id",
+      });
 
     if (!user) {
       return next(
@@ -266,10 +276,30 @@ export const getMe = catchAsync(
       );
     }
 
+    const transformUser = {
+      firstname: user.firstname,
+      lastname: user.lastname,
+      email: user.email,
+      role: user.role,
+      id: user.id,
+      apiKeys: await Promise.all(
+        user.apiKeys.flatMap((el) =>
+          el.apiKeys.map(async (el) => ({
+            id: el._id,
+            apiName: el.apiName,
+            apiKeyExpire: el.apiKeyExpire,
+            apiKey: el.apiKey
+              ? await ApiKeyManager.decryptApiKey(el.apiKey)
+              : undefined,
+          }))
+        )
+      ),
+    };
+
     res.status(200).json({
       status: "success",
       data: {
-        user,
+        user: transformUser,
       },
     });
   }
@@ -285,7 +315,11 @@ export const updateUserProfile = catchAsync(
       );
     }
 
-    const filteredBody = bodyFilter(req.body, "firstname", "lastname");
+    const filteredBody = bodyFilter<UserInterface>(
+      req.body,
+      "firstname",
+      "lastname"
+    );
 
     const user = await User.findByIdAndUpdate(req.user.id, filteredBody, {
       runValidators: true,
@@ -367,7 +401,10 @@ export const changeEmail = catchAsync(
 
     if (!newEmail) {
       return next(
-        new AppError(AppMessage.errorMessage.ERROR_EMPTY_NEW_EMAIL, 400)
+        new AppError(
+          AppMessage.errorMessage.ERROR_EMPTY_FIELD("nouvelle adresse e-mail"),
+          400
+        )
       );
     }
 

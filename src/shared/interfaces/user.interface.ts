@@ -25,8 +25,19 @@ export interface UserInterface extends Document {
   role: userRoleType;
   loginFailures: number;
   disableAccountAt: Date;
-  // apiKeys
 
+  apiKeys?: [
+    {
+      apiKeys?: [
+        {
+          apiName?: string;
+          apiKey?: string;
+          apiKeyExpire?: Date;
+          _id?: ObjectId;
+        }
+      ];
+    }
+  ];
   // METHODS
   createResetRandomToken: (resetType: resetType) => string;
   activeUserAccount: () => void;

@@ -46,7 +46,7 @@ export default class EmailManager {
   private emailText = (subject: string, text: string) => {
     return `Bonjour,\n
 
-    Nous vous contactons concernant: ${subject}.\n
+    Nous vous contactons concernant le sujet suivant: ${subject}.\n
 
     Nous vous serions reconnaissants de bien vouloir prendre en compte les informations suivantes:\n
 

@@ -42,7 +42,7 @@ export const protect = catchAsync(
         new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
       );
     }
-    const {secretValue:jwtSecret} = await client.getSecret("JWT_SECRET");
+    const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
 
     const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
 

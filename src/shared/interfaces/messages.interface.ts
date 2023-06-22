@@ -1,3 +1,5 @@
+import { Types } from "mongoose";
+
 interface ErrorMessageInterface {
   ERROR_NO_SEARCH_RESULTS: string;
   ERROR_EMPTY_LOGIN: string;
@@ -13,13 +15,16 @@ interface ErrorMessageInterface {
   ERROR_SENT_EMAIL_DISABLE_ACCOUNT: string;
   ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT: string;
   ERROR_SENT_NOTIFICATION_ACTIVATION_ACCOUNT: string;
+  ERROR_SENT_NOTIFICATION_CREATE_API_KEY: string;
   ERROR_WRONG_PASSWORD: string;
-  ERROR_EMPTY_PASSWORD: string;
   ERROR_WRONG_LOGIN: string;
-  ERROR_EMPTY_EMAIL: string;
-  ERROR_EMPTY_NEW_EMAIL: string;
   ERROR_WRONG_EMAIL: string;
+  ERROR_SENT_EMAIL_RENEWAL_API_KEY: string;
   ERROR_WRONG_PASSWORD_ROUTE: string;
+  ERROR_API_KEY_EXPIRE: string;
+  ERROR_EMPTY_FIELD: (field: string) => string;
+  ERROR_MODIFIED_FIELD: (field: string) => string;
+  ERROR_SENT_NEW_API_KEY: (username: string, userEmail: string) => string;
 }
 
 interface ValidationMessageInterface {
@@ -43,6 +48,11 @@ interface SuccessMessageInterface {
   SUCCESS_SENT_EMAIL_RESET_PASSWORD: (userEmail: string) => string;
   SUCCESS_SENT_EMAIL_RESET_EMAIL: (userEmail: string) => string;
   SUCCESS_SENT_EMAIL_DISABLE_ACCOUNT: (userEmail: string) => string;
+  SUCCESS_API_KEY_CREATION_REQUEST: (userEmail: string) => string;
+  SUCCESS_SENT_EMAIL_RENEWAL_API_KEY: (userEmail: string) => string;
+  SUCCESS_ACTIVE_API_KEY: (userEmail: string) => string;
+  SUCCESS_SENT_EMAIL_CREATE_API_KEY: (userEmail: string) => string;
+  SUCCESS_API_KEY_DELETED: (idApi: Types.ObjectId) => string;
 }
 
 export default interface MessagesInterface {
