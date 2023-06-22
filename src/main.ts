@@ -1,6 +1,7 @@
 import express from "express";
 import morgan from "morgan";
 import userRouter from "./routes/user.routes";
+import apiKeyRouter from "./routes/apiKey.routes";
 import errorController from "./controllers/error.controller";
 import dotenv from "dotenv";
 
@@ -14,6 +15,7 @@ app.use(morgan("dev"));
 
 // 2) ROUTES
 app.use("/playground-connect/v1/users", userRouter);
+app.use("/playground-connect/v1/apiKeys", apiKeyRouter);
 // ERRORS
 app.use(errorController);
 export default app;

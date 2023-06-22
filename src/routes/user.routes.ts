@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as adminController from "./../controllers/admin.controller";
 import * as userController from "./../controllers/user.controller";
 import * as authController from "./../controllers/auth.controller";
+import apiKeyRouter from "./apiKey.routes";
 
 const router = Router();
 
@@ -55,5 +56,10 @@ router
   .get(adminController.getUser)
   .patch(adminController.updateUser)
   .delete(adminController.deleteUser);
+
+// NESTED ROUTES
+
+// DELETE SELECTED API KEY
+router.use("/:id", apiKeyRouter);
 
 export default router;
