@@ -6,6 +6,8 @@ import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
+import { AppMessage } from "../shared/messages";
+import client from "../infisical";
 
 const userSchema = new Schema<UserInterface>({
   // USER
@@ -13,24 +15,39 @@ const userSchema = new Schema<UserInterface>({
     type: String,
     lowercase: true,
     trim: true,
-    required: [true, "Le champ prénom est obligatoire"],
-    minlength: [3, "Le champ prénom doit contenir au minimum 3 caractères"],
-    maxlength: [15, "Le champ prénom doit contenir au maximum 15 caractères"],
+    required: [
+      true,
+      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
+    ],
+    minlength: [
+      3,
+      AppMessage.validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
+    ],
+    maxlength: [
+      15,
+      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
+    ],
     validate: [
       validator.isAlpha,
-      "Le champ prénom doit comporter uniquement des lettres",
+      AppMessage.validationMessage.VALIDATE_ONLY_STRING("prénom"),
     ],
   },
   lastname: {
     type: String,
     lowercase: true,
     trim: true,
-    required: [true, "Le champ nom est obligatoire"],
-    minlength: [3, "Le champ nom doit contenir au minimum 3 caractères"],
-    maxlength: [15, "Le champ nom doit contenir au maximum 15 caractères"],
+    required: [
+      true,
+      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
+    ],
+    minlength: [3, AppMessage.validationMessage.VALIDATE_MIN_LENGTH("nom", 3)],
+    maxlength: [
+      15,
+      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
+    ],
     validate: [
       validator.isAlpha,
-      "Le champ nom doit comporter uniquement des lettres",
+      AppMessage.validationMessage.VALIDATE_ONLY_STRING("nom"),
     ],
   },
   role: {
@@ -43,12 +60,12 @@ const userSchema = new Schema<UserInterface>({
     type: String,
     trim: true,
     lowercase: true,
-    required: [true, "Le champ email est obligatoire"],
-    unique: true,
-    validate: [
-      validator.isEmail,
-      "Veuillez renseigner une adresse email valide",
+    required: [
+      true,
+      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("email"),
     ],
+    unique: true,
+    validate: [validator.isEmail, AppMessage.validationMessage.VALIDATE_EMAIL],
   },
   emailChangeAt: { type: Date },
   emailResetToken: { type: String },
@@ -57,27 +74,34 @@ const userSchema = new Schema<UserInterface>({
   password: {
     type: String,
     trim: true,
-    required: [true, "Le champ mot de passe est obligtoire"],
+    required: [
+      true,
+      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("mot de passe"),
+    ],
     validate: [
       validator.isStrongPassword,
-      "Le champ mot de passe doit contenir au minimum une lettre minuscule, une majuscule, un chiffre, un caractère spécial et avoir une longueur minimale de 8 caractères.",
+      AppMessage.validationMessage.VALIDATE_PASSWORD,
     ],
     maxlength: [
       30,
-      "Le champ mot de passe doit faire au miximum 30 caractères",
+      AppMessage.validationMessage.VALIDATE_MAX_LENGTH("mot de passe", 30),
     ],
     select: false,
   },
   passwordConfirm: {
     type: String,
     trim: true,
-    required: [true, "Le champ mot de passe de confirmation est obligatoire"],
+    required: [
+      true,
+      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD(
+        "mot de passe de confirmation"
+      ),
+    ],
     validate: {
       validator: function (this: UserInterface): boolean {
         return this.password === this.passwordConfirm;
       },
-      message:
-        "Le mot de passe de confirmation doit être identique au mot de passe",
+      message: AppMessage.validationMessage.VALIDATE_PASSWORD_CONFIRM,
     },
   },
   passwordChangeAt: { type: Date },
@@ -139,14 +163,15 @@ userSchema.methods.activeUserAccount = function (this: UserInterface) {
   this.activationAccountTokenExpire = undefined;
 };
 
-userSchema.methods.createAndSendToken = function (
+userSchema.methods.createAndSendToken = async function (
   res: Response,
   userId: ObjectId,
   role: userRoleType
-): string {
+): Promise<string> {
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
+  const {secretValue:jwtSecret} = await client.getSecret("JWT_SECRET");
 
-  const token = jwt.sign({ id: userId, role }, process.env.JWT_SECRET, {
+  const token = jwt.sign({ id: userId, role }, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 

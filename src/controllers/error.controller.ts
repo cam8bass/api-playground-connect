@@ -31,11 +31,9 @@ export default async (
     // DUPLICATE ERROR
     if (error.code === 11000) error = handleDuplicateError(error);
     // JWT SIGNATURE ERROR
-    if (error.name === "JsonWebTokenError")
-      error = handleJsonWebTokenError(error);
+    if (error.name === "JsonWebTokenError") error = handleJsonWebTokenError();
     // JWT EXPIRE ERROR
-    if (error.name === "TokenExpiredError")
-      error = handleTokenExpiredError(error);
+    if (error.name === "TokenExpiredError") error = handleTokenExpiredError();
 
     handleErrorProd(error, res);
   }

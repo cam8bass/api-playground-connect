@@ -1,7 +1,7 @@
 import { Response } from "express";
 import { AppErrorInterface } from "../shared/interfaces";
 import AppError from "../shared/utils/AppError.utils";
-import { USER_EXPIRE, USER_PROTECT } from "../shared/messages";
+import { AppMessage } from "../shared/messages";
 
 export const handleCastError = (err: any): AppError => {
   const message = `Désolé, une erreur est survenue. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value} ou essayer une autre requête`;
@@ -28,12 +28,12 @@ export const handleDuplicateError = (err: any): AppError => {
   return new AppError(message, 400);
 };
 
-export const handleJsonWebTokenError = (err: any): AppError => {
-  return new AppError(USER_PROTECT, 401);
+export const handleJsonWebTokenError = (): AppError => {
+  return new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401);
 };
 
-export const handleTokenExpiredError = (err: any): AppError => {
-  return new AppError(USER_EXPIRE, 401);
+export const handleTokenExpiredError = (): AppError => {
+  return new AppError(AppMessage.errorMessage.ERROR_SESSION_EXPIRED, 401);
 };
 
 export const handleErrorDev = (error: AppErrorInterface, res: Response) => {

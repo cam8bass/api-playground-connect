@@ -34,7 +34,7 @@ export interface UserInterface extends Document {
     res: Response,
     userId: ObjectId,
     role: userRoleType
-  ) => string;
+  ) => Promise<string>;
   checkUserPassword: (
     inputPassword: string,
     userPassword: string
