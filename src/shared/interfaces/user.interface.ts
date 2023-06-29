@@ -25,7 +25,7 @@ export interface UserInterface extends Document {
   role: userRoleType;
   loginFailures: number;
   disableAccountAt: Date;
-
+  createAt: Date;
   apiKeys?: [
     {
       apiKeys?: [

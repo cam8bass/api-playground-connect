@@ -6,12 +6,19 @@ import { ApiKeyInterface, UserInterface } from "../shared/interfaces";
 import { Model, Types, PopulateOptions } from "mongoose";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
+import FilterQuery from "../shared/utils/filterQuery";
 
 export const getAll = <T extends Model<UserInterface | ApiKeyInterface>>(
   Model: T
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const doc = await Model.find().lean();
+    const query = new FilterQuery(Model.find(), req.query)
+      .filter()
+      .fields()
+      .sort()
+      .page();
+
+    const doc = await query.queryMethod.lean();
 
     if (!doc) {
       return next(
@@ -34,7 +41,7 @@ export const getOne = <T extends Model<UserInterface | ApiKeyInterface>>(
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = new Types.ObjectId(req.params.id);
-    const doc = await Model.findById(id).populate(populateOptions)
+    const doc = await Model.findById(id).populate(populateOptions);
 
     if (!doc) {
       return next(

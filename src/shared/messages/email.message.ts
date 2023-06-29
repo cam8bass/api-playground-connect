@@ -21,29 +21,28 @@ export const emailMessages = {
       "Nous tenons à vous informer que le mot de passe de votre compte a été modifié avec succès. Votre nouveau mot de passe est maintenant actif et vous pouvez l'utiliser pour vous connecter à votre compte.",
 
     SEND_RESET_URL: (resetUrl: string, expire: number): string => `
-      Pour procéder à votre demande, veuillez cliquer sur le lien ci-dessous.\n
+      Pour procéder à votre demande, veuillez cliquer sur le lien ci-dessous.
   
-      Veuillez noter que ce lien est valable pendant ${expire} minutes à partir de l'envoi de cet e-mail.\n 
+      Veuillez noter que ce lien est valable pendant ${expire} minutes à partir de l'envoi de cet e-mail.
   
       ${resetUrl}\n
   
-      Si vous n'êtes pas à l'origine de cette demande et que vous pensez que votre compte a été compromis, nous vous recommandons vivement de prendre des mesures immédiates pour assurer la sécurité de votre compte, comme le changement de votre mot de passe.\n
-  `,
+      Si vous n'êtes pas à l'origine de cette demande et que vous pensez que votre compte a été compromis, nous vous recommandons vivement de prendre des mesures immédiates pour assurer la sécurité de votre compte, comme le changement de votre mot de passe.`,
 
     SEND_API_KEY: (apiKey: string): string => `
-  Voici les détails de votre clé d'API :\n
+  Voici les détails de votre clé d'API :
 
   Clé d'API : ${apiKey}
   Date d'expiration : 1 ans
   
   Veuillez noter que votre clé d'API est confidentielle et doit être traitée avec précaution. Elle vous permettra d'authentifier et d'accéder à nos fonctionnalités et services. Assurez-vous de la garder en sécurité et de ne pas la partager avec des personnes non autorisées.
   
-  Votre clé d'API a une date d'expiration, indiquée ci-dessus. Avant la date d'expiration, vous aurez la possibilité de renouveler votre clé d'API une semaine avant qu'elle ne devienne invalide.\n
+  Votre clé d'API a une date d'expiration, indiquée ci-dessus. Avant la date d'expiration, vous aurez la possibilité de renouveler votre clé d'API une semaine avant qu'elle ne devienne invalide.
   
-  Pour renouveler votre clé d'API, veuillez suivre les instructions suivantes :\n
+  Pour renouveler votre clé d'API, veuillez suivre les instructions suivantes :
   - Connectez-vous à votre compte utilisateur sur notre plateforme.
   - Accédez à la section "Clés d'API" ou "Gestion des clés".
-  - Recherchez la clé d'API expirante et suivez les étapes pour effectuer une demande de renouvellement.\n
+  - Recherchez la clé d'API expirante et suivez les étapes pour effectuer une demande de renouvellement.
   
   Veuillez noter que si vous ne renouvelez pas votre clé d'API avant sa date d'expiration, elle deviendra inutilisable. Dans ce cas, vous devrez à nouveau faire une demande de création de clé d'API en suivant la procédure habituelle.`,
     SEND_ADMIN_CREATION_REQUEST_API_KEY_NOTIFICATION: (
@@ -53,8 +52,8 @@ export const emailMessages = {
     ) =>
       `Nous vous informons qu'un utilisateur a soumis une demande de création d'une nouvelle clé d'API. Voici les détails de la demande :
   Nom de l'API : ${apiName}
-  Id de l'api: ${idApi}
   Utilisateur : ${idUser}
+  Id de l'api: ${idApi}
 
   Veuillez prendre les mesures appropriées pour examiner et traiter cette demande dans les meilleurs délais.
   Cordialement,`,

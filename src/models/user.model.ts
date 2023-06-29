@@ -125,6 +125,10 @@ const userSchema = new Schema<UserInterface>(
     activationAccountTokenExpire: { type: Date },
     activationAccountAt: { type: Date },
     accountLockedExpire: { type: Date },
+    createAt: {
+      type: Date,
+      default: Date.now(),
+    },
     // OTHERS
     loginFailures: {
       type: Number,
