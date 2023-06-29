@@ -9,87 +9,21 @@ import { emailMessages } from "../shared/messages";
 import ApiKey from "../models/apiKey.model";
 import { UserInterface } from "../shared/interfaces";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
+import { Types } from "mongoose";
+import * as factory from "./factory.controller";
 
 // USERS
+export const getAllUsers = factory.getAll(User);
 
-export const getAllUsers = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const users = await User.find();
+export const getUser = factory.getOne(User,{path:"apiKeys"});
 
-    if (!users) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-      );
-    }
+export const createUser = factory.createOne(User, "user");
 
-    res.status(200).json({
-      status: "success",
-      results: users.length,
-      data: {
-        users,
-      },
-    });
-  }
-);
-
-export const getUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-    const user = await User.findById(id);
-
-    if (!user) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        user,
-      },
-    });
-  }
-);
-
-export const deleteUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-
-    const user = await User.findByIdAndDelete(id);
-
-    if (!user) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-      );
-    }
-
-    const emailSend = await EmailManager.send({
-      to: user.email,
-      subject:
-        emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Suppression"),
-      text: emailMessages.bodyEmail.ACCOUNT_DELETED,
-    });
-
-    if (!emailSend) {
-      return next(
-        new AppError(
-          AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT,
-          500
-        )
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(user.id),
-    });
-  }
-);
+export const deleteUser = factory.deleteOne(User, "user");
 
 export const updateUser = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
+    const id = new Types.ObjectId(req.params.id);
 
     const filteredBody = bodyFilter<UserInterface>(
       req.body,
@@ -125,128 +59,275 @@ export const updateUser = catchAsync(
 );
 
 // API KEYS
+export const getAllApiKeys = factory.getAll(ApiKey);
 
-export const getAllApiKeys = catchAsync(
+export const getApiKey = factory.getOne(ApiKey);
+
+export const createApiKey = factory.createOne(ApiKey, "apiKey");
+
+export const deleteAllApiKeysFromUser = factory.deleteOne(ApiKey);
+
+export const activeAndcreateApiKey = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const apiKeys = await ApiKey.find();
+    const active = req.body.active as boolean;
+    const idUser = new Types.ObjectId(req.params.id);
+    const idApi = new Types.ObjectId(req.params.idApi);
 
-    if (!apiKeys) {
+    if (
+      active === undefined ||
+      active === null ||
+      typeof active !== "boolean"
+    ) {
       return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+        new AppError(AppMessage.errorMessage.ERROR_EMPTY_FIELD("active"), 500)
       );
     }
 
-    res.status(200).json({
-      status: "success",
-      results: apiKeys.length,
-      data: {
-        apiKeys,
-      },
-    });
-  }
-);
+    if (active === true) {
+      const newApiKey = ApiKeyManager.createNewApiKey();
+      const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
 
-export const getApiKey = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-
-    const apiKey = await ApiKey.findById(id);
-
-    if (!apiKey) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      data: {
-        apiKey,
-      },
-    });
-  }
-);
-
-export const deleteAllApiKeysFromUser = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const id = req.params.id;
-
-    const apiKeys = await ApiKey.findByIdAndDelete(id);
-
-    if (!apiKeys) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-      );
-    }
-
-    res.status(200).json({
-      status: "success",
-      message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(id),
-    });
-  }
-);
-
-
-
-export const createApiKey = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    const idUser = req.params.id;
-    const idApi = req.params.idApi;
-
-    const newApiKey = ApiKeyManager.createNewApiKey();
-    const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
-
-    const apiKey = await ApiKey.findOneAndUpdate(
-      {
-        user: idUser,
-        apiKeys: {
-          $elemMatch: {
-            _id: idApi,
-            active: false,
+      const apiKey = await ApiKey.findOneAndUpdate(
+        {
+          user: idUser,
+          apiKeys: {
+            $elemMatch: {
+              _id: idApi,
+              active: false,
+            },
           },
         },
-      },
-      {
-        $set: {
-          "apiKeys.$.active": true,
-          "apiKeys.$.apiKey": newApiKeyHash,
-          "apiKeys.$.apiKeyExpire": new Date(
-            Date.now() + 365 * 24 * 60 * 60 * 1000
-          ),
-        },
+        {
+          $set: {
+            "apiKeys.$.active": true,
+            "apiKeys.$.apiKey": newApiKeyHash,
+            "apiKeys.$.apiKeyExpire": new Date(
+              Date.now() + 365 * 24 * 60 * 60 * 1000
+            ),
+          },
+        }
+      );
+
+      if (!apiKey) {
+        return next(
+          new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+        );
       }
-    );
+      const sendEmail = await EmailManager.send({
+        to: apiKey.user.email,
+        subject: emailMessages.subjectEmail.SUBJECT_API_KEY("Création"),
+        text: emailMessages.bodyEmail.SEND_API_KEY(newApiKey),
+      });
 
-    if (!apiKey) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+      if (!sendEmail) {
+        return next(
+          new AppError(
+            AppMessage.errorMessage.ERROR_ADMIN_SENT_NEW_API_KEY(
+              apiKey.user.id,
+              apiKey.user.email
+            ),
+            500
+          )
+        );
+      }
+
+      res.status(200).json({
+        status: "success",
+        message: AppMessage.successMessage.SUCCESS_ACTIVE_API_KEY(
+          apiKey.user.email
+        ),
+      });
+    } else if (active === false) {
+      const apiKey = await ApiKey.findOneAndUpdate(
+        {
+          user: idUser,
+          apiKeys: {
+            $elemMatch: {
+              _id: idApi,
+              active: false,
+            },
+          },
+        },
+        {
+          $pull: {
+            apiKeys: { _id: idApi },
+          },
+        },
+        { new: true }
       );
-    }
 
-    const sendEmail = await EmailManager.send({
-      to: apiKey.user.email,
-      subject: emailMessages.subjectEmail.SUBJECT_API_KEY("Création"),
-      text: emailMessages.bodyEmail.SEND_API_KEY(newApiKey),
-    });
+      if (!apiKey) {
+        return next(
+          new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+        );
+      }
 
-    if (!sendEmail) {
-      return next(
-        new AppError(
-          AppMessage.errorMessage.ERROR_SENT_NEW_API_KEY(
-            apiKey.user.id,
-            apiKey.user.email
+      if (apiKey.apiKeys.length < 1) {
+        await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey.id));
+      }
+
+      const sendEmail = await EmailManager.send({
+        to: apiKey.user.email,
+        subject:
+          emailMessages.subjectEmail.SUBJECT_ADMIN_REFUSAL_API_KEY_CREATION,
+        text: emailMessages.bodyEmail.REFUSAL_API_KEY_CREATION,
+      });
+
+      if (!sendEmail) {
+        return next(
+          new AppError(
+            AppMessage.errorMessage.ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION(
+              apiKey.user.id,
+              apiKey.user.email
+            ),
+            500
+          )
+        );
+      }
+
+      res.status(200).json({
+        status: "success",
+        message:
+          AppMessage.successMessage.SUCCESS_ADMIN_REFUSAL_API_KEY_CREATION(
+            apiKey.id,
+            apiKey.user.id
           ),
-          500
-        )
-      );
+      });
     }
-
-    res.status(200).json({
-      status: "success",
-      message: AppMessage.successMessage.SUCCESS_ACTIVE_API_KEY(
-        apiKey.user.email
-      ),
-    });
   }
 );
 
+// export const deleteUser = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const id = new Types.ObjectId(req.params.id);
+
+//     const user = await User.findByIdAndDelete(id);
+
+//     if (!user) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     const emailSend = await EmailManager.send({
+//       to: user.email,
+//       subject:
+//         emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Suppression"),
+//       text: emailMessages.bodyEmail.ACCOUNT_DELETED,
+//     });
+
+//     if (!emailSend) {
+//       return next(
+//         new AppError(
+//           AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT,
+//           500
+//         )
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(user.id),
+//     });
+//   }
+// );
+
+// export const deleteAllApiKeysFromUser = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const id = new Types.ObjectId(req.params.id);
+
+//     const apiKeys = await ApiKey.findByIdAndDelete(id);
+
+//     if (!apiKeys) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(id),
+//     });
+//   }
+// );
+
+// export const getApiKey = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const id = new Types.ObjectId(req.params.id);
+
+//     const apiKey = await ApiKey.findById(id);
+
+//     if (!apiKey) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       data: {
+//         apiKey,
+//       },
+//     });
+//   }
+// );
+
+// export const getAllApiKeys = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const apiKeys = await ApiKey.find();
+
+//     if (!apiKeys) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       results: apiKeys.length,
+//       data: {
+//         apiKeys,
+//       },
+//     });
+//   }
+// );
+
+// export const getUser = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const id = new Types.ObjectId(req.params.id);
+//     const user = await User.findById(id);
+
+//     if (!user) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       data: {
+//         user,
+//       },
+//     });
+//   }
+// );
+
+// export const getAllUsers = catchAsync(
+//   async (req: Request, res: Response, next: NextFunction) => {
+//     const users = await User.find();
+
+//     if (!users) {
+//       return next(
+//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
+//       );
+//     }
+
+//     res.status(200).json({
+//       status: "success",
+//       results: users.length,
+//       data: {
+//         users,
+//       },
+//     });
+//   }
+// );

@@ -1,4 +1,4 @@
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 import { apiNameType } from "../types/types";
 import { UserInterface } from "./user.interface";
 
@@ -12,7 +12,7 @@ export interface ApiKeyInterface extends Document {
       active: boolean;
       renewalToken: string;
       renewalTokenExpire: Date;
-      id: string;
+      _id: Types.ObjectId;
     }
   ];
   createAt: Date;

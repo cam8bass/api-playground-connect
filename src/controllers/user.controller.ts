@@ -3,57 +3,43 @@ import User from "./../models/user.model";
 import catchAsync from "../shared/utils/catchAsync.utils";
 import crypto from "crypto";
 import AppError from "../shared/utils/AppError.utils";
-import { UserInterface, userRequestInterface } from "../shared/interfaces";
+import {
+  ApiKeyInterface,
+  UserInterface,
+  userRequestInterface,
+} from "../shared/interfaces";
 import bodyFilter from "../shared/utils/filterBodyRequest.utils";
 import { AppMessage } from "../shared/messages";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import { emailMessages } from "../shared/messages";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
+import { Types } from "mongoose";
+import { createResetRandomToken } from "../shared/utils/reset.utils";
 
 export const signUp = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user = await User.create({
-      firstname: req.body.firstname,
-      lastname: req.body.lastname,
-      role: req.body.role,
-      email: req.body.email,
-      password: req.body.password,
-      passwordConfirm: req.body.passwordConfirm,
-    });
+    const filteredBody = bodyFilter<UserInterface>(
+      req.body,
+      "firstname",
+      "lastname",
+      "email",
+      "password",
+      "passwordConfirm"
+    );
 
-    const resetToken = user.createResetRandomToken("activation");
-    await user.save({ validateBeforeSave: false });
-
-    const resetUrl = user.createResetUrl(req, resetToken, "activation");
-
-    const sendEmail = await EmailManager.send({
-      to: user.email,
-      subject: emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
-      text: emailMessages.bodyEmail.SEND_RESET_URL(resetUrl, 10),
-    });
-
-    if (!sendEmail) {
-      user.activationAccountToken = undefined;
-      user.activationAccountTokenExpire = undefined;
-      await user.save({ validateBeforeSave: false });
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_SENT_EMAIL_ACTIVATION, 500)
-      );
-    }
+    await User.create(filteredBody);
 
     res.status(200).json({
       status: "success",
-      message: AppMessage.successMessage.SUCCESS_SENT_EMAIL_ACTIVATION(
-        user.email
-      ),
+      message: AppMessage.successMessage.SUCCESS_CREATE_ACCOUNT,
     });
   }
 );
 
-export const activationAccount = catchAsync(
+export const confirmActivationAccount = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { password } = req.body;
-    const resetToken = req.params.token;
+    const { token: resetToken } = req.params;
 
     const hashToken = crypto
       .createHash("sha256")
@@ -77,9 +63,6 @@ export const activationAccount = catchAsync(
       );
     }
 
-    user.activeUserAccount();
-    await user.save({ validateBeforeSave: false });
-
     const sendEmail = await EmailManager.send({
       to: user.email,
       subject: emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
@@ -94,7 +77,20 @@ export const activationAccount = catchAsync(
         )
       );
     }
-    const token = await user.createAndSendToken(res, user.id, user.role);
+
+    await user.updateOne({
+      active: true,
+      $unset: {
+        activationAccountToken: "",
+        activationAccountTokenExpire: "",
+      },
+    });
+
+    const token = await user.createAndSendToken(
+      res,
+      new Types.ObjectId(user.id),
+      user.role
+    );
 
     res.status(200).json({
       status: "success",
@@ -104,8 +100,6 @@ export const activationAccount = catchAsync(
   }
 );
 
-// TODO:
-// Voir si il est possible d'effectuer moins de sauvegarder dans la phase login pour améliorer les performances
 export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -132,12 +126,12 @@ export const login = catchAsync(
       user.loginFailures = undefined;
     }
 
-    if (!user.active) {
-      user.active = true;
-    }
-
     await user.save({ validateBeforeSave: false });
-    const token = await user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(
+      res,
+      new Types.ObjectId(user.id),
+      user.role
+    );
 
     res.status(200).json({
       status: "success",
@@ -158,14 +152,22 @@ export const forgotPassword = catchAsync(
         )
       );
     }
+    const { resetToken, resetHashToken, dateExpire } = createResetRandomToken();
 
-    const user = await User.findOne({ email });
+    const user = await User.findOneAndUpdate(
+      {
+        email,
+      },
+      {
+        passwordResetToken: resetHashToken,
+        passwordResetTokenExpire: dateExpire,
+      }
+    );
 
     if (!user) {
       return next(new AppError(AppMessage.errorMessage.ERROR_WRONG_EMAIL, 400));
     }
 
-    const resetToken = user.createResetRandomToken("password");
     const resetUrl = user.createResetUrl(req, resetToken, "password");
 
     const emailSend = await EmailManager.send({
@@ -175,9 +177,13 @@ export const forgotPassword = catchAsync(
     });
 
     if (!emailSend) {
-      user.passwordResetToken = undefined;
-      user.passwordResetTokenExpire = undefined;
-      await user.save({ validateBeforeSave: false });
+      await user.updateOne({
+        $unset: {
+          passwordResetToken: undefined,
+          passwordResetTokenExpire: undefined,
+        },
+      });
+
       return next(
         new AppError(
           AppMessage.errorMessage.ERROR_SENT_EMAIL_RESET_PASSWORD,
@@ -185,8 +191,6 @@ export const forgotPassword = catchAsync(
         )
       );
     }
-
-    await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
       status: "success",
@@ -219,7 +223,11 @@ export const resetPassword = catchAsync(
     user.changeUserPassword(password, passwordConfirm);
     await user.save();
 
-    const token = await user.createAndSendToken(res, user.id, user.role);
+    const token = await user.createAndSendToken(
+      res,
+      new Types.ObjectId(user.id),
+      user.role
+    );
 
     res.status(200).json({
       status: "success",
@@ -231,7 +239,9 @@ export const resetPassword = catchAsync(
 
 export const updatePassword = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    const user = await User.findById(req.user.id).select("+password");
+    const user = await User.findById(new Types.ObjectId(req.user.id)).select(
+      "+password"
+    );
 
     if (!user) {
       return next(
@@ -250,8 +260,11 @@ export const updatePassword = catchAsync(
     user.changeUserPassword(newPassword, newPasswordConfirm);
     await user.save();
 
-    const token = await user.createAndSendToken(res, user.id, user.role);
-
+    const token = await user.createAndSendToken(
+      res,
+      new Types.ObjectId(user.id),
+      user.role
+    );
     res.status(200).json({
       status: "success",
       message: AppMessage.successMessage.SUCCESS_PASSWORD_MODIFIED,
@@ -262,13 +275,14 @@ export const updatePassword = catchAsync(
 
 export const getMe = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    const user = await User.findOne({ _id: req.user.id })
+    const user = await User.findOne({ _id: new Types.ObjectId(req.user.id) })
       .select("firstname lastname email role ")
       .populate({
         path: "apiKeys",
         select:
-          "apiKeys.apiName apiKeys.apiKey apiKeys.apiKeyExpire apiKeys._id",
-      });
+          "apiKeys.apiName apiKeys.apiKey apiKeys.apiKeyExpire apiKeys._id apiKeys.active",
+      })
+      .lean();
 
     if (!user) {
       return next(
@@ -281,11 +295,12 @@ export const getMe = catchAsync(
       lastname: user.lastname,
       email: user.email,
       role: user.role,
-      id: user.id,
+      id: new Types.ObjectId(user.id),
       apiKeys: await Promise.all(
-        user.apiKeys.flatMap((el) =>
+        user.apiKeys.flatMap((el: Partial<ApiKeyInterface>) =>
           el.apiKeys.map(async (el) => ({
-            id: el._id,
+            id: new Types.ObjectId(el._id),
+            active: el.active,
             apiName: el.apiName,
             apiKeyExpire: el.apiKeyExpire,
             apiKey: el.apiKey
@@ -321,9 +336,13 @@ export const updateUserProfile = catchAsync(
       "lastname"
     );
 
-    const user = await User.findByIdAndUpdate(req.user.id, filteredBody, {
-      runValidators: true,
-    });
+    const user = await User.findByIdAndUpdate(
+      new Types.ObjectId(req.user.id),
+      filteredBody,
+      {
+        runValidators: true,
+      }
+    );
 
     if (!user) {
       return next(
@@ -340,9 +359,14 @@ export const updateUserProfile = catchAsync(
   }
 );
 
-export const resetEmail = catchAsync(
+export const emailChangeRequest = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    const user = await User.findById(req.user.id);
+    const { resetToken, resetHashToken, dateExpire } = createResetRandomToken();
+
+    const user = await User.findByIdAndUpdate(new Types.ObjectId(req.user.id), {
+      emailResetToken: resetHashToken,
+      emailResetTokenExpire: dateExpire,
+    });
 
     if (!user) {
       return next(
@@ -350,7 +374,6 @@ export const resetEmail = catchAsync(
       );
     }
 
-    const resetToken = user.createResetRandomToken("email");
     const resetUrl = user.createResetUrl(req, resetToken, "email");
 
     const emailSend = await EmailManager.send({
@@ -360,15 +383,14 @@ export const resetEmail = catchAsync(
     });
 
     if (!emailSend) {
-      user.emailResetToken = undefined;
-      user.emailResetTokenExpire = undefined;
-      await user.save({ validateBeforeSave: false });
+      await user.updateOne({
+        $unset: { emailResetToken: "", emailResetTokenExpire: "" },
+      });
+
       return next(
         new AppError(AppMessage.errorMessage.ERROR_SENT_EMAIL_RESET_EMAIL, 500)
       );
     }
-
-    await user.save({ validateBeforeSave: false });
 
     res.status(200).json({
       status: "success",
@@ -379,23 +401,12 @@ export const resetEmail = catchAsync(
   }
 );
 
-export const changeEmail = catchAsync(
+export const confirmChangeEmail = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const tokenHash = crypto
       .createHash("sha256")
       .update(req.params.token)
       .digest("hex");
-
-    const user = await User.findOne({
-      emailResetToken: tokenHash,
-      emailResetTokenExpire: { $gte: new Date(Date.now()) },
-    });
-
-    if (!user) {
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_REQUEST_EXPIRED, 401)
-      );
-    }
 
     const { newEmail } = req.body;
 
@@ -408,8 +419,42 @@ export const changeEmail = catchAsync(
       );
     }
 
-    user.changeUserEmail(newEmail);
-    await user.save({ validateModifiedOnly: true });
+    const user = await User.findOneAndUpdate(
+      {
+        emailResetToken: tokenHash,
+        emailResetTokenExpire: { $gte: new Date(Date.now()) },
+      },
+      {
+        email: newEmail,
+        emailChangeAt: new Date(Date.now()),
+        $unset: {
+          emailResetToken: "",
+          emailResetTokenExpire: "",
+        },
+      },
+      { runValidators: true }
+    );
+
+    if (!user) {
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_REQUEST_EXPIRED, 401)
+      );
+    }
+
+    const sendEmail = await EmailManager.send({
+      to: user.email,
+      subject: emailMessages.subjectEmail.SUBJECT_EMAIL_CHANGED,
+      text: emailMessages.bodyEmail.SEND_NOTIFICATION_EMAIL_CHANGED(newEmail),
+    });
+
+    if (!sendEmail) {
+      return next(
+        new AppError(
+          AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_EMAIL_CHANGED,
+          500
+        )
+      );
+    }
 
     res.status(200).json({
       status: "success",
@@ -420,16 +465,16 @@ export const changeEmail = catchAsync(
 
 export const disableUserAccount = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    const user = await User.findById(req.user.id);
+    const user = await User.findByIdAndUpdate(new Types.ObjectId(req.user.id), {
+      active: false,
+      disableAccountAt: new Date(),
+    });
 
     if (!user) {
       return next(
         new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
       );
     }
-
-    user.disableAccount();
-    await user.save({ validateBeforeSave: false });
 
     const emailSend = await EmailManager.send({
       to: user.email,

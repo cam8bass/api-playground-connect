@@ -1,4 +1,4 @@
-import { Document, ObjectId } from "mongoose";
+import { Document, Types } from "mongoose";
 import { resetType, userRoleType } from "../types/types";
 import { Response, Request } from "express";
 
@@ -33,17 +33,17 @@ export interface UserInterface extends Document {
           apiName?: string;
           apiKey?: string;
           apiKeyExpire?: Date;
-          _id?: ObjectId;
+          _id?: Types.ObjectId;
+          active?: boolean;
         }
       ];
     }
   ];
   // METHODS
-  createResetRandomToken: (resetType: resetType) => string;
-  activeUserAccount: () => void;
+
   createAndSendToken: (
     res: Response,
-    userId: ObjectId,
+    userId: Types.ObjectId,
     role: userRoleType
   ) => Promise<string>;
   checkUserPassword: (
@@ -58,6 +58,4 @@ export interface UserInterface extends Document {
     resetType: resetType
   ) => string;
   changeUserPassword: (newPassword: string, newPasswordConfirm: string) => void;
-  changeUserEmail: (this: UserInterface, newEmail: string) => void;
-  disableAccount: () => void;
 }

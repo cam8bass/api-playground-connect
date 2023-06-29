@@ -1,8 +1,7 @@
-import { ObjectId, Schema, model } from "mongoose";
+import { Types, Schema, model } from "mongoose";
 import { UserInterface } from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
-import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
@@ -56,7 +55,10 @@ const userSchema = new Schema<UserInterface>(
     },
     role: {
       type: String,
-      enum: ["user", "admin"],
+      enum: {
+        values: ["user", "admin"],
+        message: AppMessage.validationMessage.VALIDATE_FIELD("un role"),
+      },
       default: "user",
     },
     // EMAIL
@@ -71,7 +73,7 @@ const userSchema = new Schema<UserInterface>(
       unique: true,
       validate: [
         validator.isEmail,
-        AppMessage.validationMessage.VALIDATE_EMAIL,
+        AppMessage.validationMessage.VALIDATE_FIELD("une adresse email"),
       ],
     },
     emailChangeAt: { type: Date },
@@ -87,7 +89,7 @@ const userSchema = new Schema<UserInterface>(
       ],
       validate: [
         validator.isStrongPassword,
-        AppMessage.validationMessage.VALIDATE_PASSWORD,
+        AppMessage.validationMessage.VALIDATE_PASSWORD(8),
       ],
       maxlength: [
         30,
@@ -149,41 +151,9 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
-userSchema.methods.createResetRandomToken = function (
-  this: UserInterface,
-  resetType: resetType
-): string {
-  const resetToken = crypto.randomBytes(32).toString("hex");
-  const resetHashToken = crypto
-    .createHash("sha256")
-    .update(resetToken)
-    .digest("hex");
-
-  const dateExpire = new Date(Date.now() + 10 * 60 * 1000);
-
-  if (resetType === "activation") {
-    this.activationAccountToken = resetHashToken;
-    this.activationAccountTokenExpire = dateExpire;
-  } else if (resetType === "password") {
-    this.passwordResetToken = resetHashToken;
-    this.passwordResetTokenExpire = dateExpire;
-  } else if (resetType === "email") {
-    this.emailResetToken = resetHashToken;
-    this.emailResetTokenExpire = dateExpire;
-  }
-
-  return resetToken;
-};
-
-userSchema.methods.activeUserAccount = function (this: UserInterface) {
-  this.active = true;
-  this.activationAccountToken = undefined;
-  this.activationAccountTokenExpire = undefined;
-};
-
 userSchema.methods.createAndSendToken = async function (
   res: Response,
-  userId: ObjectId,
+  userId: Types.ObjectId,
   role: userRoleType
 ): Promise<string> {
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
@@ -218,7 +188,6 @@ userSchema.methods.enterWrongPassword = function (this: UserInterface): void {
   this.loginFailures++;
   if (this.loginFailures >= 10) {
     this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
-    // this.accountLockedExpire = new Date(Date.now() + 20 * 1000);
 
     this.loginFailures = undefined;
   }
@@ -260,21 +229,6 @@ userSchema.methods.changeUserPassword = function (
   this.passwordChangeAt = new Date(Date.now());
   this.passwordResetToken = undefined;
   this.passwordResetTokenExpire = undefined;
-};
-
-userSchema.methods.changeUserEmail = function (
-  this: UserInterface,
-  newEmail: string
-): void {
-  this.email = newEmail;
-  this.emailResetToken = undefined;
-  this.emailResetTokenExpire = undefined;
-  this.emailChangeAt = new Date(Date.now());
-};
-
-userSchema.methods.disableAccount = function (this: UserInterface) {
-  this.active = false;
-  this.disableAccountAt = new Date(Date.now());
 };
 
 const User = model<UserInterface>("User", userSchema);
