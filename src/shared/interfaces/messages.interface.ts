@@ -1,6 +1,8 @@
 import { Types } from "mongoose";
 
 interface ErrorMessageInterface {
+  ERROR_EMPTY_USER_MODIFICATION: string;
+  ERROR_SENT_NOTIFICATION_PASSWORD_CHANGED: string;
   ERROR_PAGE_NOT_FOUND: string;
   ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE: string;
   ERROR_ACCOUNT_NOT_ACTIVE: string;

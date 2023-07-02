@@ -15,7 +15,7 @@ import * as factory from "./factory.controller";
 // USERS
 export const getAllUsers = factory.getAll(User);
 
-export const getUser = factory.getOne(User,{path:"apiKeys"});
+export const getUser = factory.getOne(User, { path: "apiKeys" });
 
 export const createUser = factory.createOne(User, "user");
 
@@ -34,6 +34,12 @@ export const updateUser = catchAsync(
       "role",
       "loginFailures"
     );
+
+    if (Object.entries(filteredBody).length === 0) {
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_EMPTY_USER_MODIFICATION, 400)
+      );
+    }
 
     const user = await User.findByIdAndUpdate(id, filteredBody, {
       runValidators: true,
@@ -61,7 +67,10 @@ export const updateUser = catchAsync(
 // API KEYS
 export const getAllApiKeys = factory.getAll(ApiKey);
 
-export const getApiKey = factory.getOne(ApiKey);
+export const getApiKey = factory.getOne(ApiKey, {
+  path: "user",
+  select: "email firstname lastname",
+});
 
 export const createApiKey = factory.createOne(ApiKey, "apiKey");
 
@@ -106,7 +115,7 @@ export const activeAndcreateApiKey = catchAsync(
             ),
           },
         }
-      );
+      ).select("user");
 
       if (!apiKey) {
         return next(
@@ -154,7 +163,7 @@ export const activeAndcreateApiKey = catchAsync(
           },
         },
         { new: true }
-      );
+      ).select("apiKeys._id user");
 
       if (!apiKey) {
         return next(
@@ -163,7 +172,7 @@ export const activeAndcreateApiKey = catchAsync(
       }
 
       if (apiKey.apiKeys.length < 1) {
-        await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey.id));
+        await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey._id));
       }
 
       const sendEmail = await EmailManager.send({
@@ -177,7 +186,7 @@ export const activeAndcreateApiKey = catchAsync(
         return next(
           new AppError(
             AppMessage.errorMessage.ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION(
-              apiKey.user.id,
+              apiKey.user._id,
               apiKey.user.email
             ),
             500
@@ -189,145 +198,10 @@ export const activeAndcreateApiKey = catchAsync(
         status: "success",
         message:
           AppMessage.successMessage.SUCCESS_ADMIN_REFUSAL_API_KEY_CREATION(
-            apiKey.id,
-            apiKey.user.id
+            apiKey._id,
+            apiKey.user._id
           ),
       });
     }
   }
 );
-
-// export const deleteUser = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-
-//     const user = await User.findByIdAndDelete(id);
-
-//     if (!user) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     const emailSend = await EmailManager.send({
-//       to: user.email,
-//       subject:
-//         emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Suppression"),
-//       text: emailMessages.bodyEmail.ACCOUNT_DELETED,
-//     });
-
-//     if (!emailSend) {
-//       return next(
-//         new AppError(
-//           AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT,
-//           500
-//         )
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(user.id),
-//     });
-//   }
-// );
-
-// export const deleteAllApiKeysFromUser = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-
-//     const apiKeys = await ApiKey.findByIdAndDelete(id);
-
-//     if (!apiKeys) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       message: AppMessage.successMessage.SUCCESS_DOCUMENT_DELETED(id),
-//     });
-//   }
-// );
-
-// export const getApiKey = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-
-//     const apiKey = await ApiKey.findById(id);
-
-//     if (!apiKey) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       data: {
-//         apiKey,
-//       },
-//     });
-//   }
-// );
-
-// export const getAllApiKeys = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const apiKeys = await ApiKey.find();
-
-//     if (!apiKeys) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       results: apiKeys.length,
-//       data: {
-//         apiKeys,
-//       },
-//     });
-//   }
-// );
-
-// export const getUser = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-//     const user = await User.findById(id);
-
-//     if (!user) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       data: {
-//         user,
-//       },
-//     });
-//   }
-// );
-
-// export const getAllUsers = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const users = await User.find();
-
-//     if (!users) {
-//       return next(
-//         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       results: users.length,
-//       data: {
-//         users,
-//       },
-//     });
-//   }
-// );

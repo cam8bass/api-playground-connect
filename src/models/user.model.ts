@@ -1,5 +1,5 @@
 import { Types, Schema, model } from "mongoose";
-import { UserInterface } from "../shared/interfaces";
+import { ApiKeyInterface, UserInterface } from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,6 +7,7 @@ import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
 import client from "../infisical";
+import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -146,6 +147,12 @@ userSchema.virtual("apiKeys", {
   ref: "ApiKey",
   foreignField: "user",
   localField: "_id",
+});
+
+userSchema.pre(/^find/, function (next) {
+  this.select("-__v");
+
+  next();
 });
 
 userSchema.pre("save", async function (next) {

@@ -49,7 +49,7 @@ export const confirmActivationAccount = catchAsync(
     const user = await User.findOne({
       activationAccountToken: hashToken,
       activationAccountTokenExpire: { $gte: Date.now() },
-    }).select("+password");
+    }).select("+password email role");
 
     if (!user) {
       return next(
@@ -88,7 +88,7 @@ export const confirmActivationAccount = catchAsync(
 
     const token = await user.createAndSendToken(
       res,
-      new Types.ObjectId(user.id),
+      new Types.ObjectId(user._id),
       user.role
     );
 
@@ -109,7 +109,7 @@ export const login = catchAsync(
     }
 
     const user = await User.findOne<UserInterface>({ email }).select(
-      "+password"
+      "+password loginFailures role"
     );
 
     if (!user) {
@@ -162,7 +162,7 @@ export const forgotPassword = catchAsync(
         passwordResetToken: resetHashToken,
         passwordResetTokenExpire: dateExpire,
       }
-    );
+    ).select("email");
 
     if (!user) {
       return next(new AppError(AppMessage.errorMessage.ERROR_WRONG_EMAIL, 400));
@@ -211,7 +211,7 @@ export const resetPassword = catchAsync(
     const user = await User.findOne({
       passwordResetToken,
       passwordResetTokenExpire: { $gte: new Date(Date.now()) },
-    });
+    }).select("role");
 
     if (!user) {
       return next(
@@ -240,7 +240,7 @@ export const resetPassword = catchAsync(
 export const updatePassword = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
     const user = await User.findById(new Types.ObjectId(req.user.id)).select(
-      "+password"
+      "+password role email "
     );
 
     if (!user) {
@@ -260,6 +260,20 @@ export const updatePassword = catchAsync(
     user.changeUserPassword(newPassword, newPasswordConfirm);
     await user.save();
 
+    const sendEmail = await EmailManager.send({
+      to: user.email,
+      subject: emailMessages.subjectEmail.SUBJECT_FIELD_CHANGED("mot de passe"),
+      text: emailMessages.bodyEmail.PASSWORD_CHANGED,
+    });
+
+    if (!sendEmail) {
+      return next(
+        new AppError(
+          AppMessage.errorMessage.ERROR_SENT_NOTIFICATION_PASSWORD_CHANGED,
+          500
+        )
+      );
+    }
     const token = await user.createAndSendToken(
       res,
       new Types.ObjectId(user.id),
@@ -281,8 +295,7 @@ export const getMe = catchAsync(
         path: "apiKeys",
         select:
           "apiKeys.apiName apiKeys.apiKey apiKeys.apiKeyExpire apiKeys._id apiKeys.active",
-      })
-      .lean();
+      });
 
     if (!user) {
       return next(
@@ -295,7 +308,7 @@ export const getMe = catchAsync(
       lastname: user.lastname,
       email: user.email,
       role: user.role,
-      id: new Types.ObjectId(user.id),
+      id: new Types.ObjectId(user._id),
       apiKeys: await Promise.all(
         user.apiKeys.flatMap((el: Partial<ApiKeyInterface>) =>
           el.apiKeys.map(async (el) => ({
@@ -336,13 +349,18 @@ export const updateUserProfile = catchAsync(
       "lastname"
     );
 
+    if (Object.entries(filteredBody).length === 0) {
+      return next(
+        new AppError(AppMessage.errorMessage.ERROR_EMPTY_USER_MODIFICATION, 400)
+      );
+    }
     const user = await User.findByIdAndUpdate(
       new Types.ObjectId(req.user.id),
       filteredBody,
       {
         runValidators: true,
       }
-    );
+    ).select("_id");
 
     if (!user) {
       return next(
@@ -366,7 +384,7 @@ export const emailChangeRequest = catchAsync(
     const user = await User.findByIdAndUpdate(new Types.ObjectId(req.user.id), {
       emailResetToken: resetHashToken,
       emailResetTokenExpire: dateExpire,
-    });
+    }).select("email");
 
     if (!user) {
       return next(
@@ -433,7 +451,7 @@ export const confirmChangeEmail = catchAsync(
         },
       },
       { runValidators: true }
-    );
+    ).select("email");
 
     if (!user) {
       return next(
@@ -443,7 +461,8 @@ export const confirmChangeEmail = catchAsync(
 
     const sendEmail = await EmailManager.send({
       to: user.email,
-      subject: emailMessages.subjectEmail.SUBJECT_EMAIL_CHANGED,
+      subject:
+        emailMessages.subjectEmail.SUBJECT_FIELD_CHANGED("adresse email"),
       text: emailMessages.bodyEmail.SEND_NOTIFICATION_EMAIL_CHANGED(newEmail),
     });
 
@@ -468,7 +487,7 @@ export const disableUserAccount = catchAsync(
     const user = await User.findByIdAndUpdate(new Types.ObjectId(req.user.id), {
       active: false,
       disableAccountAt: new Date(),
-    });
+    }).select("email");
 
     if (!user) {
       return next(

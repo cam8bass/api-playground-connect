@@ -7,6 +7,7 @@ import { Model, Types, PopulateOptions } from "mongoose";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import FilterQuery from "../shared/utils/filterQuery";
+import { apiNameType } from "../shared/types/types";
 
 export const getAll = <T extends Model<UserInterface | ApiKeyInterface>>(
   Model: T
@@ -64,7 +65,7 @@ export const deleteOne = <T extends Model<UserInterface | ApiKeyInterface>>(
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = new Types.ObjectId(req.params.id);
 
-    const doc = await Model.findByIdAndDelete(id);
+    const doc = await Model.findOneAndDelete({ _id: id }).select("email");
 
     if (!doc) {
       return next(
@@ -106,8 +107,8 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
     if (target === "user") {
       query = Model.create(req.body);
     } else if (target === "apiKey") {
-      const idUser = new Types.ObjectId(req.body.user);
-      const apiName = req.body.apiName;
+      const idUser: Types.ObjectId = req.body.user;
+      const apiName: apiNameType = req.body.apiName;
 
       if (!idUser || !apiName) {
         return next(
@@ -119,9 +120,9 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
           )
         );
       }
-      const userApiKeys = (await Model.findOne({
+      const userApiKeys = await Model.findOne<ApiKeyInterface>({
         user: idUser,
-      })) as ApiKeyInterface;
+      }).select("apiKeys.apiName");
 
       if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
         return next(
@@ -132,7 +133,7 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
       const newApiKey = ApiKeyManager.createNewApiKey();
       const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
 
-      query = (await Model.findOneAndUpdate(
+      query = await Model.findOneAndUpdate<ApiKeyInterface>(
         {
           user: idUser,
         },
@@ -146,12 +147,14 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
             },
           },
         },
+
         {
           upsert: true,
           runValidators: true,
           new: true,
         }
-      )) as ApiKeyInterface;
+      )
+      .select("user");
 
       const sendEmail = await EmailManager.send({
         to: query.user.email,

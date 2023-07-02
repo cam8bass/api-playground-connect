@@ -1,7 +1,6 @@
 import { Schema, model } from "mongoose";
 import { ApiKeyInterface } from "../shared/interfaces";
 import { AppMessage } from "../shared/messages";
-
 import { apiNameType } from "../shared/types/types";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
@@ -53,8 +52,11 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
   },
 });
 
+
+
 apiKeySchema.pre(/^find/, function (next) {
-  this.populate({ path: "user", select: "email firstname lastname" });
+  this.populate({ path: "user", select: "email" });
+  this.select("-__v");
   next();
 });
 

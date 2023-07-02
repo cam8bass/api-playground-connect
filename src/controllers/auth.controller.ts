@@ -22,7 +22,7 @@ export const accountIsActive = catchAsync(
         );
 
     if (!user || user.active) return next();
-
+    // TODO: Voir pour retourner une erreur si active= false
     if (user.activationAccountTokenExpire > new Date(Date.now())) {
       return next(
         new AppError(

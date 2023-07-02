@@ -25,7 +25,7 @@ export const apiKeyCreationRequest = catchAsync(
     }
     const userApiKeys = await ApiKey.findOne({
       user: new Types.ObjectId(req.user.id),
-    });
+    }).select("apiKeys.apiName");
 
     if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
       return next(
@@ -46,9 +46,10 @@ export const apiKeyCreationRequest = catchAsync(
         },
       },
       { upsert: true, new: true, runValidators: true }
-    );
+    ).select("apiKeys.apiName apiKeys._id");
 
     const idNewApi = newApiKey.apiKeys.find((el) => el.apiName === apiName)._id;
+
     const sendEmail = await EmailManager.send({
       to: "admin@email.fr",
       subject: emailMessages.subjectEmail.SUBJECT_ADMIN_VALID_NEW_API_KEY,
@@ -77,7 +78,7 @@ export const apiKeyCreationRequest = catchAsync(
           },
         },
         { new: true }
-      );
+      ).select("apiKeys");
 
       if (updatedUserApiKeys.apiKeys.length < 1) {
         await ApiKey.findByIdAndDelete(
@@ -125,7 +126,7 @@ export const apiKeyRenewalRequest = catchAsync(
           "apiKeys.$.renewalTokenExpire": dateExpire,
         },
       }
-    );
+    ).select("_id");
 
     if (!apiKey) {
       return next(
@@ -210,7 +211,7 @@ export const confirmRenewalApiKey = catchAsync(
           "apiKeys.$.renewalTokenExpire": "",
         },
       }
-    );
+    ).select("user");
 
     if (!apiKey) {
       return next(
@@ -269,7 +270,7 @@ export const deleteSelectedApiKey = catchAsync(
         $pull: { apiKeys: { _id: idApi } },
       },
       { new: true }
-    );
+    ).select('apiKeys');
 
     if (!apiKey) {
       return next(

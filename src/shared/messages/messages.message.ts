@@ -3,6 +3,8 @@ import MessagesInterface from "../interfaces/messages.interface";
 
 export const AppMessage: MessagesInterface = {
   errorMessage: {
+    ERROR_EMPTY_USER_MODIFICATION:
+      "Désolé, mais aucune modification n'a été prise en compte. Veuillez saisir des champs valides pour effectuer des modifications.",
     ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE:
       "Veuillez activer votre compte en utilisant le lien d'activation qui vous a été envoyé à votre adresse e-mail. Si vous avez perdu l'e-mail contenant le lien d'activation, veuillez patienter pendant 10 minutes avant de vous connecter à la page de connexion avec vos identifiants. Cela permettra de générer la procédure d'activation du compte.",
     ERROR_ACCOUNT_NOT_ACTIVE:
@@ -53,6 +55,8 @@ export const AppMessage: MessagesInterface = {
       "Pour modifier votre mot de passe, veuillez vous rediriger vers la section prévu à cet effet.",
     ERROR_SENT_NOTIFICATION_EMAIL_CHANGED:
       "Nous sommes désolés, mais une erreur s'est produite lors de l'envoi de l'e-mail de notification pour le changement de votre adresse e-mail. Cependant, nous tenons à vous assurer que la modification a été enregistrée avec succès. Nous nous excusons pour ce désagrément.",
+    ERROR_SENT_NOTIFICATION_PASSWORD_CHANGED:
+      "Nous sommes désolés, mais une erreur s'est produite lors de l'envoi de l'e-mail de notification pour le changement de votre mot de passe. Cependant, nous tenons à vous assurer que la modification a été enregistrée avec succès. Nous nous excusons pour ce désagrément.",
     ERROR_API_KEY_EXPIRE:
       "Désolé, nous ne trouvons pas de clé d'API susceptible d'être renouvelée pour le moment. Veuillez vérifier si votre clé d'API est expirée. Si ce n'est pas le cas, veuillez contacter notre équipe de support pour obtenir de l'aide supplémentaire. Merci de votre compréhension.",
     ERROR_DUPLICATE_API_KEY: "Vous disposez déjà d'une clé pour cette API.",
@@ -70,7 +74,6 @@ export const AppMessage: MessagesInterface = {
   },
 
   successMessage: {
-  
     SUCCESS_PASSWORD_MODIFIED: "Votre mot de passe a été modifié avec succès.",
     SUCCESS_EMAIL_MODIFIED: "Votre adresse e-mail a été modifiée avec succès.",
     SUCCESS_ACTIVATION_ACCOUNT: "Votre compte a été activé avec succès.",
@@ -103,7 +106,7 @@ export const AppMessage: MessagesInterface = {
 
     SUCCESS_SENT_EMAIL_CREATE_API_KEY: (userEmail: string): string =>
       `Un email contenant votre nouvelle clé d'API a été envoyé à l'adresse ${userEmail}. Veuillez vérifier votre boîte de réception.`,
-        SUCCESS_ADMIN_REFUSAL_API_KEY_CREATION: (
+    SUCCESS_ADMIN_REFUSAL_API_KEY_CREATION: (
       idApi: Types.ObjectId,
       idUser: Types.ObjectId
     ): string =>

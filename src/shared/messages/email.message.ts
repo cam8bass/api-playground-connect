@@ -73,7 +73,10 @@ export const emailMessages = {
       "Demande de création d'une nouvelle clé d'API",
     SUBJECT_ADMIN_REFUSAL_API_KEY_CREATION:
       "Refus de demande de création de clé d'API",
-    SUBJECT_EMAIL_CHANGED: "Modification de votre adresse e-mail",
+    // SUBJECT_EMAIL_CHANGED: "Modification de votre adresse e-mail",
+    // SUBJECT_PASSWORD_CHANGED: "Modification de votre mot de passe",
+    SUBJECT_FIELD_CHANGED: (field: string): string =>
+      `Modification de votre ${field}`,
     SUBJECT_ACCOUNT_REACTIVATION:
       "Réactivation de votre compte - Bienvenue de nouveau !",
   },
