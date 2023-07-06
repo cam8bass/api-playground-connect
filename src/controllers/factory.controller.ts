@@ -65,7 +65,9 @@ export const deleteOne = <T extends Model<UserInterface | ApiKeyInterface>>(
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = new Types.ObjectId(req.params.id);
 
-    const doc = await Model.findOneAndDelete({ _id: id }).select("email");
+    const doc = await Model.findOneAndDelete({ _id: id })
+      .select("email")
+      .lean();
 
     if (!doc) {
       return next(
@@ -153,8 +155,7 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
           runValidators: true,
           new: true,
         }
-      )
-      .select("user");
+      ).select("user");
 
       const sendEmail = await EmailManager.send({
         to: query.user.email,

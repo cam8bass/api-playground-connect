@@ -17,6 +17,10 @@ export const createResetRandomToken = (): {
   return { resetToken, resetHashToken, dateExpire };
 };
 
+export const createHashRandomToken = (resetToken: string): string => {
+  return crypto.createHash("sha256").update(resetToken).digest("hex");
+};
+
 export const createResetUrl = (
   req: Request,
   resetToken: string,
@@ -29,9 +33,8 @@ export const createResetUrl = (
     path = "resetPassword";
   } else if (resetType === "email") {
     path = "resetEmail";
-  }else if (resetType==="api-Key"){
+  } else if (resetType === "api-Key") {
     path = "confirmRenewal";
-
   }
   return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;
 };

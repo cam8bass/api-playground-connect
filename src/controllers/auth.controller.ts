@@ -5,10 +5,8 @@ import AppError from "../shared/utils/AppError.utils";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { userRequestInterface } from "../shared/interfaces";
 import { userRoleType } from "../shared/types/types";
-import { AppMessage, emailMessages } from "../shared/messages";
+import { AppMessage } from "../shared/messages";
 import client from "../infisical";
-import { createResetRandomToken } from "../shared/utils/reset.utils";
-import EmailManager from "../shared/utils/EmailManager.utils";
 
 export const accountIsActive = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
@@ -22,73 +20,19 @@ export const accountIsActive = catchAsync(
         );
 
     if (!user || user.active) return next();
-    // TODO: Voir pour retourner une erreur si active= false
-    if (user.activationAccountTokenExpire > new Date(Date.now())) {
+
+    if (!user.active) {
       return next(
-        new AppError(
-          AppMessage.errorMessage.ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE,
-          404
-        )
+        new AppError(AppMessage.errorMessage.ERROR_ACCOUNT_NOT_ACTIVE, 404)
       );
     }
-
-    if (user.disableAccountAt) {
-      await user.updateOne({
-        active: true,
-        $unset: {
-          disableAccountAt: "",
-        },
-      });
-
-      await EmailManager.send({
-        to: user.email,
-        subject: emailMessages.subjectEmail.SUBJECT_ACCOUNT_REACTIVATION,
-        text: emailMessages.bodyEmail.SEND_NOTIFICATION_ACCOUNT_REACTIVATION,
-      });
-
-      return next();
-    }
-
-    const { resetToken, resetHashToken, dateExpire } = createResetRandomToken();
-
-    const resetUrl = user.createResetUrl(req, resetToken, "activation");
-
-    const sendEmail = await EmailManager.send({
-      to: user.email,
-      subject: emailMessages.subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
-      text: emailMessages.bodyEmail.SEND_RESET_URL(resetUrl, 10),
-    });
-
-    if (!sendEmail) {
-      await user.updateOne({
-        $unset: {
-          activationAccountToken: "",
-          activationAccountTokenExpire: "",
-        },
-      });
-
-      return next(
-        new AppError(AppMessage.errorMessage.ERROR_SENT_EMAIL_ACTIVATION, 500)
-      );
-    }
-
-    await user.updateOne({
-      activationAccountToken: resetHashToken,
-      activationAccountTokenExpire: dateExpire,
-    });
-
-    res.status(200).json({
-      status: "success",
-      message: AppMessage.successMessage.SUCCESS_SENT_EMAIL_ACTIVATION(
-        user.email
-      ),
-    });
   }
 );
 
 export const accountIsLocked = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
     const email = req.user ? req.user.email : req.body.email;
+
     const user = req.user
       ? req.user
       : await User.findOne({ email }, "accountLockedExpire");
@@ -104,11 +48,7 @@ export const accountIsLocked = catchAsync(
       );
     }
 
-    await user.updateOne({
-      $unset: {
-        accountLockedExpire: "",
-      },
-    });
+    await user.deleteAccountLockedExpire();
 
     next();
   }
@@ -137,7 +77,11 @@ export const protect = catchAsync(
       _id: decoded.id,
     });
 
-    if (!user || user.checkPasswordChangedAfterToken(decoded.iat)) {
+    if (
+      !user ||
+      user.checkPasswordChangedAfterToken(decoded.iat) ||
+      user.checkEmailChangedAfterToken(decoded.iat)
+    ) {
       return next(
         new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401)
       );

@@ -122,6 +122,7 @@ export const activeAndcreateApiKey = catchAsync(
           new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
         );
       }
+
       const sendEmail = await EmailManager.send({
         to: apiKey.user.email,
         subject: emailMessages.subjectEmail.SUBJECT_API_KEY("Création"),
@@ -193,7 +194,6 @@ export const activeAndcreateApiKey = catchAsync(
           )
         );
       }
-
       res.status(200).json({
         status: "success",
         message:

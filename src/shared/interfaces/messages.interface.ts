@@ -32,9 +32,9 @@ interface ErrorMessageInterface {
   ERROR_SENT_NOTIFICATION_EMAIL_CHANGED: string;
   ERROR_EMPTY_FIELD: (...field: string[]) => string;
   ERROR_MODIFIED_FIELD: (field: string) => string;
-  ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: string, userEmail: string) => string;
+  ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: Types.ObjectId, userEmail: string) => string;
   ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION: (
-    idUser: string,
+    idUser: Types.ObjectId,
     userEmail: string
   ) => string;
 }

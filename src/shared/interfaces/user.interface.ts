@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 import { resetType, userRoleType } from "../types/types";
-import { Response, Request } from "express";
+import { Response, Request, NextFunction } from "express";
 
 export interface UserInterface extends Document {
   firstname: string;
@@ -40,22 +40,35 @@ export interface UserInterface extends Document {
     }
   ];
   // METHODS
-
+  activeUserAccount: (
+    resetHashToken: string,
+    dateExpire: Date
+  ) => Promise<void>;
+  reactivatedUserAccount: () => Promise<void>;
   createAndSendToken: (
     res: Response,
     userId: Types.ObjectId,
     role: userRoleType
   ) => Promise<string>;
+  deleteActivationToken: () => Promise<void>;
+  deletePasswordResetToken: () => Promise<void>;
   checkUserPassword: (
     inputPassword: string,
     userPassword: string
   ) => Promise<boolean>;
-  enterWrongPassword: () => void;
   checkPasswordChangedAfterToken: (timestampToken: number) => boolean;
   createResetUrl: (
     req: Request,
     resetToken: string,
     resetType: resetType
   ) => string;
-  changeUserPassword: (newPassword: string, newPasswordConfirm: string) => void;
+  changeUserPassword: (
+    newPassword: string,
+    newPasswordConfirm: string
+  ) => Promise<void>;
+  deleteEmailResetToken: () => Promise<void>;
+  changeUserEmail: (newEmail: string) => Promise<void>;
+  checkEmailChangedAfterToken: (timestampToken: number) => boolean;
+
+  deleteAccountLockedExpire: () => Promise<void>;
 }

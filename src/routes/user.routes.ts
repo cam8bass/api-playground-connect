@@ -11,25 +11,29 @@ router.post("/signup", userController.signUp);
 // ACTIVATION ACCOUNT
 router.patch(
   "/activationAccount/:token",
+  authController.accountIsLocked,
   userController.confirmActivationAccount
 );
 
 // LOGIN
-router.post(
-  "/login",
-  authController.accountIsActive,
-  authController.accountIsLocked,
-  userController.login
-);
+router.post("/login", authController.accountIsLocked, userController.login);
 
 // FORGOT PASSWORD
 router.post("/forgotPassword", userController.forgotPassword);
 
 // RESET PASSWORD
-router.patch("/resetPassword/:token", userController.resetPassword);
+router.patch(
+  "/resetPassword/:token",
+  authController.accountIsLocked,
+  userController.resetPassword
+);
 
 // RESET EMAIL
-router.patch("/resetEmail/:token", userController.confirmChangeEmail);
+router.patch(
+  "/resetEmail/:token",
+  authController.accountIsLocked,
+  userController.confirmChangeEmail
+);
 
 // === NEED AUTH ===
 

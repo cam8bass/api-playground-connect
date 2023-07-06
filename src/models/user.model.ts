@@ -1,5 +1,5 @@
 import { Types, Schema, model } from "mongoose";
-import { ApiKeyInterface, UserInterface } from "../shared/interfaces";
+import { UserInterface } from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,7 +7,6 @@ import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
 import client from "../infisical";
-import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -188,19 +187,89 @@ userSchema.methods.createAndSendToken = async function (
   return token;
 };
 
+userSchema.methods.activeUserAccount = async function (
+  this: UserInterface,
+  resetHashToken: string,
+  dateExpire: Date
+): Promise<void> {
+  await this.updateOne({
+    activationAccountToken: resetHashToken,
+    activationAccountTokenExpire: dateExpire,
+  });
+};
+
+userSchema.methods.reactivatedUserAccount = async function (
+  this: UserInterface
+): Promise<void> {
+  await this.updateOne({
+    active: true,
+    $unset: {
+      disableAccountAt: "",
+    },
+  });
+};
+
+userSchema.methods.deleteActivationToken = async function (
+  this: UserInterface
+): Promise<void> {
+  await this.updateOne({
+    $unset: { activationAccountToken: "", activationAccountTokenExpire: "" },
+  });
+};
+
+userSchema.methods.deletePasswordResetToken = async function (
+  this: UserInterface
+): Promise<void> {
+  await this.updateOne({
+    $unset: {
+      passwordResetToken: "",
+      passwordResetTokenExpire: "",
+    },
+  });
+};
+
+userSchema.methods.deleteEmailResetToken = async function (
+  this: UserInterface
+) {
+  await this.updateOne({
+    $unset: { emailResetToken: "", emailResetTokenExpire: "" },
+  });
+};
+
+userSchema.methods.deleteAccountLockedExpire = async function (
+  this: UserInterface
+): Promise<void> {
+  await this.updateOne({
+    $unset: {
+      accountLockedExpire: "",
+    },
+  });
+};
+
 userSchema.methods.checkUserPassword = async function (
+  this: UserInterface,
   inputPassword: string,
   userPassword: string
 ): Promise<boolean> {
-  return await bcrypt.compare(inputPassword, userPassword);
-};
+  const validPassword = await bcrypt.compare(inputPassword, userPassword);
 
-userSchema.methods.enterWrongPassword = function (this: UserInterface): void {
-  this.loginFailures++;
-  if (this.loginFailures >= 10) {
-    this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
+  if (!validPassword) {
+    this.loginFailures++;
 
-    this.loginFailures = undefined;
+    if (this.loginFailures >= 10) {
+      this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
+
+      this.loginFailures = undefined;
+    }
+
+    await this.save({ validateBeforeSave: false });
+    return false;
+  } else {
+    if (this.loginFailures !== 0) {
+      this.loginFailures = undefined;
+    }
+    await this.save({ validateBeforeSave: false });
+    return true;
   }
 };
 
@@ -210,6 +279,16 @@ userSchema.methods.checkPasswordChangedAfterToken = function (
 ): boolean {
   if (this.passwordChangeAt) {
     return Date.parse(this.passwordChangeAt.toString()) / 1000 > tokenTimestamp;
+  }
+  return false;
+};
+
+userSchema.methods.checkEmailChangedAfterToken = function (
+  this: UserInterface,
+  tokenTimestamp: number
+): boolean {
+  if (this.emailChangeAt) {
+    return Date.parse(this.emailChangeAt.toString()) / 1000 > tokenTimestamp;
   }
   return false;
 };
@@ -230,16 +309,33 @@ userSchema.methods.createResetUrl = (
   return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;
 };
 
-userSchema.methods.changeUserPassword = function (
+userSchema.methods.changeUserPassword = async function (
   this: UserInterface,
   newPassword: string,
   newPasswordConfirm: string
-) {
+): Promise<void> {
   this.password = newPassword;
   this.passwordConfirm = newPasswordConfirm;
   this.passwordChangeAt = new Date(Date.now());
+
   this.passwordResetToken = undefined;
   this.passwordResetTokenExpire = undefined;
+
+  await this.save();
+};
+
+userSchema.methods.changeUserEmail = async function (
+  this: UserInterface,
+  newEmail: string
+): Promise<void> {
+  await this.updateOne({
+    email: newEmail,
+    emailChangeAt: new Date(Date.now()),
+    $unset: {
+      emailResetToken: "",
+      emailResetTokenExpire: "",
+    },
+  });
 };
 
 const User = model<UserInterface>("User", userSchema);

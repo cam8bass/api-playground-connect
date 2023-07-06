@@ -6,9 +6,9 @@ import { AppMessage } from "../shared/messages";
 import ApiKey from "../models/apiKey.model";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import { emailMessages } from "../shared/messages";
-import crypto from "crypto";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import {
+  createHashRandomToken,
   createResetRandomToken,
   createResetUrl,
 } from "../shared/utils/reset.utils";
@@ -182,10 +182,7 @@ export const apiKeyRenewalRequest = catchAsync(
 
 export const confirmRenewalApiKey = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const renewalToken = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
+    const renewalToken = createHashRandomToken(req.params.token);
 
     const newApiKey = ApiKeyManager.createNewApiKey();
     const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
@@ -270,7 +267,7 @@ export const deleteSelectedApiKey = catchAsync(
         $pull: { apiKeys: { _id: idApi } },
       },
       { new: true }
-    ).select('apiKeys');
+    ).select("apiKeys");
 
     if (!apiKey) {
       return next(

@@ -1,7 +1,8 @@
-import { SendEmailOptionsInterface, userRequestInterface } from "../interfaces";
+import { SendEmailOptionsInterface } from "../interfaces";
 import nodemailer, { TransportOptions, Transporter } from "nodemailer";
 import { MailOptions } from "nodemailer/lib/stream-transport";
 import client from "../../infisical";
+
 
 export default class EmailManager {
   private transporter: Transporter;
@@ -73,4 +74,6 @@ export default class EmailManager {
         .catch(() => resolve(false));
     });
   }
+
 }
+

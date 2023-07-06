@@ -64,10 +64,10 @@ export const AppMessage: MessagesInterface = {
       `Veuillez remplir le(s) champ(s): ${field}`,
     ERROR_MODIFIED_FIELD: (field: string) =>
       `Désolé, il n'est pas possible de modifier le champ: ${field}.`,
-    ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: string, userEmail: string): string =>
+    ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: Types.ObjectId, userEmail: string): string =>
       `Une erreur s'est produite lors de l'envoi de l'e-mail de notification confirmant la création de la clé d'API pour l'utilisateur ${idUser}. Veuillez vérifier les paramètres de messagerie et l'état du service de messagerie pour résoudre le problème. En attendant, veuillez traiter manuellement la demande de clé d'API de l'utilisateur et lui fournir les informations nécessaires à l'adresse : ${userEmail}. Merci de votre attention.`,
     ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION: (
-      idUser: string,
+      idUser: Types.ObjectId,
       userEmail: string
     ): string =>
       `Une erreur s'est produite lors de l'envoi de l'e-mail de notification pour le refus concernant la demande de création de clé d'API pour l'utilisateur ${idUser}. Veuillez vérifier les paramètres de messagerie et l'état du service de messagerie pour résoudre le problème. En attendant, veuillez traiter manuellement la demande de l'utilisateur et lui fournir les informations nécessaires à l'adresse : ${userEmail}. Merci de votre attention.`,
