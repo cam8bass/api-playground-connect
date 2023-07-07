@@ -180,6 +180,6 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
 
     res.status(200).json({
       status: "success",
-      message: AppMessage.successMessage.SUCCESS_DOCUMENT_CREATED(doc.id),
+      message: AppMessage.successMessage.SUCCESS_DOCUMENT_CREATED(doc._id),
     });
   });

@@ -2,6 +2,7 @@ import { Schema, model } from "mongoose";
 import { ApiKeyInterface } from "../shared/interfaces";
 import { AppMessage } from "../shared/messages";
 import { apiNameType } from "../shared/types/types";
+import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 const apiKeySchema = new Schema<ApiKeyInterface>({
   user: {
@@ -43,6 +44,7 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
       },
       renewalToken: { type: String },
       renewalTokenExpire: { type: Date },
+      createAt: { type: Date, default: Date.now() },
     },
   ],
   createAt: {
@@ -51,9 +53,21 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
   },
 });
 
+apiKeySchema.post(/^find/, async function (docs: ApiKeyInterface[]) {
+  if (!Array.isArray(docs) || !docs) return;
+  docs.map((api) =>
+    api.apiKeys.forEach(async (el) => {
+      el.apiKey = await ApiKeyManager.decryptApiKey(el.apiKey);
+    })
+  );
+});
+
+apiKeySchema.index({ active: 1, user: 1, apiName: 1 });
+
 apiKeySchema.pre(/^find/, function (next) {
   this.populate({ path: "user", select: "email" });
   this.select("-__v");
+
   next();
 });
 

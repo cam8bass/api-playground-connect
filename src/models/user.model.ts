@@ -1,5 +1,9 @@
 import { Types, Schema, model } from "mongoose";
-import { UserInterface } from "../shared/interfaces";
+import {
+  ApiKeyInterface,
+  KeyInterface,
+  UserInterface,
+} from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -7,6 +11,7 @@ import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
 import client from "../infisical";
+import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -137,22 +142,45 @@ const userSchema = new Schema<UserInterface>(
     disableAccountAt: { type: Date },
   },
   {
+    id: false,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
 );
 
-userSchema.virtual("apiKeys", {
-  ref: "ApiKey",
-  foreignField: "user",
-  localField: "_id",
-});
+userSchema.index({ email: 1 }, { unique: true });
+
+userSchema
+  .virtual("apiKeys", {
+    ref: "ApiKey",
+    foreignField: "user",
+    localField: "_id",
+    justOne: true,
+  })
+  .get(function (value: ApiKeyInterface) {
+    if (!value) return;
+
+    return value.apiKeys.map((el: KeyInterface) => {
+      return {
+        _id: el._id,
+        active: el.active,
+        apiName: el.apiName,
+        apiKey: el.apiKey,
+        apiKeyExpire: el.apiKeyExpire,
+        renewalToken: el.renewalToken,
+        renewalTokenExpire: el.renewalTokenExpire,
+        createAt: el.createAt,
+      };
+    });
+  });
 
 userSchema.pre(/^find/, function (next) {
   this.select("-__v");
 
   next();
 });
+
+userSchema.post(/^find/, function () {});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();

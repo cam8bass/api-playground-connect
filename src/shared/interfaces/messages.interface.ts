@@ -13,14 +13,16 @@ interface ErrorMessageInterface {
   ERROR_ACCESS_DENIED: string;
   ERROR_SESSION_EXPIRED: string;
   ERROR_REQUEST_EXPIRED: string;
+  ERROR_CONFIRM_RENEWAL_REQUEST: string;
   ERROR_SENT_EMAIL_ACTIVATION: string;
   ERROR_SENT_EMAIL_RESET_PASSWORD: string;
-  ERROR_LINK_ACTIVATION_EXPIRED: string;
+  ERROR_LINK_ACTIVATION: string;
   ERROR_SENT_EMAIL_RESET_EMAIL: string;
   ERROR_SENT_EMAIL_DISABLE_ACCOUNT: string;
   ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT: string;
   ERROR_SENT_NOTIFICATION_ACTIVATION_ACCOUNT: string;
   ERROR_SENT_NOTIFICATION_CREATE_API_KEY: string;
+  ERROR_CONFIRM_CHANGE_EMAIL_REQUEST: string;
   ERROR_WRONG_PASSWORD: string;
   ERROR_WRONG_LOGIN: string;
   ERROR_WRONG_EMAIL: string;
@@ -32,7 +34,10 @@ interface ErrorMessageInterface {
   ERROR_SENT_NOTIFICATION_EMAIL_CHANGED: string;
   ERROR_EMPTY_FIELD: (...field: string[]) => string;
   ERROR_MODIFIED_FIELD: (field: string) => string;
-  ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: Types.ObjectId, userEmail: string) => string;
+  ERROR_ADMIN_SENT_NEW_API_KEY: (
+    idUser: Types.ObjectId,
+    userEmail: string
+  ) => string;
   ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION: (
     idUser: Types.ObjectId,
     userEmail: string

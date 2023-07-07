@@ -133,7 +133,7 @@ export const activeAndcreateApiKey = catchAsync(
         return next(
           new AppError(
             AppMessage.errorMessage.ERROR_ADMIN_SENT_NEW_API_KEY(
-              apiKey.user.id,
+              apiKey.user._id,
               apiKey.user.email
             ),
             500

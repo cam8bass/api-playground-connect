@@ -26,7 +26,13 @@ export const AppMessage: MessagesInterface = {
 
     ERROR_SESSION_EXPIRED:
       "Votre session a expiré. Veuillez vous connecter à votre compte.",
+    // TODO: A VOIR SI JE SUPPRIME
     ERROR_REQUEST_EXPIRED: "Votre demande à expiré. Veuillez la renouveler",
+    ERROR_CONFIRM_RENEWAL_REQUEST:
+      "Une erreur est survenue lors du renouvellement de votre clé d'API. Veuillez vérifier que vos identifiants sont corrects ou que votre demande n'a pas expiré. De plus, veuillez noter que la clé d'activation liée à cette demande doit être préalablement activée.",
+ERROR_CONFIRM_CHANGE_EMAIL_REQUEST:"Une erreur est survenue lors du changement de votre adresse e-mail. Veuillez vérifier que vos identifiants sont corrects ou que votre demande n'a pas expiré. Si votre demande a expiré, veuillez renouveler votre requête.",
+    ERROR_LINK_ACTIVATION:
+    "Une erreur est survenue lors de l'activation de votre compte. Veuillez vérifier que vos identifiants sont corrects. Dans le cas où le lien d'activation aurait expiré, veuillez retourner à la page de connexion et essayer de vous connecter avec vos identifiants. Un nouveau lien d'activation vous sera envoyé.",
     ERROR_SENT_EMAIL_ACTIVATION:
       "Une erreur est survenue lors de l'envoi de l'e-mail d'activation du compte. Veuillez vous rendre sur la page de connexion et tenter de vous connecter à nouveau pour générer un nouvel e-mail d'activation. Si le problème persiste, veuillez contacter l'équipe de support.",
     ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT:
@@ -40,8 +46,6 @@ export const AppMessage: MessagesInterface = {
     ERROR_SENT_EMAIL_RESET_PASSWORD:
       "Une erreur est survenue lors de l'envoi de l'e-mail réinitialisation de votre mot de passe. Veuillez réessayer ultérieurement. Si le problème persiste, veuillez contacter l'équipe de support.",
 
-    ERROR_LINK_ACTIVATION_EXPIRED:
-      "Une erreur est survenue. Le lien d'activation a expiré. Veuillez retourner à la page de connexion et essayer de vous connecter avec vos identifiants. Un nouveau lien d'activation vous sera envoyé.",
     ERROR_SENT_EMAIL_RESET_EMAIL:
       "Une erreur est survenue lors de l'envoi de l'e-mail changement de votre adresse email. Veuillez réessayer ultérieurement. Si le problème persiste, veuillez contacter l'équipe de support.",
     ERROR_SENT_EMAIL_DISABLE_ACCOUNT:
@@ -64,7 +68,10 @@ export const AppMessage: MessagesInterface = {
       `Veuillez remplir le(s) champ(s): ${field}`,
     ERROR_MODIFIED_FIELD: (field: string) =>
       `Désolé, il n'est pas possible de modifier le champ: ${field}.`,
-    ERROR_ADMIN_SENT_NEW_API_KEY: (idUser: Types.ObjectId, userEmail: string): string =>
+    ERROR_ADMIN_SENT_NEW_API_KEY: (
+      idUser: Types.ObjectId,
+      userEmail: string
+    ): string =>
       `Une erreur s'est produite lors de l'envoi de l'e-mail de notification confirmant la création de la clé d'API pour l'utilisateur ${idUser}. Veuillez vérifier les paramètres de messagerie et l'état du service de messagerie pour résoudre le problème. En attendant, veuillez traiter manuellement la demande de clé d'API de l'utilisateur et lui fournir les informations nécessaires à l'adresse : ${userEmail}. Merci de votre attention.`,
     ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION: (
       idUser: Types.ObjectId,

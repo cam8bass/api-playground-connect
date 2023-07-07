@@ -1,6 +1,7 @@
 import { Document, Types } from "mongoose";
 import { resetType, userRoleType } from "../types/types";
 import { Response, Request, NextFunction } from "express";
+import { ApiKeyInterface } from "./apiKey.interface";
 
 export interface UserInterface extends Document {
   firstname: string;
@@ -26,19 +27,8 @@ export interface UserInterface extends Document {
   loginFailures: number;
   disableAccountAt: Date;
   createAt: Date;
-  apiKeys?: [
-    {
-      apiKeys?: [
-        {
-          apiName?: string;
-          apiKey?: string;
-          apiKeyExpire?: Date;
-          _id?: Types.ObjectId;
-          active?: boolean;
-        }
-      ];
-    }
-  ];
+  apiKeys?: Partial<ApiKeyInterface>;
+
   // METHODS
   activeUserAccount: (
     resetHashToken: string,
@@ -69,6 +59,7 @@ export interface UserInterface extends Document {
   deleteEmailResetToken: () => Promise<void>;
   changeUserEmail: (newEmail: string) => Promise<void>;
   checkEmailChangedAfterToken: (timestampToken: number) => boolean;
-
   deleteAccountLockedExpire: () => Promise<void>;
+
+
 }

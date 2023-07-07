@@ -13,6 +13,7 @@ import {
   createResetUrl,
 } from "../shared/utils/reset.utils";
 import { Types } from "mongoose";
+import User from "../models/user.model";
 
 export const apiKeyCreationRequest = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
@@ -24,7 +25,7 @@ export const apiKeyCreationRequest = catchAsync(
       );
     }
     const userApiKeys = await ApiKey.findOne({
-      user: new Types.ObjectId(req.user.id),
+      user: new Types.ObjectId(req.user._id),
     }).select("apiKeys.apiName");
 
     if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
@@ -35,7 +36,7 @@ export const apiKeyCreationRequest = catchAsync(
 
     const newApiKey = await ApiKey.findOneAndUpdate(
       {
-        user: new Types.ObjectId(req.user.id),
+        user: new Types.ObjectId(req.user._id),
         "apiKeys.apiName": { $ne: apiName },
       },
       {
@@ -56,14 +57,14 @@ export const apiKeyCreationRequest = catchAsync(
       text: emailMessages.bodyEmail.SEND_ADMIN_CREATION_REQUEST_API_KEY_NOTIFICATION(
         apiName,
         idNewApi,
-        new Types.ObjectId(req.user.id)
+        new Types.ObjectId(req.user._id)
       ),
     });
 
     if (!sendEmail) {
       const updatedUserApiKeys = await ApiKey.findOneAndUpdate(
         {
-          user: new Types.ObjectId(req.user.id),
+          user: new Types.ObjectId(req.user._id),
           apiKeys: {
             $elemMatch: {
               apiName: apiName,
@@ -111,7 +112,7 @@ export const apiKeyRenewalRequest = catchAsync(
 
     const apiKey = await ApiKey.findOneAndUpdate(
       {
-        user: new Types.ObjectId(req.user.id),
+        user: new Types.ObjectId(req.user._id),
         apiKeys: {
           $elemMatch: {
             _id: idApi,
@@ -145,7 +146,7 @@ export const apiKeyRenewalRequest = catchAsync(
     if (!sendEmail) {
       await ApiKey.findOneAndUpdate(
         {
-          user: new Types.ObjectId(req.user.id),
+          user: new Types.ObjectId(req.user._id),
 
           apiKeys: {
             $elemMatch: {
@@ -184,11 +185,37 @@ export const confirmRenewalApiKey = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const renewalToken = createHashRandomToken(req.params.token);
 
+    const { email } = req.body;
+    const { password } = req.body;
+
+    if (!email || !password) {
+      return next(
+        new AppError(
+          AppMessage.errorMessage.ERROR_EMPTY_FIELD(
+            "adresse email",
+            "mot de passe"
+          ),
+          401
+        )
+      );
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+
+    if (!user) {
+      return next(new AppError(AppMessage.errorMessage.ERROR_WRONG_LOGIN, 401));
+    }
+
+    if (!(await user.checkUserPassword(password, user.password))) {
+      return next(new AppError(AppMessage.errorMessage.ERROR_WRONG_LOGIN, 401));
+    }
+
     const newApiKey = ApiKeyManager.createNewApiKey();
     const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
 
     const apiKey = await ApiKey.findOneAndUpdate(
       {
+        user: user._id,
         "apiKeys.renewalToken": renewalToken,
         apiKeys: {
           $elemMatch: {
@@ -212,7 +239,7 @@ export const confirmRenewalApiKey = catchAsync(
 
     if (!apiKey) {
       return next(
-        new AppError(AppMessage.errorMessage.ERROR_REQUEST_EXPIRED, 404)
+        new AppError(AppMessage.errorMessage.ERROR_CONFIRM_RENEWAL_REQUEST, 404)
       );
     }
 
@@ -239,7 +266,7 @@ export const confirmRenewalApiKey = catchAsync(
 
 export const deleteSelectedApiKey = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-    let idUser = new Types.ObjectId(req.user.id);
+    let idUser = new Types.ObjectId(req.user._id);
     const idApi = new Types.ObjectId(req.params.idApi);
 
     if (req.user.role === "admin") {
@@ -276,7 +303,7 @@ export const deleteSelectedApiKey = catchAsync(
     }
 
     if (apiKey.apiKeys.length < 1) {
-      await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey.id));
+      await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey._id));
     }
 
     res.status(200).json({
