@@ -67,10 +67,7 @@ export const updateUser = catchAsync(
 // API KEYS
 export const getAllApiKeys = factory.getAll(ApiKey);
 
-export const getApiKey = factory.getOne(ApiKey, {
-  path: "user",
-  select: "email firstname lastname",
-});
+export const getApiKey = factory.getOne(ApiKey);
 
 export const createApiKey = factory.createOne(ApiKey, "apiKey");
 

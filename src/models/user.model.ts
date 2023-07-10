@@ -11,7 +11,6 @@ import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
 import { AppMessage } from "../shared/messages";
 import client from "../infisical";
-import ApiKeyManager from "../shared/utils/createApiKey.utils";
 
 const userSchema = new Schema<UserInterface>(
   {

@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 import { resetType, userRoleType } from "../types/types";
-import { Response, Request, NextFunction } from "express";
+import { Response, Request } from "express";
 import { ApiKeyInterface } from "./apiKey.interface";
 
 export interface UserInterface extends Document {
@@ -60,6 +60,4 @@ export interface UserInterface extends Document {
   changeUserEmail: (newEmail: string) => Promise<void>;
   checkEmailChangedAfterToken: (timestampToken: number) => boolean;
   deleteAccountLockedExpire: () => Promise<void>;
-
-
 }

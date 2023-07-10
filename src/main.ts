@@ -7,14 +7,34 @@ import errorController from "./controllers/error.controller";
 import dotenv from "dotenv";
 import AppError from "./shared/utils/AppError.utils";
 import { AppMessage } from "./shared/messages";
+import helmet from "helmet";
+import hpp from "hpp";
+import mongoSanitize from "express-mongo-sanitize";
+import { rateLimit } from "express-rate-limit";
+import { nodeEnv } from "./shared/types/types";
 
 dotenv.config({ path: "./config.env" });
+const nodeEnv = process.env.NODE_ENV as nodeEnv;
 
 const app = express();
 
 // 1) MIDDLEWARE
-app.use(express.json());
-app.use(morgan("dev"));
+app.use(helmet());
+app.use(
+  rateLimit({
+    max: 100,
+    message:
+      "Vous avez atteint le nombre maximal de requêtes autorisées. Veuillez réessayer ultérieurement.",
+    windowMs: 1000 * 60 * 60,
+  })
+);
+
+app.use(express.json({ limit: "10kb" }));
+app.use(mongoSanitize());
+
+if (nodeEnv === "development") {
+  app.use(morgan("dev"));
+}
 
 // 2) ROUTES
 app.use("/playground-connect/v1/users", userRouter);
