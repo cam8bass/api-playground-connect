@@ -188,6 +188,15 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+userSchema.pre("save", function (next) {
+  if (!this.isModified("password") || this.isNew) {
+    return next();
+  }
+  const dateNow = Date.now() - 1000;
+  this.passwordChangeAt = new Date(dateNow);
+  next();
+});
+
 userSchema.methods.createAndSendToken = async function (
   res: Response,
   userId: Types.ObjectId,
@@ -343,7 +352,6 @@ userSchema.methods.changeUserPassword = async function (
 ): Promise<void> {
   this.password = newPassword;
   this.passwordConfirm = newPasswordConfirm;
-  this.passwordChangeAt = new Date(Date.now());
 
   this.passwordResetToken = undefined;
   this.passwordResetTokenExpire = undefined;

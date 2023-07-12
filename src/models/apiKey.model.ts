@@ -57,6 +57,7 @@ apiKeySchema.post(/^find/, async function (docs: ApiKeyInterface[]) {
   if (!Array.isArray(docs) || !docs) return;
   docs.map((api) =>
     api.apiKeys.forEach(async (el) => {
+      if (!el.apiKey) return;
       el.apiKey = await ApiKeyManager.decryptApiKey(el.apiKey);
     })
   );

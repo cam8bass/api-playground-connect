@@ -9,8 +9,8 @@ import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import FilterQuery from "../shared/utils/FilterQuery";
 import { apiNameType } from "../shared/types/types";
 
-export const getAll = <T extends Model<UserInterface | ApiKeyInterface>>(
-  Model: T
+export const getAll = <T extends UserInterface | ApiKeyInterface>(
+  Model: Model<T>
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const query = new FilterQuery(Model.find(), req.query)
@@ -19,14 +19,13 @@ export const getAll = <T extends Model<UserInterface | ApiKeyInterface>>(
       .sort()
       .page();
 
-    const doc = await query.queryMethod.lean();
+    const doc: T[] = await query.queryMethod.lean();
 
-    if (!doc) {
+    if (doc.length === 0) {
       return next(
         new AppError(AppMessage.errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
       );
     }
-
     res.status(200).json({
       status: "success",
       results: doc.length,
@@ -36,8 +35,8 @@ export const getAll = <T extends Model<UserInterface | ApiKeyInterface>>(
     });
   });
 
-export const getOne = <T extends Model<UserInterface | ApiKeyInterface>>(
-  Model: T,
+export const getOne = <T extends UserInterface | ApiKeyInterface>(
+  Model: Model<T>,
   populateOptions?: PopulateOptions
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -58,8 +57,8 @@ export const getOne = <T extends Model<UserInterface | ApiKeyInterface>>(
     });
   });
 
-export const deleteOne = <T extends Model<UserInterface | ApiKeyInterface>>(
-  Model: T,
+export const deleteOne = <T extends UserInterface | ApiKeyInterface>(
+  Model: Model<T>,
   target?: "user"
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {

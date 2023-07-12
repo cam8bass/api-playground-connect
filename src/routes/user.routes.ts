@@ -8,32 +8,24 @@ const router = Router();
 // SIGNUP
 router.post("/signup", userController.signUp);
 
+// FORGOT PASSWORD
+router.post("/forgotPassword", userController.forgotPassword);
+
+router.use(authController.accountIsLocked);
 // ACTIVATION ACCOUNT
 router.patch(
   "/activationAccount/:token",
-  authController.accountIsLocked,
   userController.confirmActivationAccount
 );
 
 // LOGIN
-router.post("/login", authController.accountIsLocked, userController.login);
-
-// FORGOT PASSWORD
-router.post("/forgotPassword", userController.forgotPassword);
+router.post("/login", userController.login);
 
 // RESET PASSWORD
-router.patch(
-  "/resetPassword/:token",
-  authController.accountIsLocked,
-  userController.resetPassword
-);
+router.patch("/resetPassword/:token", userController.resetPassword);
 
 // RESET EMAIL
-router.patch(
-  "/resetEmail/:token",
-  authController.accountIsLocked,
-  userController.confirmChangeEmail
-);
+router.patch("/resetEmail/:token", userController.confirmChangeEmail);
 
 // === NEED AUTH ===
 
