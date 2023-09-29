@@ -6,7 +6,7 @@ import { ApiKeyInterface, UserInterface } from "../shared/interfaces";
 import { Model, Types, PopulateOptions } from "mongoose";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
-import FilterQuery from "../shared/utils/FilterQuery";
+import FilterQuery from "../shared/utils/FilterQuery.utils";
 import { apiNameType } from "../shared/types/types";
 
 export const getAll = <T extends UserInterface | ApiKeyInterface>(

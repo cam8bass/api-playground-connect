@@ -10,13 +10,16 @@ export const handleCastError = (err: any): AppError => {
 
 export const handleValidationError = (err: any): AppError => {
   const value = Object.values(err.errors).map((el: any) => el.message);
+  const message = `Désolé, la validation a échoué en raison de champs obligatoires manquants. Veuillez vérifier les champs suivants : ${value.join(
+    ", "
+  )} `;
 
-  return new AppError(
-    `Désolé, la validation a échoué en raison de champs obligatoires manquants. Veuillez vérifier les champs suivants :${value.join(
-      ", "
-    )} `,
-    400
-  );
+  const field = Object.keys(err.errors).reduce((acc, key) => {
+    acc[key] = err.errors[key].message;
+    return acc;
+  }, {});
+
+  return new AppError(message, 400, field);
 };
 
 export const handleDuplicateError = (err: any): AppError => {
@@ -25,7 +28,14 @@ export const handleDuplicateError = (err: any): AppError => {
     .at(0)
     .replace(/[\\"{}]/g, "");
   const message = `Désolé, une erreur est survenue lors de la création de l'élément. Un élément possède déjà la valeur: ${value.trim()} Veuillez vérifier les données saisies et réessayer.`;
-  return new AppError(message, 400);
+
+  const field = (err.message as string).matchAll(/(\w+): \"(.+?)\"/g);
+
+  const obj = Object.fromEntries(
+    Array.from(field, (match) => [match[1], `${match[2]} est déjà utilisé`])
+  );
+
+  return new AppError(message, 400, obj);
 };
 
 export const handleJsonWebTokenError = (): AppError => {
@@ -39,6 +49,7 @@ export const handleTokenExpiredError = (): AppError => {
 export const handleErrorDev = (error: AppErrorInterface, res: Response) => {
   res.status(error.statusCode).json({
     error: error,
+    errors: error.data,
     message: error.message,
     stack: error.stack,
   });
@@ -49,6 +60,7 @@ export const handleErrorProd = (error: AppErrorInterface, res: Response) => {
     res.status(error.statusCode).json({
       status: error.status,
       message: error.message,
+      errors: error.data,
     });
   } else {
     res.status(500).json({

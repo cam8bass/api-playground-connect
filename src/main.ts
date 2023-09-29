@@ -12,6 +12,7 @@ import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
 import { rateLimit } from "express-rate-limit";
 import { nodeEnv } from "./shared/types/types";
+import cors from "cors";
 
 dotenv.config({ path: "./config.env" });
 const nodeEnv = process.env.NODE_ENV as nodeEnv;
@@ -20,6 +21,8 @@ const app = express();
 
 // 1) MIDDLEWARE
 app.use(helmet());
+app.use(cors({ origin: ["http://localhost:5173"] })); // FIXME: A modifier pour la production
+
 app.use(
   rateLimit({
     max: 100,

@@ -10,9 +10,25 @@ async function connectToDB(): Promise<void> {
       "DATABASE_PASSWORD"
     );
 
+    const { secretValue: DATABASE_NAME } = await client.getSecret(
+      "DATABASE_NAME"
+    );
+
     const databaseUri = DATABASE?.replace("<password>", DATABASE_PASSWORD!);
 
-    await mongoose.connect(databaseUri);
+    await mongoose.connect(databaseUri, {
+      dbName: DATABASE_NAME,
+      authMechanism: "SCRAM-SHA-256",
+      tls: true,
+      maxPoolSize: 50,
+      connectTimeoutMS: 10000,
+      socketTimeoutMS: 45000,
+      family: 4,
+      serverSelectionTimeoutMS: 5000,
+      autoIndex: false,
+      compressors: ["zlib"],
+    });
+
     console.log("✅ Database connected");
   } catch (error) {
     const nodeEnv = process.env.NODE_ENV as nodeEnv;

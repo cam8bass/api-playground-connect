@@ -1,6 +1,7 @@
-import { Types, Schema, model } from "mongoose";
+import { Types, Schema, model, Query } from "mongoose";
 import {
   ApiKeyInterface,
+  CustomQuery,
   KeyInterface,
   UserInterface,
 } from "../shared/interfaces";
@@ -173,11 +174,13 @@ userSchema
     });
   });
 
-userSchema.pre(/^find/, function (next) {
-  this.select("-__v");
-
-  next();
-});
+userSchema.pre<Query<UserInterface[], UserInterface> & CustomQuery>(
+  /^find/,
+  function (next) {
+    this.select("-__v");
+    next();
+  }
+);
 
 userSchema.post(/^find/, function () {});
 

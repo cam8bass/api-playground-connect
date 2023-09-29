@@ -1,5 +1,5 @@
-import { Schema, model } from "mongoose";
-import { ApiKeyInterface } from "../shared/interfaces";
+import { Query, Schema, model } from "mongoose";
+import { ApiKeyInterface,CustomQuery } from "../shared/interfaces";
 import { AppMessage } from "../shared/messages";
 import { apiNameType } from "../shared/types/types";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
@@ -65,8 +65,10 @@ apiKeySchema.post(/^find/, async function (docs: ApiKeyInterface[]) {
 
 apiKeySchema.index({ active: 1, user: 1, apiName: 1 });
 
-apiKeySchema.pre(/^find/, function (next) {
+apiKeySchema.pre<Query<ApiKeyInterface[], ApiKeyInterface> & CustomQuery>(/^find/, function (next) {
+
   this.populate({ path: "user", select: "email" });
+   
   this.select("-__v");
 
   next();

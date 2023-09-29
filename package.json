@@ -1,12 +1,10 @@
 {
-  "name": "app",
+  "name": "api-playground-connect",
   "version": "1.0.0",
-  "description": "",
-  "main": "webpack.config.js",
   "scripts": {
-    "start": "nodemon ./dist/bundle.js",
+    "start": "NODE_ENV=production ts-node src/server.js",
     "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
-    "build": "webpack --config webpack.config.js",
+    "build": "tsc -p tsconfig.json && node copy-files.js",
     "debug": "NODE_ENV=production ndb ts-node ./src/server.ts"
   },
   "keywords": [],
@@ -14,11 +12,13 @@
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
     "express-mongo-sanitize": "^2.2.0",
     "express-rate-limit": "^6.7.1",
+    "fs-extra": "^11.1.1",
     "helmet": "^7.0.0",
     "hpp": "^0.2.3",
     "infisical-node": "^1.2.1",
@@ -31,6 +31,7 @@
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
+    "@types/cors": "^2.8.14",
     "@types/crypto-js": "^4.1.1",
     "@types/express": "^4.17.17",
     "@types/hpp": "^0.2.2",
@@ -44,8 +45,6 @@
     "nodemon": "^2.0.22",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
-    "typescript": "^5.0.4",
-    "webpack": "^5.79.0",
-    "webpack-cli": "^5.0.1"
+    "typescript": "^5.0.4"
   }
 }
