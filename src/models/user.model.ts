@@ -10,8 +10,9 @@ import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
 import { CookieOptions, Request, Response } from "express";
-import { AppMessage } from "../shared/messages";
+
 import client from "../infisical";
+import { validationMessage } from "../shared/messages";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -22,19 +23,19 @@ const userSchema = new Schema<UserInterface>(
       trim: true,
       required: [
         true,
-        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
+        validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
       ],
       minlength: [
         3,
-        AppMessage.validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
+        validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
       ],
       maxlength: [
         15,
-        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
+        validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
       ],
       validate: [
         validator.isAlpha,
-        AppMessage.validationMessage.VALIDATE_ONLY_STRING("prénom"),
+        validationMessage.VALIDATE_ONLY_STRING("prénom"),
       ],
     },
     lastname: {
@@ -43,26 +44,26 @@ const userSchema = new Schema<UserInterface>(
       trim: true,
       required: [
         true,
-        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
+        validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
       ],
       minlength: [
         3,
-        AppMessage.validationMessage.VALIDATE_MIN_LENGTH("nom", 3),
+        validationMessage.VALIDATE_MIN_LENGTH("nom", 3),
       ],
       maxlength: [
         15,
-        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
+        validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
       ],
       validate: [
         validator.isAlpha,
-        AppMessage.validationMessage.VALIDATE_ONLY_STRING("nom"),
+        validationMessage.VALIDATE_ONLY_STRING("nom"),
       ],
     },
     role: {
       type: String,
       enum: {
         values: ["user", "admin"],
-        message: AppMessage.validationMessage.VALIDATE_FIELD("un role"),
+        message: validationMessage.VALIDATE_FIELD("un role"),
       },
       default: "user",
     },
@@ -73,12 +74,12 @@ const userSchema = new Schema<UserInterface>(
       lowercase: true,
       required: [
         true,
-        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("email"),
+        validationMessage.VALIDATE_REQUIRED_FIELD("email"),
       ],
       unique: true,
       validate: [
         validator.isEmail,
-        AppMessage.validationMessage.VALIDATE_FIELD("une adresse email"),
+        validationMessage.VALIDATE_FIELD("une adresse email"),
       ],
     },
     emailChangeAt: { type: Date },
@@ -90,15 +91,15 @@ const userSchema = new Schema<UserInterface>(
       trim: true,
       required: [
         true,
-        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("mot de passe"),
+        validationMessage.VALIDATE_REQUIRED_FIELD("mot de passe"),
       ],
       validate: [
         validator.isStrongPassword,
-        AppMessage.validationMessage.VALIDATE_PASSWORD(8),
+        validationMessage.VALIDATE_PASSWORD(8),
       ],
       maxlength: [
         30,
-        AppMessage.validationMessage.VALIDATE_MAX_LENGTH("mot de passe", 30),
+        validationMessage.VALIDATE_MAX_LENGTH("mot de passe", 30),
       ],
       select: false,
     },
@@ -107,7 +108,7 @@ const userSchema = new Schema<UserInterface>(
       trim: true,
       required: [
         true,
-        AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD(
+        validationMessage.VALIDATE_REQUIRED_FIELD(
           "mot de passe de confirmation"
         ),
       ],
@@ -115,7 +116,7 @@ const userSchema = new Schema<UserInterface>(
         validator: function (this: UserInterface): boolean {
           return this.password === this.passwordConfirm;
         },
-        message: AppMessage.validationMessage.VALIDATE_PASSWORD_CONFIRM,
+        message: validationMessage.VALIDATE_PASSWORD_CONFIRM,
       },
     },
     passwordChangeAt: { type: Date },

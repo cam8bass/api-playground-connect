@@ -6,13 +6,14 @@ import adminRouter from "./routes/admin.routes";
 import errorController from "./controllers/error.controller";
 import dotenv from "dotenv";
 import AppError from "./shared/utils/AppError.utils";
-import { AppMessage } from "./shared/messages";
+
 import helmet from "helmet";
 import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
 import { rateLimit } from "express-rate-limit";
 import { nodeEnv } from "./shared/types/types";
 import cors from "cors";
+import { errorMessage, warningMessage } from "./shared/messages";
 
 dotenv.config({ path: "./config.env" });
 const nodeEnv = process.env.NODE_ENV as nodeEnv;
@@ -21,7 +22,7 @@ const app = express();
 
 // 1) MIDDLEWARE
 app.use(helmet());
-app.use(cors({ origin: ["http://localhost:5173"] })); // FIXME: A modifier pour la production
+// app.use(cors({ origin: ["http://localhost:5173"] })); // FIXME: A modifier pour la production
 
 app.use(
   rateLimit({
@@ -44,7 +45,11 @@ app.use("/playground-connect/v1/users", userRouter);
 app.use("/playground-connect/v1/apiKeys", apiKeyRouter);
 app.use("/playground-connect/v1/admin", adminRouter);
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
-  return next(new AppError(AppMessage.errorMessage.ERROR_PAGE_NOT_FOUND, 404));
+  return next(
+    new AppError(404, warningMessage.WARNING_PAGE_NOT_FOUND, {
+      app: errorMessage.ERROR_PAGE_NOT_FOUND,
+    })
+  );
 });
 // ERRORS
 app.use(errorController);

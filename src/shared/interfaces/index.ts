@@ -5,3 +5,6 @@ export * from "./userRequest.interface";
 export * from "./messages.interface";
 export * from "./apiKey.interface";
 export * from "./customQuery.interface";
+export * from "./email.interface";
+export * from "./jsonResponse.interface"
+export * from "./notification.interface"

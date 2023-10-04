@@ -1,8 +1,9 @@
 import { Query, Schema, model } from "mongoose";
 import { ApiKeyInterface,CustomQuery } from "../shared/interfaces";
-import { AppMessage } from "../shared/messages";
+
 import { apiNameType } from "../shared/types/types";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
+import { validationMessage } from "../shared/messages";
 
 const apiKeySchema = new Schema<ApiKeyInterface>({
   user: {
@@ -10,7 +11,7 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
     ref: "User",
     required: [
       true,
-      AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur"),
+      validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur"),
     ],
     unique: true,
   },
@@ -20,12 +21,12 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
         type: String,
         enum: {
           values: ["Api-travel", "Api-test1", "Api-test2"],
-          message: AppMessage.validationMessage.VALIDATE_FIELD("un nom d'API"),
+          message: validationMessage.VALIDATE_FIELD("un nom d'API"),
         },
         trim: true,
         required: [
           true,
-          AppMessage.validationMessage.VALIDATE_REQUIRED_FIELD("nom de l'api"),
+          validationMessage.VALIDATE_REQUIRED_FIELD("nom de l'api"),
         ],
       },
       apiKey: {

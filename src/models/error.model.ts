@@ -1,25 +1,28 @@
 import { Response } from "express";
 import { AppErrorInterface } from "../shared/interfaces";
 import AppError from "../shared/utils/AppError.utils";
-import { AppMessage } from "../shared/messages";
+import { errorMessage } from "../shared/messages";
 
 export const handleCastError = (err: any): AppError => {
-  const message = `Désolé, une erreur est survenue. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value} ou essayer une autre requête`;
-  return new AppError(message, 404);
+  const url = `Désolé, une erreur est survenue. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value} ou essayer une autre requête`;
+  const message = `La requête a échoué en raison d'un format d'URL incorrect. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value}`;
+
+  return new AppError(404, message, { url });
 };
 
 export const handleValidationError = (err: any): AppError => {
   const value = Object.values(err.errors).map((el: any) => el.message);
-  const message = `Désolé, la validation a échoué en raison de champs obligatoires manquants. Veuillez vérifier les champs suivants : ${value.join(
+
+  const message = `La requête a échoué en raison de données de formulaire incorrectes ou invalides. Veuillez vérifier les champs suivant du formulaire : ${value.join(
     ", "
-  )} `;
+  )} et réessayer.`;
 
   const field = Object.keys(err.errors).reduce((acc, key) => {
     acc[key] = err.errors[key].message;
     return acc;
   }, {});
 
-  return new AppError(message, 400, field);
+  return new AppError(400, message, field);
 };
 
 export const handleDuplicateError = (err: any): AppError => {
@@ -27,30 +30,39 @@ export const handleDuplicateError = (err: any): AppError => {
     .match(/{[^}]+}/)
     .at(0)
     .replace(/[\\"{}]/g, "");
-  const message = `Désolé, une erreur est survenue lors de la création de l'élément. Un élément possède déjà la valeur: ${value.trim()} Veuillez vérifier les données saisies et réessayer.`;
 
+  const message = `"La requête a échoué en raison d'une duplication de données pour les champs : ${value.trim()}. L'élément que vous tentez de créer ou de modifier existe déjà dans notre système. Veuillez vérifier les détails que vous avez fournis et assurez-vous qu'ils sont uniques."
+    `;
   const field = (err.message as string).matchAll(/(\w+): \"(.+?)\"/g);
 
-  const obj = Object.fromEntries(
+  const errorField = Object.fromEntries(
     Array.from(field, (match) => [match[1], `${match[2]} est déjà utilisé`])
   );
 
-  return new AppError(message, 400, obj);
+  return new AppError(400, message, errorField);
 };
 
 export const handleJsonWebTokenError = (): AppError => {
-  return new AppError(AppMessage.errorMessage.ERROR_LOGIN_REQUIRED, 401);
+  const message =
+    "Le token semble avoir été modifié ou altéré. Vérifiez l'intégrité du token généré et assurez-vous qu'aucune altération n'a eu lieu pendant le processus de transmission ou de stockage.";
+  return new AppError(401, message, {
+    token: errorMessage.ERROR_LOGIN_REQUIRED,
+  });
 };
 
 export const handleTokenExpiredError = (): AppError => {
-  return new AppError(AppMessage.errorMessage.ERROR_SESSION_EXPIRED, 401);
+  const message =
+    "Le token est expiré. Cela signifie que la période de validité du token a expiré et qu'il ne peut plus être utilisé pour authentifier les requêtes. Pour résoudre ce problème, générez un nouveau token en suivant le processus d'authentification approprié. Assurez-vous également de vérifier et de mettre à jour régulièrement les durées de validité des tokens pour éviter les expirations inattendues.";
+
+  return new AppError(401, message, {
+    token: errorMessage.ERROR_SESSION_EXPIRED,
+  });
 };
 
 export const handleErrorDev = (error: AppErrorInterface, res: Response) => {
   res.status(error.statusCode).json({
-    error: error,
-    errors: error.data,
     message: error.message,
+    error: error,
     stack: error.stack,
   });
 };
@@ -58,14 +70,20 @@ export const handleErrorDev = (error: AppErrorInterface, res: Response) => {
 export const handleErrorProd = (error: AppErrorInterface, res: Response) => {
   if (error.isOperational) {
     res.status(error.statusCode).json({
+      statusCode: error.statusCode,
       status: error.status,
       message: error.message,
-      errors: error.data,
+      errors: error.errors,
     });
   } else {
     res.status(500).json({
+      statusCode: error.statusCode,
       status: "error",
-      message: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+      message:
+        "Une erreur interne du serveur est survenue lors du traitement de votre requête. Cela peut être dû à divers facteurs, y compris des erreurs dans la logique métier, des problèmes de base de données ou des dysfonctionnements temporaires du serveur. Les développeurs ont été notifiés de cette erreur et travaillent activement à sa résolution. Nous vous prions de nous excuser pour ce désagrément et vous encourageons à réessayer plus tard. Si le problème persiste, veuillez contacter notre équipe de support technique pour obtenir de l'aide.",
+      errors: {
+        app: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+      },
     });
   }
 };

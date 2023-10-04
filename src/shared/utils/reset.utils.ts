@@ -38,3 +38,5 @@ export const createResetUrl = (
   }
   return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;
 };
+
+
