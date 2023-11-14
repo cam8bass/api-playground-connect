@@ -1,6 +1,6 @@
 import { ValidationMessageInterface } from "../interfaces";
 
-export const validationMessage :ValidationMessageInterface= {
+export const validationMessage: ValidationMessageInterface = {
   VALIDATE_REQUIRED_FIELD: (fieldName: string): string =>
     `Le champ ${fieldName} est obligatoire`,
   VALIDATE_MIN_LENGTH: (fieldName: string, min: number): string =>

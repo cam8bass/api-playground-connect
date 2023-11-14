@@ -7,6 +7,8 @@ import { userRequestInterface } from "../shared/interfaces";
 import { userRoleType } from "../shared/types/types";
 import client from "../infisical";
 import { errorMessage, warningMessage } from "../shared/messages";
+import { formatUserResponse } from "../shared/utils/formatResponse.utils";
+
 export const accountIsActive = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
     const email = req.user ? req.user.email : req.body.email;
@@ -36,9 +38,10 @@ export const accountIsLocked = catchAsync(
 
     const user = req.user
       ? req.user
-      : await User.findOne({ email }, "accountLockedExpire");
+      : await User.findOne({ email }, "accountLockedExpire accountLocked");
 
-    if (!user || !user.accountLockedExpire) return next();
+    if (!user || (!user.accountLockedExpire && !user.accountLocked))
+      return next();
 
     const accountIsLocked =
       Date.parse(user.accountLockedExpire.toString()) > Date.now();
@@ -65,6 +68,8 @@ export const protect = catchAsync(
       req.headers.authorization.startsWith("Bearer")
     ) {
       token = req.headers.authorization.split("Bearer ").at(1);
+    } else if (req.cookies.jwt) {
+      token = req.cookies.jwt;
     }
 
     if (!token) {
@@ -94,7 +99,7 @@ export const protect = catchAsync(
       );
     }
 
-    req.user = user;
+    req.user =  user;
 
     next();
   }
@@ -114,101 +119,3 @@ export const restrictTo = (...userRole: userRoleType[]) =>
       next();
     }
   );
-
-// export const accountIsActive = catchAsync(
-//   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-//     const email = req.user ? req.user.email : req.body.email;
-
-//     const user = req.user
-//       ? req.user
-//       : await User.findOne(
-//           { email },
-//           "email active activationAccountToken activationAccountTokenExpire disableAccountAt"
-//         );
-
-//     if (!user || user.active) return next();
-
-//     if (!user.active) {
-//       return next(
-//         new AppError(errorMessage.ERROR_ACCOUNT_NOT_ACTIVE, 404)
-//       );
-//     }
-//   }
-// );
-
-// export const accountIsLocked = catchAsync(
-//   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-//     const email = req.user ? req.user.email : req.body.email;
-
-//     const user = req.user
-//       ? req.user
-//       : await User.findOne({ email }, "accountLockedExpire");
-
-//     if (!user || !user.accountLockedExpire) return next();
-
-//     const accountIsLocked =
-//       Date.parse(user.accountLockedExpire.toString()) > Date.now();
-
-//     if (accountIsLocked) {
-//       return next(
-//         new AppError(errorMessage.ERROR_ACCOUNT_LOCKED, 401)
-//       );
-//     }
-
-//     await user.deleteAccountLockedExpire();
-
-//     next();
-//   }
-// );
-
-// export const protect = catchAsync(
-//   async (req: userRequestInterface, res: Response, next: NextFunction) => {
-//     let token: string | undefined;
-//     if (
-//       req.headers.authorization &&
-//       req.headers.authorization.startsWith("Bearer")
-//     ) {
-//       token = req.headers.authorization.split("Bearer ").at(1);
-//     }
-
-//     if (!token) {
-//       return next(
-//         new AppError(errorMessage.ERROR_LOGIN_REQUIRED, 401)
-//       );
-//     }
-//     const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
-
-//     const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
-
-//     const user = await User.findOne({
-//       _id: decoded.id,
-//     });
-
-//     if (
-//       !user ||
-//       user.checkPasswordChangedAfterToken(decoded.iat) ||
-//       user.checkEmailChangedAfterToken(decoded.iat)
-//     ) {
-//       return next(
-//         new AppError(errorMessage.ERROR_LOGIN_REQUIRED, 401)
-//       );
-//     }
-
-//     req.user = user;
-
-//     next();
-//   }
-// );
-
-// export const restrictTo = (...userRole: userRoleType[]) =>
-//   catchAsync(
-//     async (req: userRequestInterface, res: Response, next: NextFunction) => {
-//       if (!userRole.includes(req.user.role)) {
-//         return next(
-//           new AppError(errorMessage.ERROR_ACCESS_DENIED, 401)
-//         );
-//       }
-
-//       next();
-//     }
-//   );

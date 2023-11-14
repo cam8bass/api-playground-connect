@@ -19,11 +19,12 @@ import * as factory from "./factory.controller";
 import { jsonResponse } from "../shared/utils/jsonResponse.utils";
 import { createNotification } from "../shared/utils/notification.utils";
 import { notificationMessage } from "../shared/messages/notification.message";
+import { formatUserResponse } from "../shared/utils/formatResponse.utils";
 
 // USERS
 export const getAllUsers = factory.getAll(User);
 
-export const getUser = factory.getOne(User, { path: "apiKeys" });
+export const getUser = factory.getOne(User);
 
 export const createUser = factory.createOne(User, "user");
 
@@ -39,8 +40,19 @@ export const updateUser = catchAsync(
       "lastname",
       "email",
       "active",
-      "role",
-      "loginFailures"
+      "role"
+    );
+
+    const keyMapping = {
+      firstname: "Nom",
+      lastname: "Prénom",
+      email: "email",
+      active: "active",
+      role: "rôle",
+    };
+
+    const modifiedFields = Object.keys(filteredBody).map(
+      (key) => keyMapping[key] || key
     );
 
     if (Object.entries(filteredBody).length === 0) {
@@ -68,7 +80,15 @@ export const updateUser = catchAsync(
       );
     }
 
-    res.status(200).json(jsonResponse);
+    res.status(200).json(
+      jsonResponse({
+        data: formatUserResponse(user, "admin"),
+        notification: createNotification(
+          "success",
+          notificationMessage.NOTIFICATION_FIELDS_MODIFIED(modifiedFields)
+        ),
+      })
+    );
   }
 );
 
@@ -121,8 +141,9 @@ export const activeAndcreateApiKey = catchAsync(
               Date.now() + 365 * 24 * 60 * 60 * 1000
             ),
           },
-        }
-      ).select("user");
+        },
+        { new: true }
+      );
 
       if (!apiKey) {
         return next(
@@ -145,6 +166,7 @@ export const activeAndcreateApiKey = catchAsync(
       if (!sendEmail) {
         return res.status(200).json(
           jsonResponse({
+            data: apiKey,
             notification: createNotification(
               "fail",
               notificationMessage.NOTIFICATION_ADMIN_SENT_NEW_API_KEY(
@@ -157,6 +179,7 @@ export const activeAndcreateApiKey = catchAsync(
       } else {
         return res.status(200).json(
           jsonResponse({
+            data: apiKey,
             notification: createNotification(
               "success",
               notificationMessage.NOTIFICATION_ACTIVE_API_KEY(apiKey.user.email)
@@ -208,6 +231,7 @@ export const activeAndcreateApiKey = catchAsync(
       if (!sendEmail) {
         return res.status(200).json(
           jsonResponse({
+            data: apiKey,
             notification: createNotification(
               "fail",
               notificationMessage.NOTIFICATION_ADMIN_SENT_REFUSAL_API_KEY_CREATION(
@@ -218,199 +242,52 @@ export const activeAndcreateApiKey = catchAsync(
           })
         );
       } else {
-        return res.status(200).json(jsonResponse);
+        return res.status(200).json(
+          jsonResponse({
+            data: apiKey,
+            notification: createNotification(
+              "success",
+              notificationMessage.NOTIFICATION_ADMIN_REFUSAL_API_KEY
+            ),
+          })
+        );
       }
     }
   }
 );
 
-// // USERS
-// export const getAllUsers = factory.getAll(User);
+export const getSelectedUserApiKeys = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { idUser } = req.params;
+    const apiKeys = await ApiKey.findOne({ user: idUser });
 
-// export const getUser = factory.getOne(User, { path: "apiKeys" });
+    if (!apiKeys) {
+      return res.status(204).end();
+    }
 
-// export const createUser = factory.createOne(User, "user");
+    res.status(200).json(jsonResponse({ data: apiKeys }));
+  }
+);
 
-// export const deleteUser = factory.deleteOne(User, "user");
+export const getAllInactiveApiKeys = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const apiKeys = await ApiKey.find({
+      "apiKeys.active": false,
+    }).lean();
 
-// export const updateUser = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
+    res.status(200).json(jsonResponse({ data: apiKeys }));
+  }
+);
 
-//     const filteredBody = bodyFilter<UserInterface>(
-//       req.body,
-//       "firstname",
-//       "lastname",
-//       "email",
-//       "active",
-//       "role",
-//       "loginFailures"
-//     );
+export const getAllLockedAccounts = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const user = await User.find({
+      accountLocked: true,
+      accountLockedExpire: { $gt: new Date(Date.now()) },
+    });
 
-//     if (Object.entries(filteredBody).length === 0) {
-//       return next(
-//         new AppError(errorMessage.ERROR_EMPTY_USER_MODIFICATION, 400)
-//       );
-//     }
-
-//     const user = await User.findByIdAndUpdate(id, filteredBody, {
-//       runValidators: true,
-//       new: true,
-//     });
-
-//     if (!user) {
-//       return next(
-//         new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "sucess",
-//       message: successMessage.SUCCESS_FIELDS_MODIFIED(
-//         Object.keys(filteredBody)
-//       ),
-//       data: {
-//         user,
-//       },
-//     });
-//   }
-// );
-
-// // API KEYS
-// export const getAllApiKeys = factory.getAll(ApiKey);
-
-// export const getApiKey = factory.getOne(ApiKey);
-
-// export const createApiKey = factory.createOne(ApiKey, "apiKey");
-
-// export const deleteAllApiKeysFromUser = factory.deleteOne(ApiKey);
-
-// export const activeAndcreateApiKey = catchAsync(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     const active = req.body.active as boolean;
-//     const idUser = new Types.ObjectId(req.params.id);
-//     const idApi = new Types.ObjectId(req.params.idApi);
-
-//     if (
-//       active === undefined ||
-//       active === null ||
-//       typeof active !== "boolean"
-//     ) {
-//       return next(
-//         new AppError(errorMessage.ERROR_EMPTY_FIELD("active"), 500)
-//       );
-//     }
-
-//     if (active === true) {
-//       const newApiKey = ApiKeyManager.createNewApiKey();
-//       const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
-
-//       const apiKey = await ApiKey.findOneAndUpdate(
-//         {
-//           user: idUser,
-//           apiKeys: {
-//             $elemMatch: {
-//               _id: idApi,
-//               active: false,
-//             },
-//           },
-//         },
-//         {
-//           $set: {
-//             "apiKeys.$.active": true,
-//             "apiKeys.$.apiKey": newApiKeyHash,
-//             "apiKeys.$.apiKeyExpire": new Date(
-//               Date.now() + 365 * 24 * 60 * 60 * 1000
-//             ),
-//           },
-//         }
-//       ).select("user");
-
-//       if (!apiKey) {
-//         return next(
-//           new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//         );
-//       }
-
-//       const sendEmail = await EmailManager.send({
-//         to: apiKey.user.email,
-//         subject: subjectEmail.SUBJECT_API_KEY("Création"),
-//         text: bodyEmail.SEND_API_KEY(newApiKey),
-//       });
-
-//       if (!sendEmail) {
-//         return next(
-//           new AppError(
-//             errorMessage.ERROR_ADMIN_SENT_NEW_API_KEY(
-//               apiKey.user._id,
-//               apiKey.user.email
-//             ),
-//             500
-//           )
-//         );
-//       }
-
-//       res.status(200).json({
-//         status: "success",
-//         message: successMessage.SUCCESS_ACTIVE_API_KEY(
-//           apiKey.user.email
-//         ),
-//       });
-//     } else if (active === false) {
-//       const apiKey = await ApiKey.findOneAndUpdate(
-//         {
-//           user: idUser,
-//           apiKeys: {
-//             $elemMatch: {
-//               _id: idApi,
-//               active: false,
-//             },
-//           },
-//         },
-//         {
-//           $pull: {
-//             apiKeys: { _id: idApi },
-//           },
-//         },
-//         { new: true }
-//       ).select("apiKeys._id user");
-
-//       if (!apiKey) {
-//         return next(
-//           new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//         );
-//       }
-
-//       if (apiKey.apiKeys.length < 1) {
-//         await ApiKey.findByIdAndDelete(new Types.ObjectId(apiKey._id));
-//       }
-
-//       const sendEmail = await EmailManager.send({
-//         to: apiKey.user.email,
-//         subject:
-//           subjectEmail.SUBJECT_ADMIN_REFUSAL_API_KEY_CREATION,
-//         text: bodyEmail.REFUSAL_API_KEY_CREATION,
-//       });
-
-//       if (!sendEmail) {
-//         return next(
-//           new AppError(
-//             errorMessage.ERROR_ADMIN_SENT_REFUSAL_API_KEY_CREATION(
-//               apiKey.user._id,
-//               apiKey.user.email
-//             ),
-//             500
-//           )
-//         );
-//       }
-//       res.status(200).json({
-//         status: "success",
-//         message:
-//           successMessage.SUCCESS_ADMIN_REFUSAL_API_KEY_CREATION(
-//             apiKey._id,
-//             apiKey.user._id
-//           ),
-//       });
-//     }
-//   }
-// );
+    res
+      .status(200)
+      .json(jsonResponse({ data: formatUserResponse(user, "admin") }));
+  }
+);

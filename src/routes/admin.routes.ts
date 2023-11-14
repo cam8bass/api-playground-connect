@@ -11,6 +11,9 @@ router.use(
   authController.accountIsLocked,
   authController.restrictTo("admin")
 );
+router.get("/getUserApiKeys/:idUser", adminController.getSelectedUserApiKeys);
+router.get("/getInactiveApiKeys", adminController.getAllInactiveApiKeys);
+router.get("/getAccountsLocked", adminController.getAllLockedAccounts);
 
 // USER ROUTES
 
@@ -47,4 +50,5 @@ router.delete(
   "/users/:id/apiKeys/deleteApiKey/:idApi",
   apiKeyController.deleteSelectedApiKey
 );
+
 export default router;

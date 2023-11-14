@@ -7,7 +7,7 @@ export const handleCastError = (err: any): AppError => {
   const url = `Désolé, une erreur est survenue. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value} ou essayer une autre requête`;
   const message = `La requête a échoué en raison d'un format d'URL incorrect. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value}`;
 
-  return new AppError(404, message, { url });
+  return new AppError(404, message, { request: url });
 };
 
 export const handleValidationError = (err: any): AppError => {
@@ -46,7 +46,7 @@ export const handleJsonWebTokenError = (): AppError => {
   const message =
     "Le token semble avoir été modifié ou altéré. Vérifiez l'intégrité du token généré et assurez-vous qu'aucune altération n'a eu lieu pendant le processus de transmission ou de stockage.";
   return new AppError(401, message, {
-    token: errorMessage.ERROR_LOGIN_REQUIRED,
+    request: errorMessage.ERROR_LOGIN_REQUIRED,
   });
 };
 
@@ -55,7 +55,7 @@ export const handleTokenExpiredError = (): AppError => {
     "Le token est expiré. Cela signifie que la période de validité du token a expiré et qu'il ne peut plus être utilisé pour authentifier les requêtes. Pour résoudre ce problème, générez un nouveau token en suivant le processus d'authentification approprié. Assurez-vous également de vérifier et de mettre à jour régulièrement les durées de validité des tokens pour éviter les expirations inattendues.";
 
   return new AppError(401, message, {
-    token: errorMessage.ERROR_SESSION_EXPIRED,
+    request: errorMessage.ERROR_SESSION_EXPIRED,
   });
 };
 
@@ -82,7 +82,7 @@ export const handleErrorProd = (error: AppErrorInterface, res: Response) => {
       message:
         "Une erreur interne du serveur est survenue lors du traitement de votre requête. Cela peut être dû à divers facteurs, y compris des erreurs dans la logique métier, des problèmes de base de données ou des dysfonctionnements temporaires du serveur. Les développeurs ont été notifiés de cette erreur et travaillent activement à sa résolution. Nous vous prions de nous excuser pour ce désagrément et vous encourageons à réessayer plus tard. Si le problème persiste, veuillez contacter notre équipe de support technique pour obtenir de l'aide.",
       errors: {
-        app: "Une erreur s'est produite. Veuillez réessayer plus tard.",
+        resquest: "Une erreur s'est produite. Veuillez réessayer plus tard.",
       },
     });
   }

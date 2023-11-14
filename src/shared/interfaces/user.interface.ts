@@ -1,7 +1,6 @@
 import { Document, Types } from "mongoose";
 import { resetType, userRoleType } from "../types/types";
 import { Response, Request } from "express";
-import { ApiKeyInterface } from "./apiKey.interface";
 
 export interface UserInterface extends Document {
   firstname: string;
@@ -20,21 +19,23 @@ export interface UserInterface extends Document {
   active: boolean;
   activationAccountToken: string;
   activationAccountTokenExpire: Date;
-  accountLockedExpire: Date;
   activationAccountAt: Date;
+
+  accountLocked: boolean;
+  accountLockedExpire: Date;
 
   role: userRoleType;
   loginFailures: number;
   disableAccountAt: Date;
   createAt: Date;
-  apiKeys?: Partial<ApiKeyInterface>;
 
   // METHODS
-  activeUserAccount: (
+
+  prepareAccountActivation: (
     resetHashToken: string,
     dateExpire: Date
   ) => Promise<void>;
-  reactivatedUserAccount: () => Promise<void>;
+
   createAndSendToken: (
     res: Response,
     userId: Types.ObjectId,
@@ -57,7 +58,7 @@ export interface UserInterface extends Document {
     newPasswordConfirm: string
   ) => Promise<void>;
   deleteEmailResetToken: () => Promise<void>;
-  changeUserEmail: (newEmail: string) => Promise<void>;
+
   checkEmailChangedAfterToken: (timestampToken: number) => boolean;
   deleteAccountLockedExpire: () => Promise<void>;
 }

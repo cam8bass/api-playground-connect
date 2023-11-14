@@ -8,6 +8,8 @@ const router = Router();
 // SIGNUP
 router.post("/signup", userController.signUp);
 
+router.get("/me", userController.getMe);
+
 // FORGOT PASSWORD
 router.post("/forgotPassword", userController.forgotPassword);
 
@@ -39,7 +41,7 @@ router.use(
 router.patch("/updatePassword", userController.updatePassword);
 
 // GET ME
-router.get("/me", userController.getMe);
+// router.get("/me", userController.getMe);
 
 // UPDATE USER PROFILE
 router.patch("/updateProfile", userController.updateUserProfile);
@@ -49,6 +51,9 @@ router.post("/changeEmail", userController.emailChangeRequest);
 
 // DISABLE ACCOUNT
 router.delete("/disableAccount", userController.disableUserAccount);
+
+// LOGOUT
+router.get("/logout", userController.logout);
 
 // === ONLY USERS ===
 router.use(authController.restrictTo("user"));

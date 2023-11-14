@@ -11,7 +11,6 @@ import {
 
 /**
  * @type {Object} jsonResponseOptions
- * @property {string} [token] - Le token d'authentification à inclure dans la réponse.
  * @property {notificationOptions} [notification] - Les détails de la notification à afficher à l'utilisateur en cas de succès.
  * @property {Object} [data] - Les données supplémentaires à inclure dans la réponse.
  */
@@ -23,15 +22,11 @@ import {
  * @returns {Object} L'objet JSON de la réponse de succès.
  */
 export const jsonResponse = (
-  options: jsonResponseOptionsInterface
+  options: jsonResponseOptionsInterface = {}
 ): jsonResponseInterface => {
   const jsonResponse: jsonResponseInterface = {
     status: "success",
   };
-
-  if (options.token) {
-    jsonResponse.token = options.token;
-  }
 
   if (options.notification) {
     jsonResponse.notification = {

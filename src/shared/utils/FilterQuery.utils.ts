@@ -17,6 +17,7 @@ class FilterQuery {
         (match) => `$${match}`
       )
     );
+
     this.queryMethod.find(queryString);
     return this;
   }

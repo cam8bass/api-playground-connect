@@ -17,7 +17,7 @@ export interface ErrorMessageInterface {
   ERROR_SENT_EMAIL_RESET_PASSWORD: string;
   ERROR_LINK_ACTIVATION: string;
   ERROR_SENT_EMAIL_RESET_EMAIL: string;
-
+  ERROR_RATE_LIMIT: string;
   ERROR_CONFIRM_CHANGE_EMAIL_REQUEST: string;
   ERROR_SENT_EMAIL_CREATE_API_KEY: string;
   ERROR_WRONG_PASSWORD: string;
@@ -29,8 +29,6 @@ export interface ErrorMessageInterface {
   ERROR_DUPLICATE_API_KEY: string;
   ERROR_EMPTY_FIELD: (...field: string[]) => string;
   ERROR_MODIFIED_FIELD: (field: string) => string;
-
- 
 }
 
 export interface ValidationMessageInterface {
@@ -60,6 +58,10 @@ export interface WarningMessageInterface {
 }
 
 export interface notificationMessageInterface {
+  NOTIFICATION_ADMIN_CREATE_USER: string;
+  NOTIFICATION_ADMIN_CREATE_AND_ACTIVE_APIKEY: string;
+  NOTIFICATION_ADMIN_REFUSAL_API_KEY: string;
+  NOTIFICATION_SUCCESS_DELETE_SELECTED_APIKEY: string;
   NOTIFICATION_EMAIL_MODIFIED: string;
   NOTIFICATION_PASSWORD_MODIFIED: string;
   NOTIFICATION_ACTIVATION_ACCOUNT: string;
@@ -70,6 +72,8 @@ export interface notificationMessageInterface {
   NOTIFICATION_SENT_EMAIL_API_KEY: string;
   NOTIFICATION_SENT_EMAIL_CHANGED: string;
   NOTIFICATION_SUCCESS_CREATE_ACCOUNT: string;
+  NOTIFICATION_DELETE_ACCOUNT: string;
+  NOTIFICATION_DELETE_USER_APIKEYS: string;
   NOTIFICATION_SENT_EMAIL_ACTIVATION: (userEmail: string) => string;
   NOTIFICATION_SENT_EMAIL_RESET_PASSWORD: (userEmail: string) => string;
   NOTIFICATION_FIELDS_MODIFIED: (fields: object) => string;
@@ -79,6 +83,7 @@ export interface notificationMessageInterface {
   NOTIFICATION_SENT_EMAIL_RENEWAL_API_KEY: (userEmail: string) => string;
   NOTIFICATION_SENT_EMAIL_CREATE_API_KEY: (userEmail: string) => string;
   NOTIFICATION_ACTIVE_API_KEY: (userEmail: string) => string;
+
   NOTIFICATION_ADMIN_SENT_REFUSAL_API_KEY_CREATION: (
     idUser: Types.ObjectId,
     userEmail: string

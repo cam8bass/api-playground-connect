@@ -6,10 +6,3 @@ export interface AppErrorInterface extends Error {
   isOperational: boolean;
   errors: object;
 }
-
-// export interface AppErrorInterface extends Error {
-//   status: errorStatusType;
-//   statusCode: number;
-//   isOperational: boolean;
-//   errors: object;
-// }

@@ -8,7 +8,7 @@ import {
   warningMessage,
 } from "../shared/messages";
 import { ApiKeyInterface, UserInterface } from "../shared/interfaces";
-import { Model, Types, PopulateOptions } from "mongoose";
+import { Model, Types } from "mongoose";
 import EmailManager from "../shared/utils/EmailManager.utils";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import FilterQuery from "../shared/utils/FilterQuery.utils";
@@ -17,6 +17,7 @@ import { fieldErrorMessages } from "../shared/utils/fieldErrorMessage.utils";
 import { notificationMessage } from "../shared/messages/notification.message";
 import { jsonResponse } from "../shared/utils/jsonResponse.utils";
 import { createNotification } from "../shared/utils/notification.utils";
+import ApiKey from "../models/apiKey.model";
 
 export const getAll = <T extends UserInterface | ApiKeyInterface>(
   Model: Model<T>
@@ -46,12 +47,12 @@ export const getAll = <T extends UserInterface | ApiKeyInterface>(
   });
 
 export const getOne = <T extends UserInterface | ApiKeyInterface>(
-  Model: Model<T>,
-  populateOptions?: PopulateOptions
+  Model: Model<T>
 ) =>
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = new Types.ObjectId(req.params.id);
-    const doc = await Model.findById(id).populate(populateOptions);
+
+    const doc: T = await Model.findOne(id).lean();
 
     if (!doc) {
       return next(
@@ -78,7 +79,7 @@ export const deleteOne = <T extends UserInterface | ApiKeyInterface>(
   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const id = new Types.ObjectId(req.params.id);
 
-    const doc = await Model.findOneAndDelete({ _id: id })
+    const doc: T = await Model.findOneAndDelete({ _id: id })
       .select("email")
       .lean();
 
@@ -95,6 +96,8 @@ export const deleteOne = <T extends UserInterface | ApiKeyInterface>(
     }
 
     if (target === "user") {
+      await ApiKey.findOneAndDelete({ user: id });
+
       const sendEmail = await EmailManager.send({
         to: (doc as UserInterface).email,
         subject: subjectEmail.SUBJECT_MODIFIED_STATUS("Suppression"),
@@ -113,7 +116,17 @@ export const deleteOne = <T extends UserInterface | ApiKeyInterface>(
       }
     }
 
-    res.status(200).json(jsonResponse);
+    res.status(200).json(
+      jsonResponse({
+        data: doc,
+        notification: createNotification(
+          "success",
+          target === "user"
+            ? notificationMessage.NOTIFICATION_DELETE_ACCOUNT
+            : notificationMessage.NOTIFICATION_DELETE_USER_APIKEYS
+        ),
+      })
+    );
   });
 
 export const createOne = <T extends UserInterface | ApiKeyInterface>(
@@ -177,7 +190,7 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
           runValidators: true,
           new: true,
         }
-      ).select("user");
+      );
 
       const sendEmail = await EmailManager.send({
         to: query.user.email,
@@ -191,7 +204,7 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
             notification: createNotification(
               "fail",
               notificationMessage.NOTIFICATION_ADMIN_SENT_NEW_API_KEY(
-                query.user.id,
+                query.user._id,
                 query.user.email
               )
             ),
@@ -201,179 +214,26 @@ export const createOne = <T extends UserInterface | ApiKeyInterface>(
     }
 
     await query;
-    res.status(200).json(jsonResponse);
+
+    if (target === "user") {
+      res.status(200).json(
+        jsonResponse({
+          data: query,
+          notification: createNotification(
+            "success",
+            notificationMessage.NOTIFICATION_ADMIN_CREATE_USER
+          ),
+        })
+      );
+    } else if (target === "apiKey") {
+      res.status(200).json(
+        jsonResponse({
+          data: query,
+          notification: createNotification(
+            "success",
+            notificationMessage.NOTIFICATION_ADMIN_CREATE_AND_ACTIVE_APIKEY
+          ),
+        })
+      );
+    }
   });
-
-// export const getAll = <T extends UserInterface | ApiKeyInterface>(
-//   Model: Model<T>
-// ) =>
-//   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     const query = new FilterQuery(Model.find(), req.query)
-//       .filter()
-//       .fields()
-//       .sort()
-//       .page();
-
-//     const doc: T[] = await query.queryMethod.lean();
-
-//     if (doc.length === 0) {
-//       return next(
-//         new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-//     res.status(200).json({
-//       status: "success",
-//       results: doc.length,
-//       data: {
-//         doc,
-//       },
-//     });
-//   });
-
-// export const getOne = <T extends UserInterface | ApiKeyInterface>(
-//   Model: Model<T>,
-//   populateOptions?: PopulateOptions
-// ) =>
-//   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-//     const doc = await Model.findById(id).populate(populateOptions);
-
-//     if (!doc) {
-//       return next(
-//         new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       data: {
-//         doc,
-//       },
-//     });
-//   });
-
-// export const deleteOne = <T extends UserInterface | ApiKeyInterface>(
-//   Model: Model<T>,
-//   target?: "user"
-// ) =>
-//   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     const id = new Types.ObjectId(req.params.id);
-
-//     const doc = await Model.findOneAndDelete({ _id: id })
-//       .select("email")
-//       .lean();
-
-//     if (!doc) {
-//       return next(
-//         new AppError(errorMessage.ERROR_NO_SEARCH_RESULTS, 404)
-//       );
-//     }
-
-//     if (target === "user") {
-//       const emailSend = await EmailManager.send({
-//         to: (doc as UserInterface).email,
-//         subject:
-//           subjectEmail.SUBJECT_MODIFIED_STATUS("Suppression"),
-//         text: bodyEmail.ACCOUNT_DELETED,
-//       });
-
-//       if (!emailSend) {
-//         return next(
-//           new AppError(
-//             errorMessage.ERROR_SENT_NOTIFICATION_DELETE_ACCOUNT,
-//             500
-//           )
-//         );
-//       }
-//     }
-
-//     res.status(200).json({
-//       status: "success",
-//       message: successMessage.SUCCESS_DOCUMENT_DELETED(id),
-//     });
-//   });
-
-// export const createOne = <T extends UserInterface | ApiKeyInterface>(
-//   Model: Model<T>,
-//   target: "user" | "apiKey"
-// ) =>
-//   catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     let query: Promise<any> | ApiKeyInterface | UserInterface;
-
-//     if (target === "user") {
-//       query = Model.create(req.body);
-//     } else if (target === "apiKey") {
-//       const idUser: Types.ObjectId = req.body.user;
-//       const apiName: apiNameType = req.body.apiName;
-
-//       if (!idUser || !apiName) {
-//         return next(
-//           new AppError(
-//             errorMessage.ERROR_EMPTY_FIELD(
-//               "id de l'utilisateur, nom de l'api"
-//             ),
-//             400
-//           )
-//         );
-//       }
-//       const userApiKeys = await Model.findOne<ApiKeyInterface>({
-//         user: idUser,
-//       }).select("apiKeys.apiName");
-
-//       if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
-//         return next(
-//           new AppError(errorMessage.ERROR_DUPLICATE_API_KEY, 400)
-//         );
-//       }
-
-//       const newApiKey = ApiKeyManager.createNewApiKey();
-//       const newApiKeyHash = await ApiKeyManager.encryptApiKey(newApiKey);
-
-//       query = await Model.findOneAndUpdate<ApiKeyInterface>(
-//         {
-//           user: idUser,
-//         },
-//         {
-//           $push: {
-//             apiKeys: {
-//               apiName: apiName,
-//               active: true,
-//               apiKey: newApiKeyHash,
-//               apiKeyExpire: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-//             },
-//           },
-//         },
-
-//         {
-//           upsert: true,
-//           runValidators: true,
-//           new: true,
-//         }
-//       ).select("user");
-
-//       const sendEmail = await EmailManager.send({
-//         to: query.user.email,
-//         subject: subjectEmail.SUBJECT_API_KEY("Création"),
-//         text: bodyEmail.SEND_API_KEY(newApiKey),
-//       });
-
-//       if (!sendEmail) {
-//         return next(
-//           new AppError(
-//             errorMessage.ERROR_ADMIN_SENT_NEW_API_KEY(
-//               query.user.id,
-//               query.user.email
-//             ),
-//             500
-//           )
-//         );
-//       }
-//     }
-
-//     const doc = await query;
-
-//     res.status(200).json({
-//       status: "success",
-//       message: successMessage.SUCCESS_DOCUMENT_CREATED(doc._id),
-//     });
-//   });

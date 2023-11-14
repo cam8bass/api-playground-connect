@@ -35,7 +35,7 @@ export default class EmailManager {
     }
 
     const mailOptions: MailOptions = {
-      from: '"cam" <cam@email.com>',
+      from: '"cam" <lc.laignel.dev@proton.me>',
       to: options.to,
       subject: options.subject,
       text: this.emailText(options.subject, options.text),

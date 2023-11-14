@@ -53,12 +53,12 @@ export const errorMessage: ErrorMessageInterface = {
     "Pour modifier votre mot de passe, veuillez vous rediriger vers la section prévu à cet effet.",
 
   ERROR_API_KEY_EXPIRE:
-    "Désolé, nous ne trouvons pas de clé d'API susceptible d'être renouvelée pour le moment. Veuillez vérifier si votre clé d'API est expirée. Si ce n'est pas le cas, veuillez contacter notre équipe de support pour obtenir de l'aide supplémentaire. Merci de votre compréhension.",
+    "Désolé, nous ne trouvons pas de clé d'API pouvant être renouvelée pour le moment. Veuillez vérifier si votre clé d'API est expirée ou en attente de validation. Si ce n'est pas le cas, veuillez contacter notre équipe de support pour obtenir une assistance supplémentaire. Merci de votre compréhension.",
   ERROR_DUPLICATE_API_KEY: "Vous disposez déjà d'une clé pour cette API.",
+  ERROR_RATE_LIMIT:
+    "Vous avez atteint le nombre maximal de requêtes autorisées. Veuillez réessayer ultérieurement.",
   ERROR_EMPTY_FIELD: (...field: string[]): string =>
     `Veuillez remplir le(s) champ(s): ${field}`,
   ERROR_MODIFIED_FIELD: (field: string) =>
     `Désolé, il n'est pas possible de modifier le champ: ${field}.`,
- 
-
 };

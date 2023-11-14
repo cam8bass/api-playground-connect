@@ -1,6 +1,5 @@
 import { Query, Schema, model } from "mongoose";
-import { ApiKeyInterface,CustomQuery } from "../shared/interfaces";
-
+import { ApiKeyInterface, CustomQuery } from "../shared/interfaces";
 import { apiNameType } from "../shared/types/types";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import { validationMessage } from "../shared/messages";
@@ -9,10 +8,7 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
   user: {
     type: Schema.Types.ObjectId,
     ref: "User",
-    required: [
-      true,
-      validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur"),
-    ],
+    required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur")],
     unique: true,
   },
   apiKeys: [
@@ -55,25 +51,35 @@ const apiKeySchema = new Schema<ApiKeyInterface>({
 });
 
 apiKeySchema.post(/^find/, async function (docs: ApiKeyInterface[]) {
-  if (!Array.isArray(docs) || !docs) return;
-  docs.map((api) =>
-    api.apiKeys.forEach(async (el) => {
-      if (!el.apiKey) return;
-      el.apiKey = await ApiKeyManager.decryptApiKey(el.apiKey);
+  if (!Array.isArray(docs)) {
+    docs = [docs];
+  }
+
+  await Promise.all(
+    docs.map(async (api) => {
+      if (!api || !api.apiKeys) return;
+      await Promise.all(
+        api.apiKeys.map(async (el) => {
+          if (!el.apiKey) return;
+          el.apiKey = await ApiKeyManager.decryptApiKey(el.apiKey);
+        })
+      );
     })
   );
 });
 
 apiKeySchema.index({ active: 1, user: 1, apiName: 1 });
 
-apiKeySchema.pre<Query<ApiKeyInterface[], ApiKeyInterface> & CustomQuery>(/^find/, function (next) {
+apiKeySchema.pre<Query<ApiKeyInterface[], ApiKeyInterface> & CustomQuery>(
+  /^find/,
+  function (next) {
+    this.populate({ path: "user", select: "email" });
 
-  this.populate({ path: "user", select: "email" });
-   
-  this.select("-__v");
+    this.select("-__v");
 
-  next();
-});
+    next();
+  }
+);
 
 apiKeySchema.methods.checkUserApiKeys = function (
   this: ApiKeyInterface,

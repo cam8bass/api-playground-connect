@@ -1,10 +1,5 @@
 import { Types, Schema, model, Query } from "mongoose";
-import {
-  ApiKeyInterface,
-  CustomQuery,
-  KeyInterface,
-  UserInterface,
-} from "../shared/interfaces";
+import { CustomQuery, UserInterface } from "../shared/interfaces";
 import validator from "validator";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
@@ -21,18 +16,9 @@ const userSchema = new Schema<UserInterface>(
       type: String,
       lowercase: true,
       trim: true,
-      required: [
-        true,
-        validationMessage.VALIDATE_REQUIRED_FIELD("prénom"),
-      ],
-      minlength: [
-        3,
-        validationMessage.VALIDATE_MIN_LENGTH("prenom", 3),
-      ],
-      maxlength: [
-        15,
-        validationMessage.VALIDATE_MAX_LENGTH("prénom", 15),
-      ],
+      required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("prénom")],
+      minlength: [3, validationMessage.VALIDATE_MIN_LENGTH("prenom", 3)],
+      maxlength: [15, validationMessage.VALIDATE_MAX_LENGTH("prénom", 15)],
       validate: [
         validator.isAlpha,
         validationMessage.VALIDATE_ONLY_STRING("prénom"),
@@ -42,18 +28,9 @@ const userSchema = new Schema<UserInterface>(
       type: String,
       lowercase: true,
       trim: true,
-      required: [
-        true,
-        validationMessage.VALIDATE_REQUIRED_FIELD("nom"),
-      ],
-      minlength: [
-        3,
-        validationMessage.VALIDATE_MIN_LENGTH("nom", 3),
-      ],
-      maxlength: [
-        15,
-        validationMessage.VALIDATE_MAX_LENGTH("nom", 15),
-      ],
+      required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("nom")],
+      minlength: [3, validationMessage.VALIDATE_MIN_LENGTH("nom", 3)],
+      maxlength: [15, validationMessage.VALIDATE_MAX_LENGTH("nom", 15)],
       validate: [
         validator.isAlpha,
         validationMessage.VALIDATE_ONLY_STRING("nom"),
@@ -72,10 +49,7 @@ const userSchema = new Schema<UserInterface>(
       type: String,
       trim: true,
       lowercase: true,
-      required: [
-        true,
-        validationMessage.VALIDATE_REQUIRED_FIELD("email"),
-      ],
+      required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("email")],
       unique: true,
       validate: [
         validator.isEmail,
@@ -130,7 +104,13 @@ const userSchema = new Schema<UserInterface>(
     activationAccountToken: { type: String },
     activationAccountTokenExpire: { type: Date },
     activationAccountAt: { type: Date },
+
     accountLockedExpire: { type: Date },
+
+    accountLocked: {
+      type: Boolean,
+      default: false,
+    },
     createAt: {
       type: Date,
       default: Date.now(),
@@ -151,30 +131,6 @@ const userSchema = new Schema<UserInterface>(
 
 userSchema.index({ email: 1 }, { unique: true });
 
-userSchema
-  .virtual("apiKeys", {
-    ref: "ApiKey",
-    foreignField: "user",
-    localField: "_id",
-    justOne: true,
-  })
-  .get(function (value: ApiKeyInterface) {
-    if (!value) return;
-
-    return value.apiKeys.map((el: KeyInterface) => {
-      return {
-        _id: el._id,
-        active: el.active,
-        apiName: el.apiName,
-        apiKey: el.apiKey,
-        apiKeyExpire: el.apiKeyExpire,
-        renewalToken: el.renewalToken,
-        renewalTokenExpire: el.renewalTokenExpire,
-        createAt: el.createAt,
-      };
-    });
-  });
-
 userSchema.pre<Query<UserInterface[], UserInterface> & CustomQuery>(
   /^find/,
   function (next) {
@@ -182,8 +138,6 @@ userSchema.pre<Query<UserInterface[], UserInterface> & CustomQuery>(
     next();
   }
 );
-
-userSchema.post(/^find/, function () {});
 
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -205,7 +159,7 @@ userSchema.methods.createAndSendToken = async function (
   res: Response,
   userId: Types.ObjectId,
   role: userRoleType
-): Promise<string> {
+): Promise<void> {
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
   const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
 
@@ -216,18 +170,19 @@ userSchema.methods.createAndSendToken = async function (
   const cookieOptions: CookieOptions = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     httpOnly: true,
-    secure: false,
+    domain: "localhost",
+    path: "/",
   };
 
   if (nodeEnv === "production") {
     cookieOptions.secure = true;
+    cookieOptions.sameSite = "strict";
   }
 
   res.cookie("jwt", token, cookieOptions);
-  return token;
 };
 
-userSchema.methods.activeUserAccount = async function (
+userSchema.methods.prepareAccountActivation = async function (
   this: UserInterface,
   resetHashToken: string,
   dateExpire: Date
@@ -238,16 +193,7 @@ userSchema.methods.activeUserAccount = async function (
   });
 };
 
-userSchema.methods.reactivatedUserAccount = async function (
-  this: UserInterface
-): Promise<void> {
-  await this.updateOne({
-    active: true,
-    $unset: {
-      disableAccountAt: "",
-    },
-  });
-};
+
 
 userSchema.methods.deleteActivationToken = async function (
   this: UserInterface
@@ -280,6 +226,7 @@ userSchema.methods.deleteAccountLockedExpire = async function (
   this: UserInterface
 ): Promise<void> {
   await this.updateOne({
+    $set: { accountLocked: false },
     $unset: {
       accountLockedExpire: "",
     },
@@ -296,9 +243,9 @@ userSchema.methods.checkUserPassword = async function (
   if (!validPassword) {
     this.loginFailures++;
 
-    if (this.loginFailures >= 10) {
+    if (this.loginFailures >= 5) {
       this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
-
+      this.accountLocked = true;
       this.loginFailures = undefined;
     }
 
@@ -308,6 +255,8 @@ userSchema.methods.checkUserPassword = async function (
     if (this.loginFailures !== 0) {
       this.loginFailures = undefined;
     }
+
+    if (this.accountLocked) this.accountLocked = false;
     await this.save({ validateBeforeSave: false });
     return true;
   }
@@ -361,20 +310,6 @@ userSchema.methods.changeUserPassword = async function (
   this.passwordResetTokenExpire = undefined;
 
   await this.save();
-};
-
-userSchema.methods.changeUserEmail = async function (
-  this: UserInterface,
-  newEmail: string
-): Promise<void> {
-  await this.updateOne({
-    email: newEmail,
-    emailChangeAt: new Date(Date.now()),
-    $unset: {
-      emailResetToken: "",
-      emailResetTokenExpire: "",
-    },
-  });
 };
 
 const User = model<UserInterface>("User", userSchema);

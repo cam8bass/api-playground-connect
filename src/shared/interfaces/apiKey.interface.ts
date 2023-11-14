@@ -1,11 +1,15 @@
 import { Document, Types } from "mongoose";
 import { apiNameType } from "../types/types";
-import { UserInterface } from "./user.interface";
+
 
 export interface ApiKeyInterface extends Document {
-  user: Partial<UserInterface>;
+  user: {
+    _id: Types.ObjectId;
+    email: string;
+  };
   apiKeys: [KeyInterface];
   createAt: Date;
+  _id: Types.ObjectId;
 
   // METHODS
   checkUserApiKeys: (
