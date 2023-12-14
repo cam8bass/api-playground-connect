@@ -279,15 +279,39 @@ export const getAllInactiveApiKeys = catchAsync(
   }
 );
 
-export const getAllLockedAccounts = catchAsync(
+export const getUsersStats = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const user = await User.find({
-      accountLocked: true,
-      accountLockedExpire: { $gt: new Date(Date.now()) },
-    });
+    const isActive = { $eq: ["$active", true] };
+    const isInactive = { $eq: ["$active", false] };
+    const isDisabled = { $eq: ["$accountDisabled", true] };
+    const isLocked = { $eq: ["$accountLocked", true] };
 
-    res
-      .status(200)
-      .json(jsonResponse({ data: formatUserResponse(user, "admin") }));
+    const [data] = await User.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalUsers: { $sum: 1 },
+          totalActiveAccount: {
+            $sum: { $cond: { if: isActive, then: 1, else: 0 } },
+          },
+          totalInactiveAccount: {
+            $sum: { $cond: { if: isInactive, then: 1, else: 0 } },
+          },
+          totalDisableAccount: {
+            $sum: { $cond: { if: isDisabled, then: 1, else: 0 } },
+          },
+          totalAccountLocked: {
+            $sum: { $cond: { if: isLocked, then: 1, else: 0 } },
+          },
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+        },
+      },
+    ]);
+
+    res.status(200).json(jsonResponse({ data }));
   }
 );

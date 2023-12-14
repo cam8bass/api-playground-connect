@@ -5,10 +5,12 @@ export interface jsonResponseInterface {
   notification?: notificationInterface;
   data?: any;
   results?: number;
+  limit?:number
 }
 
 export interface jsonResponseOptionsInterface {
   notification?: notificationInterface;
   data?: any;
   results?: number;
+  limit?:number
 }

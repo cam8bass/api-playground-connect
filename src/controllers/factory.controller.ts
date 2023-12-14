@@ -27,23 +27,15 @@ export const getAll = <T extends UserInterface | ApiKeyInterface>(
       .filter()
       .fields()
       .sort()
-      .page();
+      .page()
+      .search();
 
-    const doc: T[] = await query.queryMethod.lean();
+    const [doc, results] = await Promise.all([
+      query.queryMethod.lean(),
+      Model.countDocuments(query.queryMethod.getFilter()),
+    ]);
 
-    if (doc.length === 0) {
-      return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("document"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
-      );
-    }
-
-    res.status(200).json(jsonResponse({ results: doc.length, data: doc }));
+    res.status(200).json(jsonResponse({ results, data: doc as T[] }));
   });
 
 export const getOne = <T extends UserInterface | ApiKeyInterface>(

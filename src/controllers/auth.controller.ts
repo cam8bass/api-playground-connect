@@ -7,7 +7,7 @@ import { userRequestInterface } from "../shared/interfaces";
 import { userRoleType } from "../shared/types/types";
 import client from "../infisical";
 import { errorMessage, warningMessage } from "../shared/messages";
-import { formatUserResponse } from "../shared/utils/formatResponse.utils";
+
 
 export const accountIsActive = catchAsync(
   async (req: userRequestInterface, res: Response, next: NextFunction) => {
@@ -17,7 +17,7 @@ export const accountIsActive = catchAsync(
       ? req.user
       : await User.findOne(
           { email },
-          "email active activationAccountToken activationAccountTokenExpire disableAccountAt"
+          "email active activationAccountToken activationAccountTokenExpire disableAccountAt accountDisabled"
         );
 
     if (!user || user.active) return next();

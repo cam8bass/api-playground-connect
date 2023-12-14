@@ -194,12 +194,13 @@ export const login = catchAsync(
         );
       }
 
-      if (user.disableAccountAt) {
+      if (user.disableAccountAt && user.accountDisabled) {
 
         user = await User.findByIdAndUpdate(
           user._id,
           {
             active: true,
+            accountDisabled:false,
             $unset: {
               disableAccountAt: "",
             },
@@ -768,6 +769,7 @@ export const disableUserAccount = catchAsync(
       new Types.ObjectId(req.user._id),
       {
         active: false,
+        accountDisabled:true,
         disableAccountAt: new Date(),
       }
     ).select("email");

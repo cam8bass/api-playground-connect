@@ -121,6 +121,11 @@ const userSchema = new Schema<UserInterface>(
       default: 0,
     },
     disableAccountAt: { type: Date },
+
+    accountDisabled: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     id: false,
@@ -192,8 +197,6 @@ userSchema.methods.prepareAccountActivation = async function (
     activationAccountTokenExpire: dateExpire,
   });
 };
-
-
 
 userSchema.methods.deleteActivationToken = async function (
   this: UserInterface

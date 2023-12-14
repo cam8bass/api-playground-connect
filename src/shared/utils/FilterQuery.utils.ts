@@ -1,4 +1,4 @@
-import { Query } from "mongoose";
+import mongoose, { Query } from "mongoose";
 
 class FilterQuery {
   public queryMethod: Query<any, any>;
@@ -9,7 +9,7 @@ class FilterQuery {
 
   filter() {
     const objectQuery = { ...this.queryRequest };
-    const excludeQuery = ["sort", "fields", "page", "limit"];
+    const excludeQuery = ["sort", "fields", "page", "limit", "search"];
     excludeQuery.forEach((el) => delete objectQuery[el]);
     const queryString = JSON.parse(
       JSON.stringify(objectQuery).replace(
@@ -19,6 +19,26 @@ class FilterQuery {
     );
 
     this.queryMethod.find(queryString);
+    return this;
+  }
+
+  search() {
+    if (this.queryRequest.search) {
+      const search = this.queryRequest.search;
+
+      const searchConditions = [
+        { firstname: new RegExp(search, "i") },
+        { lastname: new RegExp(search, "i") },
+        { email: new RegExp(search, "i") },
+      ];
+
+      if (mongoose.Types.ObjectId.isValid(search)) {
+        searchConditions.push({
+          _id: new mongoose.Types.ObjectId(search) as any,
+        } as any);
+      }
+      this.queryMethod.find({ $or: searchConditions });
+    }
     return this;
   }
 
@@ -36,19 +56,31 @@ class FilterQuery {
 
   sort() {
     if (this.queryRequest.sort) {
-      const sortBy = JSON.parse(
-        JSON.stringify(this.queryRequest.sort).split(",").join(" ")
+      const sortBy = this.queryRequest.sort.split(",");
+
+      const sortObject = sortBy.reduce(
+        (obj: Record<string, 1 | -1>, field: string) => {
+          if (field.startsWith("-")) {
+            obj[field.substring(1)] = -1;
+          } else {
+            obj[field] = 1;
+          }
+          return obj;
+        },
+        {}
       );
-      this.queryMethod.sort(sortBy);
+
+      this.queryMethod.sort({ ...sortObject, _id: 1 });
     } else {
-      this.queryMethod.sort("-createAt");
+      this.queryMethod.sort({ _id: 1, createAt: -1 });
     }
     return this;
   }
 
   page() {
-    const page = +this.queryRequest.page || 1;
-    const limit = +this.queryRequest.limit || 50;
+    const page = parseInt(this.queryRequest.page) || 1;
+    const limit = parseInt(this.queryRequest.limit) || 10;
+
     const skip = (page - 1) * limit;
     this.queryMethod.skip(skip).limit(limit);
     return this;

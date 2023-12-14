@@ -39,8 +39,12 @@ export const jsonResponse = (
     jsonResponse.data = options.data;
   }
 
-  if (options.results) {
+  if (options.results !== undefined) {
     jsonResponse.results = options.results;
+  }
+
+  if (options.limit) {
+    jsonResponse.limit = options.limit;
   }
 
   return jsonResponse;

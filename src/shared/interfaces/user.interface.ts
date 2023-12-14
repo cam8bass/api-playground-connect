@@ -24,9 +24,11 @@ export interface UserInterface extends Document {
   accountLocked: boolean;
   accountLockedExpire: Date;
 
+  disableAccountAt: Date;
+  accountDisabled: boolean;
+
   role: userRoleType;
   loginFailures: number;
-  disableAccountAt: Date;
   createAt: Date;
 
   // METHODS

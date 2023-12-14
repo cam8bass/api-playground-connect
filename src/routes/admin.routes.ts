@@ -13,7 +13,7 @@ router.use(
 );
 router.get("/getUserApiKeys/:idUser", adminController.getSelectedUserApiKeys);
 router.get("/getInactiveApiKeys", adminController.getAllInactiveApiKeys);
-router.get("/getAccountsLocked", adminController.getAllLockedAccounts);
+router.get("/dashboardUsers", adminController.getUsersStats);
 
 // USER ROUTES
 
