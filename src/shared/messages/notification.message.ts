@@ -2,9 +2,11 @@ import { Types } from "mongoose";
 import { notificationMessageInterface } from "../interfaces";
 
 export const notificationMessage: notificationMessageInterface = {
+  NOTIFICATION_ADMIN_SUCCESS_DELETE_SELECTED_APIKEY:
+    "La clé d'api a été supprimée avec succès",
   NOTIFICATION_ADMIN_CREATE_AND_ACTIVE_APIKEY:
-    "La clé d'API a été créée et activée avec succès. Un email a été envoyé à l'utilisateur.",
-    NOTIFICATION_ADMIN_CREATE_USER:"L'utilisateur a été créer avec succès.",
+    "La clé d'API a été crée et activée avec succès. Un email a été envoyé à l'utilisateur.",
+  NOTIFICATION_ADMIN_CREATE_USER: "L'utilisateur a été créer avec succès.",
   NOTIFICATION_EMAIL_MODIFIED:
     "Votre adresse e-mail a été modifiée avec succès.",
   NOTIFICATION_SUCCESS_DELETE_SELECTED_APIKEY:
@@ -16,6 +18,8 @@ export const notificationMessage: notificationMessageInterface = {
     "Le compte de l'utilisateur a été supprimé avec succès",
   NOTIFICATION_DELETE_USER_APIKEYS:
     "L'ensemble des clés d'API de l'utilisateur ont été supprimées avec succès",
+  NOTIFICATION_DELETE_NOTIFICATION:
+    "L'ensemble des notifications a été supprimé avec succès",
   NOTIFICATION_SUCCESS_CREATE_ACCOUNT:
     "Votre compte a bien été créé. Veuillez vous connecter à la page de connexion avec vos identifiants pour commencer la procédure d'activation du compte.",
   NOTIFICATION_SENT_EMAIL_DELETE_ACCOUNT:
@@ -61,4 +65,13 @@ export const notificationMessage: notificationMessageInterface = {
     userEmail: string
   ): string =>
     `Une erreur s'est produite lors de l'envoi de l'e-mail de notification confirmant la création de la clé d'API pour l'utilisateur ${idUser}. Veuillez vérifier les paramètres de messagerie et l'état du service de messagerie pour résoudre le problème. En attendant, veuillez traiter manuellement la demande de clé d'API de l'utilisateur et lui fournir les informations nécessaires à l'adresse : ${userEmail}. Merci de votre attention.`,
+
+  NOTIFICATION_ADMIN_APIKEY_CREATION_REQUEST: (user: {
+    idUser: Types.ObjectId;
+    email: string;
+    apiName: string;
+    idApi: Types.ObjectId;
+  }): string => `
+  L'utilisateur ${user.idUser} possédant l'adresse e-mail ${user.email} a soumis une demande de création de clé pour l'API ${user.idApi} - ${user.apiName}.
+  `
 };

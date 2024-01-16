@@ -61,4 +61,10 @@ export const errorMessage: ErrorMessageInterface = {
     `Veuillez remplir le(s) champ(s): ${field}`,
   ERROR_MODIFIED_FIELD: (field: string) =>
     `Désolé, il n'est pas possible de modifier le champ: ${field}.`,
+  ERROR_SEND_EMAIL: (
+    action: string,
+    idUser: Types.ObjectId,
+    email: string,
+  ) => `Une erreur s'est produite lors de l'envoi de l'e-mail relatif à l'action suivante : ${action} pour l'utilisateur ${idUser} identifié par l'adresse e-mail ${email}.
+  `,
 };

@@ -29,10 +29,7 @@ export const jsonResponse = (
   };
 
   if (options.notification) {
-    jsonResponse.notification = {
-      type: options.notification.type,
-      message: options.notification.message,
-    };
+    jsonResponse.notification = options.notification;
   }
 
   if (options.data) {

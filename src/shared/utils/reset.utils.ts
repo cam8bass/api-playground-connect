@@ -33,7 +33,7 @@ export const createResetUrl = (
     path = "resetPassword";
   } else if (resetType === "email") {
     path = "resetEmail";
-  } else if (resetType === "api-Key") {
+  } else if (resetType === "apiKey") {
     path = "confirmRenewal";
   }
   return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;

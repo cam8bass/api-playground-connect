@@ -29,6 +29,11 @@ export interface ErrorMessageInterface {
   ERROR_DUPLICATE_API_KEY: string;
   ERROR_EMPTY_FIELD: (...field: string[]) => string;
   ERROR_MODIFIED_FIELD: (field: string) => string;
+  ERROR_SEND_EMAIL: (
+    action: string,
+    idUser: Types.ObjectId,
+    email: string
+  ) => string;
 }
 
 export interface ValidationMessageInterface {
@@ -58,6 +63,8 @@ export interface WarningMessageInterface {
 }
 
 export interface notificationMessageInterface {
+  NOTIFICATION_ADMIN_SUCCESS_DELETE_SELECTED_APIKEY: string;
+  NOTIFICATION_DELETE_NOTIFICATION: string;
   NOTIFICATION_ADMIN_CREATE_USER: string;
   NOTIFICATION_ADMIN_CREATE_AND_ACTIVE_APIKEY: string;
   NOTIFICATION_ADMIN_REFUSAL_API_KEY: string;
@@ -92,4 +99,11 @@ export interface notificationMessageInterface {
     idUser: Types.ObjectId,
     userEmail: string
   ) => string;
+
+  NOTIFICATION_ADMIN_APIKEY_CREATION_REQUEST: (user: {
+    idUser: Types.ObjectId;
+    email: string;
+    apiName: string;
+    idApi: Types.ObjectId;
+  }) => string;
 }

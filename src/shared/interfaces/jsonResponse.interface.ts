@@ -1,16 +1,17 @@
-import { notificationInterface } from "./notification.interface";
+import { NotificationDetailInterface } from "./notification.interface";
+
 
 export interface jsonResponseInterface {
   status: string;
-  notification?: notificationInterface;
+  notification?: NotificationDetailInterface;
   data?: any;
   results?: number;
-  limit?:number
+  limit?: number;
 }
 
 export interface jsonResponseOptionsInterface {
-  notification?: notificationInterface;
+  notification?: NotificationDetailInterface;
   data?: any;
   results?: number;
-  limit?:number
+  limit?: number;
 }

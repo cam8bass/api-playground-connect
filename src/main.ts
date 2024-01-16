@@ -3,6 +3,7 @@ import morgan from "morgan";
 import userRouter from "./routes/user.routes";
 import apiKeyRouter from "./routes/apiKey.routes";
 import adminRouter from "./routes/admin.routes";
+import notificationRouter from "./routes/notification.routes";
 import errorController from "./controllers/error.controller";
 import dotenv from "dotenv";
 import AppError from "./shared/utils/AppError.utils";
@@ -50,6 +51,7 @@ if (nodeEnv === "development") {
 app.use("/playground-connect/v1/users", userRouter);
 app.use("/playground-connect/v1/apiKeys", apiKeyRouter);
 app.use("/playground-connect/v1/admin", adminRouter);
+app.use("/playground-connect/v1/notification", notificationRouter);
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
   return next(
     new AppError(404, warningMessage.WARNING_PAGE_NOT_FOUND, {

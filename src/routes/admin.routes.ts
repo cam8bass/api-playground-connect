@@ -2,6 +2,7 @@ import { Router } from "express";
 import * as adminController from "./../controllers/admin.controller";
 import * as authController from "./../controllers/auth.controller";
 import * as apiKeyController from "./../controllers/apiKey.controller";
+import * as notificationController from "./../controllers/notification.controller";
 
 const router = Router();
 
@@ -42,7 +43,7 @@ router
 // ACTIVE API KEY
 router.patch(
   "/users/:id/apiKeys/activeApiKey/:idApi",
-  adminController.activeAndcreateApiKey
+  adminController.activeApiKey
 );
 
 // DELETE SELECTED API KEY FOR USER
@@ -50,5 +51,10 @@ router.delete(
   "/users/:id/apiKeys/deleteApiKey/:idApi",
   apiKeyController.deleteSelectedApiKey
 );
+
+// NOTIFICATIONS ROUTES
+router.route("/notifications").get(notificationController.getAllNotifications);
+
+router.route("/notifications/:id").get(notificationController.getNotification);
 
 export default router;
