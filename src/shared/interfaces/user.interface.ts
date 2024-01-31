@@ -30,6 +30,7 @@ export interface UserInterface extends Document {
   role: userRoleType;
   loginFailures: number;
   createAt: Date;
+  updateAt: Date;
 
   // METHODS
 
@@ -45,10 +46,7 @@ export interface UserInterface extends Document {
   ) => Promise<string>;
   deleteActivationToken: () => Promise<void>;
   deletePasswordResetToken: () => Promise<void>;
-  checkUserPassword: (
-    inputPassword: string,
-    userPassword: string
-  ) => Promise<boolean>;
+
   checkPasswordChangedAfterToken: (timestampToken: number) => boolean;
   createResetUrl: (
     req: Request,
@@ -60,7 +58,12 @@ export interface UserInterface extends Document {
     newPasswordConfirm: string
   ) => Promise<void>;
   deleteEmailResetToken: () => Promise<void>;
-
   checkEmailChangedAfterToken: (timestampToken: number) => boolean;
-  deleteAccountLockedExpire: () => Promise<void>;
+  updateLoginFailure: (passwordIsCorrect: boolean) => Promise<void>;
+  unlockAccount: () => Promise<void>;
+  lockAccount: () => Promise<void>;
+  checkUserPassword: (
+    inputPassword: string,
+    userPassword: string
+  ) => Promise<boolean>;
 }

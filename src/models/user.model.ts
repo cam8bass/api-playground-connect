@@ -111,10 +111,7 @@ const userSchema = new Schema<UserInterface>(
       type: Boolean,
       default: false,
     },
-    createAt: {
-      type: Date,
-      default: Date.now(),
-    },
+
     // OTHERS
     loginFailures: {
       type: Number,
@@ -129,6 +126,7 @@ const userSchema = new Schema<UserInterface>(
   },
   {
     id: false,
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -144,6 +142,10 @@ userSchema.pre<Query<UserInterface[], UserInterface> & CustomQuery>(
   }
 );
 
+/**
+ * Sets the passwordChangeAt field to the current date and time minus one second, if the password field has been modified or if the document is new.
+ * @param {Query} this - The query object.
+ */
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -151,6 +153,10 @@ userSchema.pre("save", async function (next) {
   next();
 });
 
+/**
+ * Sets the passwordChangeAt field to the current date and time minus one second, if the password field has been modified or if the document is new.
+ * @param {Query} this - The query object.
+ */
 userSchema.pre("save", function (next) {
   if (!this.isModified("password") || this.isNew) {
     return next();
@@ -160,6 +166,12 @@ userSchema.pre("save", function (next) {
   next();
 });
 
+/**
+ * Creates and sends a JSON Web Token (JWT) to the user.
+ * @param {Response} res - The response object.
+ * @param {Types.ObjectId} userId - The ID of the user.
+ * @param {userRoleType} role - The role of the user.
+ */
 userSchema.methods.createAndSendToken = async function (
   res: Response,
   userId: Types.ObjectId,
@@ -168,10 +180,23 @@ userSchema.methods.createAndSendToken = async function (
   const nodeEnv = process.env.NODE_ENV as nodeEnv;
   const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
 
+  /**
+   * Creates a JSON Web Token (JWT) using the provided information.
+   * @param {object} payload - The payload of the JWT.
+   * @param {string} secret - The secret used to sign the JWT.
+   * @param {object} options - The options for the JWT.
+   */
   const token = jwt.sign({ id: userId, role }, jwtSecret, {
     expiresIn: process.env.JWT_EXPIRE,
   });
 
+  /**
+   * Sets the options for the cookie containing the JWT.
+   * @property {Date} expires - The expiration date of the cookie.
+   * @property {boolean} httpOnly - Indicates whether the cookie can be accessed by JavaScript.
+   * @property {string} domain - The domain of the cookie.
+   * @property {string} path - The path of the cookie.
+   */
   const cookieOptions: CookieOptions = {
     expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     httpOnly: true,
@@ -179,14 +204,28 @@ userSchema.methods.createAndSendToken = async function (
     path: "/",
   };
 
+  /**
+   * Sets the secure and sameSite properties of the cookie if the environment is production.
+   */
   if (nodeEnv === "production") {
     cookieOptions.secure = true;
     cookieOptions.sameSite = "strict";
   }
 
+  /**
+   * Sets the JWT as a cookie with the specified options.
+   * @param {string} name - The name of the cookie.
+   * @param {string} value - The value of the cookie.
+   * @param {CookieOptions} options - The options for the cookie.
+   */
   res.cookie("jwt", token, cookieOptions);
 };
 
+/**
+ * Updates the user's account activation information.
+ * @param {string} resetHashToken - The activation token.
+ * @param {Date} dateExpire - The expiration date of the token.
+ */
 userSchema.methods.prepareAccountActivation = async function (
   this: UserInterface,
   resetHashToken: string,
@@ -194,10 +233,14 @@ userSchema.methods.prepareAccountActivation = async function (
 ): Promise<void> {
   await this.updateOne({
     activationAccountToken: resetHashToken,
-    activationAccountTokenExpire: dateExpire,
+    activationAccountTokenExpire: new Date(dateExpire),
   });
 };
 
+/**
+ * Deletes the activation account token from the user document.
+ * @param {UserInterface} this - The user document.
+ */
 userSchema.methods.deleteActivationToken = async function (
   this: UserInterface
 ): Promise<void> {
@@ -206,6 +249,10 @@ userSchema.methods.deleteActivationToken = async function (
   });
 };
 
+/**
+ * Deletes the password reset token from the user document.
+ * @param {UserInterface} this - The user document.
+ */
 userSchema.methods.deletePasswordResetToken = async function (
   this: UserInterface
 ): Promise<void> {
@@ -217,6 +264,10 @@ userSchema.methods.deletePasswordResetToken = async function (
   });
 };
 
+/**
+ * Deletes the email reset token from the user document.
+ * @param {UserInterface} this - The user document.
+ */
 userSchema.methods.deleteEmailResetToken = async function (
   this: UserInterface
 ) {
@@ -225,46 +276,69 @@ userSchema.methods.deleteEmailResetToken = async function (
   });
 };
 
-userSchema.methods.deleteAccountLockedExpire = async function (
-  this: UserInterface
-): Promise<void> {
-  await this.updateOne({
-    $set: { accountLocked: false },
-    $unset: {
-      accountLockedExpire: "",
-    },
-  });
-};
-
+/**
+ * Checks if the input password matches the user's password.
+ * @param {string} inputPassword - The input password.
+ * @param {string} userPassword - The user's password.
+ * @returns {boolean} `true` if the input password matches the user's password, `false` otherwise.
+ */
 userSchema.methods.checkUserPassword = async function (
-  this: UserInterface,
   inputPassword: string,
   userPassword: string
 ): Promise<boolean> {
-  const validPassword = await bcrypt.compare(inputPassword, userPassword);
-
-  if (!validPassword) {
-    this.loginFailures++;
-
-    if (this.loginFailures >= 5) {
-      this.accountLockedExpire = new Date(Date.now() + 1 * 60 * 60 * 1000);
-      this.accountLocked = true;
-      this.loginFailures = undefined;
-    }
-
-    await this.save({ validateBeforeSave: false });
-    return false;
-  } else {
-    if (this.loginFailures !== 0) {
-      this.loginFailures = undefined;
-    }
-
-    if (this.accountLocked) this.accountLocked = false;
-    await this.save({ validateBeforeSave: false });
-    return true;
-  }
+  return await bcrypt.compare(inputPassword, userPassword);
 };
 
+/**
+ * Locks the user's account.
+ * @param {UserInterface} this - The user document.
+ */
+userSchema.methods.lockAccount = async function (this: UserInterface) {
+  await this.updateOne({
+    $set: {
+      accountLockedExpire: new Date(Date.now() + 1 * 60 * 60 * 1000),
+      accountLocked: true,
+    },
+    $unset: { loginFailures: "" },
+  });
+};
+
+/**
+ * Unlocks the user's account.
+ * @param {UserInterface} this - The user document.
+ */
+userSchema.methods.unlockAccount = async function (this: UserInterface) {
+  await this.updateOne({
+    $set: {
+      accountLocked: false,
+    },
+    $unset: { accountLockedExpire: "", loginFailures: "" },
+  });
+};
+
+/**
+ * Updates the user's login failure information.
+ * @param {boolean} passwordIsCorrect - Indicates whether the password was correct.
+ */
+userSchema.methods.updateLoginFailure = async function (
+  this: UserInterface,
+  passwordIsCorrect: boolean
+): Promise<void> {
+  if (passwordIsCorrect) {
+    this.loginFailures = undefined;
+  } else {
+    this.loginFailures++;
+  }
+  await this.save({ validateBeforeSave: false });
+};
+
+
+
+/**
+ * Checks if the user's password was changed after the given timestamp.
+ * @param {number} tokenTimestamp - The timestamp of the password change token.
+ * @returns {boolean} `true` if the password was changed after the given timestamp, `false` otherwise.
+ */
 userSchema.methods.checkPasswordChangedAfterToken = function (
   this: UserInterface,
   tokenTimestamp: number
@@ -275,6 +349,11 @@ userSchema.methods.checkPasswordChangedAfterToken = function (
   return false;
 };
 
+/**
+ * Checks if the user's email was changed after the given timestamp.
+ * @param {number} tokenTimestamp - The timestamp of the email change token.
+ * @returns {boolean} `true` if the email was changed after the given timestamp, `false` otherwise.
+ */
 userSchema.methods.checkEmailChangedAfterToken = function (
   this: UserInterface,
   tokenTimestamp: number
@@ -285,6 +364,13 @@ userSchema.methods.checkEmailChangedAfterToken = function (
   return false;
 };
 
+/**
+ * Creates a reset URL for the user.
+ * @param {Request} req - The request object.
+ * @param {string} resetToken - The reset token.
+ * @param {resetType} resetType - The type of reset.
+ * @returns {string} The reset URL.
+ */
 userSchema.methods.createResetUrl = (
   req: Request,
   resetToken: string,
@@ -301,6 +387,11 @@ userSchema.methods.createResetUrl = (
   return `${req.headers.host}${req.baseUrl}/${path}/${resetToken}`;
 };
 
+/**
+ * Changes the user's password.
+ * @param {string} newPassword - The new password.
+ * @param {string} newPasswordConfirm - The new password confirmation.
+ */
 userSchema.methods.changeUserPassword = async function (
   this: UserInterface,
   newPassword: string,

@@ -1,57 +1,72 @@
 import {
-  activationAccountServices,
-  confirmChangeEmailServices,
-  disableUserAccountServices,
-  emailChangeRequestServices,
-  forgotPasswordServices,
-  getMeServices,
-  loginServices,
-  logoutServices,
-  resetPasswordServices,
-  signupServices,
-  updatePasswordServices,
-  updateProfileServices,
-} from "../services/user";
+  activationAccountMiddleware,
+  confirmChangeEmailMiddleware,
+  disableUserAccountMiddleware,
+  emailChangeRequestMiddleware,
+  forgotPasswordMiddleware,
+  getMeMiddleware,
+  logoutMiddleware,
+  resetPasswordMiddleware,
+  signupMiddleware,
+  updatePasswordMiddleware,
+  updateProfileMiddleware,
+  loginCheckAccountMiddleware,
+  loginCheckAccountIsLockedMiddleware,
+  loginCheckAccountIsDisableMiddleware,
+  loginCheckAccountIsActiveMiddleware,
+  loginValidationMiddleware,
+} from "../middlewares/user";
 
-/**
- * Login middleware
- */
+// /**
+//  * Login middleware
+//  */
 export const login = [
-  loginServices.validateFields,
-  loginServices.verifyUser,
-  loginServices.verifyPassword,
-  loginServices.checkIfTokenExpire,
-  loginServices.checkIfAccountIsDisable,
-  loginServices.sendEmailIfAccountDisable,
-  loginServices.createAdminNotificationIfAccountDisable,
-  loginServices.generateErrorSendEmailIfAccountDisable,
-  loginServices.createResetToken,
-  loginServices.prepareAccountForActivation,
-  loginServices.createResetUrl,
-  loginServices.sendEmail,
-  loginServices.createAdminNotification,
-  loginServices.deleteToken,
-  loginServices.generateErrorSendEmailIfInactiveAccount,
-  loginServices.createUserNotification,
-  loginServices.generateResponseIfInactiveAccount,
-  loginServices.createAndSendTokenIfActiveAccount,
-  loginServices.generateResponseIfActiveAccount,
+  // find and valided fields
+  loginCheckAccountMiddleware.validateFields,
+  loginCheckAccountMiddleware.verifyUser,
+  loginCheckAccountMiddleware.verifyPassword,
+  loginCheckAccountMiddleware.updateLoginFailure,
+  // check if account is locked
+  loginCheckAccountIsLockedMiddleware.checkIfAccountIsLocked,
+  loginCheckAccountIsLockedMiddleware.unlockAccount,
+  loginCheckAccountIsLockedMiddleware.lockAccount,
+  loginCheckAccountIsLockedMiddleware.generateErrorIfAccountLocked,
+  loginCheckAccountIsLockedMiddleware.generateErrorWrongPassword,
+  loginCheckAccountIsLockedMiddleware.createUserNotification,
+  // check if account is disable
+  loginCheckAccountIsDisableMiddleware.checkIfAccountIsDisable,
+  loginCheckAccountIsDisableMiddleware.sendEmail,
+  loginCheckAccountIsDisableMiddleware.createAdminNotification,
+  loginCheckAccountIsDisableMiddleware.createUserNotification,
+  // check if account is active
+  loginCheckAccountIsActiveMiddleware.checkIfTokenExpire,
+  loginCheckAccountIsActiveMiddleware.createResetToken,
+  loginCheckAccountIsActiveMiddleware.findAndUpdateNewToken,
+  loginCheckAccountIsActiveMiddleware.createResetUrl,
+  loginCheckAccountIsActiveMiddleware.sendEmail,
+  loginCheckAccountIsActiveMiddleware.createAdminNotification,
+  loginCheckAccountIsActiveMiddleware.deleteToken,
+  loginCheckAccountIsActiveMiddleware.generateErrorSendEmail,
+  loginCheckAccountIsActiveMiddleware.createUserNotification,
+  loginCheckAccountIsActiveMiddleware.generateResponse,
+  // validate user login
+  loginValidationMiddleware.createAndSendToken,
+  loginValidationMiddleware.generateResponse,
 ];
-
 /**
  * Confirm activation account middleware
  */
 export const confirmActivationAccount = [
-  activationAccountServices.validateFields,
-  activationAccountServices.createRandomToken,
-  activationAccountServices.findUserWithToken,
-  activationAccountServices.verifyPasswordField,
-  activationAccountServices.updateUser,
-  activationAccountServices.createAndSendToken,
-  activationAccountServices.sendEmail,
-  activationAccountServices.createAdminNotification,
-  activationAccountServices.createUserNotification,
-  activationAccountServices.generateResponse,
+  activationAccountMiddleware.validateFields,
+  activationAccountMiddleware.createRandomToken,
+  activationAccountMiddleware.findUserWithToken,
+  activationAccountMiddleware.verifyPasswordField,
+  activationAccountMiddleware.updateUser,
+  activationAccountMiddleware.createAndSendToken,
+  activationAccountMiddleware.sendEmail,
+  activationAccountMiddleware.createAdminNotification,
+  activationAccountMiddleware.createUserNotification,
+  activationAccountMiddleware.generateResponse,
 ];
 
 /**
@@ -59,16 +74,16 @@ export const confirmActivationAccount = [
  */
 
 export const confirmChangeEmail = [
-  confirmChangeEmailServices.validateFields,
-  confirmChangeEmailServices.createTokenHash,
-  confirmChangeEmailServices.findUser,
-  confirmChangeEmailServices.verifyPasswordField,
-  confirmChangeEmailServices.updateUser,
-  confirmChangeEmailServices.createAndSendToken,
-  confirmChangeEmailServices.sendEmail,
-  confirmChangeEmailServices.createAdminNotification,
-  confirmChangeEmailServices.createUserNotification,
-  confirmChangeEmailServices.generateResponse,
+  confirmChangeEmailMiddleware.validateFields,
+  confirmChangeEmailMiddleware.createTokenHash,
+  confirmChangeEmailMiddleware.findUser,
+  confirmChangeEmailMiddleware.verifyPasswordField,
+  confirmChangeEmailMiddleware.updateUser,
+  confirmChangeEmailMiddleware.createAndSendToken,
+  confirmChangeEmailMiddleware.sendEmail,
+  confirmChangeEmailMiddleware.createAdminNotification,
+  confirmChangeEmailMiddleware.createUserNotification,
+  confirmChangeEmailMiddleware.generateResponse,
 ];
 
 /**
@@ -76,112 +91,129 @@ export const confirmChangeEmail = [
  *
  */
 export const disableUserAccount = [
-  disableUserAccountServices.findUser,
-  disableUserAccountServices.sendEmail,
-  disableUserAccountServices.createAdminNotification,
-  disableUserAccountServices.createUserNotification,
-  disableUserAccountServices.clearJwtToken,
-  disableUserAccountServices.generateResponse,
+  disableUserAccountMiddleware.findUser,
+  disableUserAccountMiddleware.sendEmail,
+  disableUserAccountMiddleware.createAdminNotification,
+  disableUserAccountMiddleware.createUserNotification,
+  disableUserAccountMiddleware.clearJwtToken,
+  disableUserAccountMiddleware.generateResponse,
 ];
 
 /**
  * The email change request middleware
  */
 export const emailChangeRequest = [
-  emailChangeRequestServices.createResetToken,
-  emailChangeRequestServices.findUserAndUpdateResetToken,
-  emailChangeRequestServices.createResetUrl,
-  emailChangeRequestServices.sendEmail,
-  emailChangeRequestServices.createAdminNotification,
-  emailChangeRequestServices.deleteResetToken,
-  emailChangeRequestServices.generateErrorSendEmail,
-  emailChangeRequestServices.createUserNotification,
-  emailChangeRequestServices.generateResponse,
+  emailChangeRequestMiddleware.createResetToken,
+  emailChangeRequestMiddleware.findUserAndUpdateResetToken,
+  emailChangeRequestMiddleware.createResetUrl,
+  emailChangeRequestMiddleware.sendEmail,
+  emailChangeRequestMiddleware.createAdminNotification,
+  emailChangeRequestMiddleware.deleteResetToken,
+  emailChangeRequestMiddleware.generateErrorSendEmail,
+  emailChangeRequestMiddleware.createUserNotification,
+  emailChangeRequestMiddleware.generateResponse,
 ];
 
 /**
  * Forgot password middleware
  */
 export const forgotPassword = [
-  forgotPasswordServices.validateField,
-  forgotPasswordServices.generateResetRandomToken,
-  forgotPasswordServices.findAndUpdateUser,
-  forgotPasswordServices.createResetUrl,
-  forgotPasswordServices.sendEmail,
-  forgotPasswordServices.deleteResetToken,
-  forgotPasswordServices.createAdminNotification,
-  forgotPasswordServices.generateErrorSendEmail,
-  forgotPasswordServices.createUserNotification,
-  forgotPasswordServices.generateResponse,
+  forgotPasswordMiddleware.validateField,
+  forgotPasswordMiddleware.generateResetRandomToken,
+  forgotPasswordMiddleware.findAndUpdateUser,
+  forgotPasswordMiddleware.createResetUrl,
+  forgotPasswordMiddleware.sendEmail,
+  forgotPasswordMiddleware.deleteResetToken,
+  forgotPasswordMiddleware.createAdminNotification,
+  forgotPasswordMiddleware.generateErrorSendEmail,
+  forgotPasswordMiddleware.createUserNotification,
+  forgotPasswordMiddleware.generateResponse,
 ];
 
 /**
  * Export get me  middleware
  */
 export const getMe = [
-  getMeServices.retrieveToken,
-  getMeServices.checkTokenExistence,
-  getMeServices.verifyToken,
-  getMeServices.findUser,
-  getMeServices.generateResponse,
+  getMeMiddleware.retrieveToken,
+  getMeMiddleware.checkTokenExistence,
+  getMeMiddleware.verifyToken,
+  getMeMiddleware.findUser,
+  getMeMiddleware.generateResponse,
 ];
 
 /**
  * The logout middleware function.
  */
 export const logout = [
-  logoutServices.deleteCookie,
-  logoutServices.generateReponse,
+  logoutMiddleware.deleteCookie,
+  logoutMiddleware.generateReponse,
 ];
 
 /**
  * Reset password middleware
  */
 export const resetPassword = [
-  resetPasswordServices.validateFields,
-  resetPasswordServices.generateHashRandomToken,
-  resetPasswordServices.findUserByResetToken,
-  resetPasswordServices.changeUserPassword,
-  resetPasswordServices.sendEmail,
-  resetPasswordServices.createAdminNotification,
-  resetPasswordServices.createUserNotification,
-  resetPasswordServices.generateResponse,
+  resetPasswordMiddleware.validateFields,
+  resetPasswordMiddleware.generateHashRandomToken,
+  resetPasswordMiddleware.findUserByResetToken,
+  resetPasswordMiddleware.changeUserPassword,
+  resetPasswordMiddleware.sendEmail,
+  resetPasswordMiddleware.createAdminNotification,
+  resetPasswordMiddleware.createUserNotification,
+  resetPasswordMiddleware.generateResponse,
 ];
 
 /**
  * The sign up middleware array
  */
 export const signUp = [
-  signupServices.filteredBody,
-  signupServices.createUser,
-  signupServices.createUserNotification,
-  signupServices.generateResponse,
+  signupMiddleware.filteredBody,
+  signupMiddleware.createResetToken,
+  signupMiddleware.createUser,
+  signupMiddleware.createResetUrl,
+  signupMiddleware.sendEmail,
+  signupMiddleware.createAdminNotification,
+  signupMiddleware.deleteToken,
+  signupMiddleware.generateErrorSendEmail,
+  signupMiddleware.createUserNotification,
+  signupMiddleware.generateResponse,
 ];
+
+// FIXME: OLD VERSION
+// /**
+//  * The sign up middleware array
+//  */
+// export const signUp = [
+//   signupMiddleware.filteredBody,
+//   signupMiddleware.createUser,
+//   signupMiddleware.createUserNotification,
+//   signupMiddleware.generateResponse,
+// ];
 
 /**
  * Export update password middleware
  */
 export const updatePassword = [
-  updatePasswordServices.validateFields,
-  updatePasswordServices.findUserUpdatePassword,
-  updatePasswordServices.verifyCurrentPassword,
-  updatePasswordServices.changePasswordUser,
-  updatePasswordServices.createAndSendToken,
-  updatePasswordServices.sendEmail,
-  updatePasswordServices.createAdminNotification,
-  updatePasswordServices.createUserNotification,
-  updatePasswordServices.generateResponse,
+  updatePasswordMiddleware.validateFields,
+  updatePasswordMiddleware.findUserUpdatePassword,
+  updatePasswordMiddleware.verifyCurrentPassword,
+  updatePasswordMiddleware.changePasswordUser,
+  updatePasswordMiddleware.createAndSendToken,
+  updatePasswordMiddleware.sendEmail,
+  updatePasswordMiddleware.createAdminNotification,
+  updatePasswordMiddleware.createUserNotification,
+  updatePasswordMiddleware.generateResponse,
 ];
 
 /**
  * The update user profile middleware.
  */
 export const updateUserProfile = [
-  updateProfileServices.checkPasswordPresence,
-  updateProfileServices.filteredRequestBody,
-  updateProfileServices.findAndUpdateUserProfile,
-  updateProfileServices.createAndSendToken,
-  updateProfileServices.takeModifiedFields,
-  updateProfileServices.createUserNotification,
-  updateProfileServices.generateResponse,
+  updateProfileMiddleware.checkPasswordPresence,
+  updateProfileMiddleware.filteredRequestBody,
+  updateProfileMiddleware.findAndUpdateUserProfile,
+  updateProfileMiddleware.createAndSendToken,
+  updateProfileMiddleware.takeModifiedFields,
+  updateProfileMiddleware.createUserNotification,
+  updateProfileMiddleware.generateResponse,
 ];

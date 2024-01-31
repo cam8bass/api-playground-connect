@@ -1,6 +1,7 @@
 import { WarningMessageInterface } from "../interfaces";
 
 export const warningMessage:WarningMessageInterface = {
+  WARNING_ACCOUNT_DISABLED:"Le compte de l'utilisateur est désactivé. Il doit se reconnecter pour démarrer la procédure de réactivation du compte.",
   WARNING__EMAIL:
     "Une erreur s'est produite lors de l'envoi de l'e-mail à l'adresse spécifiée. Veuillez vérifier l'adresse e-mail que vous avez fournie et assurez-vous qu'elle est correcte. Si l'adresse e-mail est correcte et que le problème persiste, cela peut être dû à un problème avec notre service d'envoi d'e-mails.",
   WARNING__REQUIRE_FIELD:

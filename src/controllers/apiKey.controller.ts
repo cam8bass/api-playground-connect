@@ -1,78 +1,78 @@
 import {
-  apiKeyCreationRequestServices,
-  apiKeyRenewalRequestServices,
-  confirmRenewalApiKeyServices,
-  deleteSelectedApiKeyServices,
-  getMyApikeyServices,
-} from "../services/apiKey";
+  apiKeyCreationRequestMiddleware,
+  apiKeyRenewalRequestMiddleware,
+  confirmRenewalApiKeyMiddleware,
+  deleteSelectedApiKeyMiddleware,
+  getMyApikeyMiddleware,
+} from "../middlewares/apiKey";
 
 /**
  * Get user api key middleware
  */
 export const getMyApikey = [
-  getMyApikeyServices.findApiKeys,
-  getMyApikeyServices.generateReponse,
+  getMyApikeyMiddleware.findApiKeys,
+  getMyApikeyMiddleware.generateReponse,
 ];
 
 /**
  * user api key creation request middleware
  */
 export const apiKeyCreationRequest = [
-  apiKeyCreationRequestServices.verifyField,
-  apiKeyCreationRequestServices.findUserAndCheckApiKeys,
-  apiKeyCreationRequestServices.findAndUpdateNewApiKey,
-  apiKeyCreationRequestServices.searchIdNewApi,
-  apiKeyCreationRequestServices.sendEmail,
-  apiKeyCreationRequestServices.createAdminNotificationIfErrorSendEmail,
-  apiKeyCreationRequestServices.findAndDeleteApiKeyIfNotSendEmail,
-  apiKeyCreationRequestServices.findAndDeleteDocumentIfLastApiKey,
-  apiKeyCreationRequestServices.generateErrorIfNotSendEmail,
-  apiKeyCreationRequestServices.createAdminNotification,
-  apiKeyCreationRequestServices.createUserNotification,
-  apiKeyCreationRequestServices.generateResponse,
+  apiKeyCreationRequestMiddleware.verifyField,
+  apiKeyCreationRequestMiddleware.findUserAndCheckApiKeys,
+  apiKeyCreationRequestMiddleware.findAndUpdateNewApiKey,
+  apiKeyCreationRequestMiddleware.searchIdNewApi,
+  apiKeyCreationRequestMiddleware.sendEmail,
+  apiKeyCreationRequestMiddleware.createAdminNotificationIfErrorSendEmail,
+  apiKeyCreationRequestMiddleware.findAndDeleteApiKeyIfNotSendEmail,
+  apiKeyCreationRequestMiddleware.findAndDeleteDocumentIfLastApiKey,
+  apiKeyCreationRequestMiddleware.generateErrorIfNotSendEmail,
+  apiKeyCreationRequestMiddleware.createAdminNotification,
+  apiKeyCreationRequestMiddleware.createUserNotification,
+  apiKeyCreationRequestMiddleware.generateResponse,
 ];
 
 /**
  * api key renewal request middleware
  */
 export const apiKeyRenewalRequest = [
-  apiKeyRenewalRequestServices.createResetToken,
-  apiKeyRenewalRequestServices.findAndUpdateRenewalApiKey,
-  apiKeyRenewalRequestServices.createResetUrlWithResetToken,
-  apiKeyRenewalRequestServices.sendEmail,
-  apiKeyRenewalRequestServices.createAdminNotification,
-  apiKeyRenewalRequestServices.findAndUpdateRenewalToken,
-  apiKeyRenewalRequestServices.generateErrorIfNotSendEmail,
-  apiKeyRenewalRequestServices.createUserNotification,
-  apiKeyRenewalRequestServices.generateResponse,
+  apiKeyRenewalRequestMiddleware.createResetToken,
+  apiKeyRenewalRequestMiddleware.findAndUpdateRenewalApiKey,
+  apiKeyRenewalRequestMiddleware.createResetUrlWithResetToken,
+  apiKeyRenewalRequestMiddleware.sendEmail,
+  apiKeyRenewalRequestMiddleware.createAdminNotification,
+  apiKeyRenewalRequestMiddleware.findAndUpdateRenewalToken,
+  apiKeyRenewalRequestMiddleware.generateErrorIfNotSendEmail,
+  apiKeyRenewalRequestMiddleware.createUserNotification,
+  apiKeyRenewalRequestMiddleware.generateResponse,
 ];
 
 /**
  * user confirm renewal api key middleware
  */
 export const confirmRenewalApiKey = [
-  confirmRenewalApiKeyServices.verifyFields,
-  confirmRenewalApiKeyServices.findUser,
-  confirmRenewalApiKeyServices.checkUserPassword,
-  confirmRenewalApiKeyServices.createRenewalToken,
-  confirmRenewalApiKeyServices.createNewApiKey,
-  confirmRenewalApiKeyServices.createNewApiKeyHash,
-  confirmRenewalApiKeyServices.findAndUpdateRenewalApiKey,
-  confirmRenewalApiKeyServices.sendEmail,
-  confirmRenewalApiKeyServices.createAdminNotification,
-  confirmRenewalApiKeyServices.createUserNotification,
-  confirmRenewalApiKeyServices.generateResponse,
+  confirmRenewalApiKeyMiddleware.verifyFields,
+  confirmRenewalApiKeyMiddleware.findUser,
+  confirmRenewalApiKeyMiddleware.checkUserPassword,
+  confirmRenewalApiKeyMiddleware.createRenewalToken,
+  confirmRenewalApiKeyMiddleware.createNewApiKey,
+  confirmRenewalApiKeyMiddleware.createNewApiKeyHash,
+  confirmRenewalApiKeyMiddleware.findAndUpdateRenewalApiKey,
+  confirmRenewalApiKeyMiddleware.sendEmail,
+  confirmRenewalApiKeyMiddleware.createAdminNotification,
+  confirmRenewalApiKeyMiddleware.createUserNotification,
+  confirmRenewalApiKeyMiddleware.generateResponse,
 ];
 
 /**
  * Deleting a selected API key middleware
  */
 export const deleteSelectedApiKey = [
-  deleteSelectedApiKeyServices.defineIdUser,
-  deleteSelectedApiKeyServices.checkIdUserForAdmin,
-  deleteSelectedApiKeyServices.findApiKeyAndUpdate,
-  deleteSelectedApiKeyServices.checkAndDeleteIfLastApiKey,
-  deleteSelectedApiKeyServices.createUserNotification,
-  deleteSelectedApiKeyServices.generateResponse,
+  deleteSelectedApiKeyMiddleware.defineIdUser,
+  deleteSelectedApiKeyMiddleware.checkIdUserForAdmin,
+  deleteSelectedApiKeyMiddleware.findApiKeyAndUpdate,
+  deleteSelectedApiKeyMiddleware.checkAndDeleteIfLastApiKey,
+  deleteSelectedApiKeyMiddleware.createUserNotification,
+  deleteSelectedApiKeyMiddleware.generateResponse,
 ];
 

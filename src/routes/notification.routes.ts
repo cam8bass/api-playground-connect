@@ -5,8 +5,9 @@ const router = Router();
 
 router.use(
   authController.protect,
-  authController.accountIsActive,
-  authController.accountIsLocked
+  authController.checkAccountActive,
+  authController.checkAccountLocked,
+  authController.checkAccountDisabled
 );
 
 router.get("/myNotifications", notificationController.getMyNotification);
@@ -29,6 +30,11 @@ router.patch(
 router.patch(
   "/deleteSelectedNotification/:idNotification",
   notificationController.deleteSelectedNotification
+);
+
+router.patch(
+  "/updateViewNotification/:idNotification",
+  notificationController.updateViewNotification
 );
 
 export default router;

@@ -7,15 +7,17 @@ const router = Router({ mergeParams: true });
 // API KEY CONFIRM RENEWAL
 router.patch(
   "/confirmRenewal/:token",
-  authController.accountIsActive,
-  authController.accountIsLocked,
+  authController.findUserAccount,
+  authController.checkAccountActive,
+  authController.checkAccountLocked,
   apiKeyController.confirmRenewalApiKey
 );
 
 router.use(
   authController.protect,
-  authController.accountIsActive,
-  authController.accountIsLocked,
+  authController.checkAccountActive,
+  authController.checkAccountLocked,
+  authController.checkAccountDisabled,
   authController.restrictTo("user")
 );
 

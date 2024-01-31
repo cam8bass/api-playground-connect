@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { notificationMessageInterface } from "../interfaces";
 
 export const notificationMessage: notificationMessageInterface = {
+  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT:"Nous avons rencontré une erreur lors de l'envoi de l'e-mail de réactivation du compte. Les administrateurs ont été notifiés. Malgré cela, votre compte est désormais activé. Nous sommes ravis de vous accueillir à nouveau.", 
+  NOTIFICATION_UNLOCK_USER_ACCOUNT: "Votre compte a été débloqué avec succès ",
   NOTIFICATION_ADMIN_SUCCESS_DELETE_SELECTED_APIKEY:
     "La clé d'api a été supprimée avec succès",
   NOTIFICATION_ADMIN_CREATE_AND_ACTIVE_APIKEY:
@@ -20,8 +22,9 @@ export const notificationMessage: notificationMessageInterface = {
     "L'ensemble des clés d'API de l'utilisateur ont été supprimées avec succès",
   NOTIFICATION_DELETE_NOTIFICATION:
     "L'ensemble des notifications a été supprimé avec succès",
-  NOTIFICATION_SUCCESS_CREATE_ACCOUNT:
-    "Votre compte a bien été créé. Veuillez vous connecter à la page de connexion avec vos identifiants pour commencer la procédure d'activation du compte.",
+  NOTIFICATION_USER_REACTIVATED_ACCOUNT:
+    "Heureux de vous revoir, votre compte a été réactivé avec succès",
+
   NOTIFICATION_SENT_EMAIL_DELETE_ACCOUNT:
     "Une erreur est survenue lors de l'envoi de l'e-mail de notification de suppression de compte. Cependant, la suppression du compte a bien été prise en compte.",
   NOTIFICATION_SENT_EMAIL_ACTIVATION_ACCOUNT:
@@ -36,8 +39,12 @@ export const notificationMessage: notificationMessageInterface = {
     "Nous sommes désolés, mais une erreur s'est produite lors de l'envoi de l'e-mail de notification pour le changement de votre mot de passe. Cependant, nous tenons à vous assurer que la modification a été enregistrée avec succès. Nous nous excusons pour ce désagrément.",
   NOTIFICATION_ADMIN_REFUSAL_API_KEY:
     "Le refus d'activation de la clé d'API a été effectué avec succès.",
+
+    NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION: (userEmail: string): string =>
+    `Un nouvel e-mail de confirmation concernant l'activation de votre compte a été envoyé à ${userEmail}. Veuillez vérifier votre boîte de réception.
+    `,
   NOTIFICATION_SENT_EMAIL_ACTIVATION: (userEmail: string): string =>
-    `Un email de confirmation concernant l'activation de votre compte a été envoyé à ${userEmail}. Veuillez vérifier votre boîte de réception.`,
+    `Votre compte a bien été créé. Un email de confirmation concernant l'activation de votre compte a été envoyé à ${userEmail}. Veuillez vérifier votre boîte de réception.`,
   NOTIFICATION_SENT_EMAIL_RESET_PASSWORD: (userEmail: string): string =>
     `Un email de confirmation concernant la réinitialisation de votre mot de passe a été envoyé à ${userEmail}. Veuillez vérifier votre boîte de réception.`,
   NOTIFICATION_FIELDS_MODIFIED: (fields: object): string =>
@@ -73,5 +80,5 @@ export const notificationMessage: notificationMessageInterface = {
     idApi: Types.ObjectId;
   }): string => `
   L'utilisateur ${user.idUser} possédant l'adresse e-mail ${user.email} a soumis une demande de création de clé pour l'API ${user.idApi} - ${user.apiName}.
-  `
+  `,
 };

@@ -1,6 +1,7 @@
 import { Types } from "mongoose";
 
 export interface ErrorMessageInterface {
+  ERROR_ACCOUNT_DISABLED: string;
   ERROR_EMPTY_USER_MODIFICATION: string;
   ERROR_PAGE_NOT_FOUND: string;
   ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE: string;
@@ -49,6 +50,7 @@ export interface ValidationMessageInterface {
 }
 
 export interface WarningMessageInterface {
+  WARNING_ACCOUNT_DISABLED: string;
   WARNING__EMAIL: string;
   WARNING__REQUIRE_FIELD: string;
   WARNING_INVALID_FIELD: string;
@@ -63,6 +65,8 @@ export interface WarningMessageInterface {
 }
 
 export interface notificationMessageInterface {
+  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT: string;
+  NOTIFICATION_UNLOCK_USER_ACCOUNT: string;
   NOTIFICATION_ADMIN_SUCCESS_DELETE_SELECTED_APIKEY: string;
   NOTIFICATION_DELETE_NOTIFICATION: string;
   NOTIFICATION_ADMIN_CREATE_USER: string;
@@ -78,7 +82,7 @@ export interface notificationMessageInterface {
   NOTIFICATION_SENT_EMAIL_ACTIVATION_ACCOUNT: string;
   NOTIFICATION_SENT_EMAIL_API_KEY: string;
   NOTIFICATION_SENT_EMAIL_CHANGED: string;
-  NOTIFICATION_SUCCESS_CREATE_ACCOUNT: string;
+  NOTIFICATION_USER_REACTIVATED_ACCOUNT: string;
   NOTIFICATION_DELETE_ACCOUNT: string;
   NOTIFICATION_DELETE_USER_APIKEYS: string;
   NOTIFICATION_SENT_EMAIL_ACTIVATION: (userEmail: string) => string;
@@ -106,4 +110,6 @@ export interface notificationMessageInterface {
     apiName: string;
     idApi: Types.ObjectId;
   }) => string;
+
+  NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION: (userEmail: string) => string;
 }

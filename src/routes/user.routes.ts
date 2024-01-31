@@ -10,38 +10,52 @@ router.post("/signup", userController.signUp);
 
 router.get("/me", userController.getMe);
 
-// FORGOT PASSWORD
-router.post("/forgotPassword", userController.forgotPassword);
+// RESET PASSWORD
+router.patch(
+  "/resetPassword/:token",
+  authController.findUserAccount,
+  authController.checkAccountLocked,
+  userController.resetPassword
+);
 
-router.use(authController.accountIsLocked);
+// RESET EMAIL
+router.patch(
+  "/resetEmail/:token",
+  authController.findUserAccount,
+  authController.checkAccountLocked,
+  userController.confirmChangeEmail
+);
+
+// FORGOT PASSWORD
+router.post(
+  "/forgotPassword",
+  authController.findUserAccount,
+  authController.checkAccountLocked,
+  userController.forgotPassword
+);
+
 // ACTIVATION ACCOUNT
 router.patch(
   "/activationAccount/:token",
+  authController.findUserAccount,
+  authController.checkAccountLocked,
   userController.confirmActivationAccount
 );
 
 // LOGIN
 router.post("/login", userController.login);
 
-// RESET PASSWORD
-router.patch("/resetPassword/:token", userController.resetPassword);
-
-// RESET EMAIL
-router.patch("/resetEmail/:token", userController.confirmChangeEmail);
-
 // === NEED AUTH ===
 
 router.use(
   authController.protect,
-  authController.accountIsActive,
-  authController.accountIsLocked
+  authController.checkAccountActive,
+  authController.checkAccountLocked,
+  authController.checkAccountDisabled
 );
 
 // UPDATE PASSWORD
 router.patch("/updatePassword", userController.updatePassword);
-
-// GET ME
-// router.get("/me", userController.getMe);
 
 // UPDATE USER PROFILE
 router.patch("/updateProfile", userController.updateUserProfile);

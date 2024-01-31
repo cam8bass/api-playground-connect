@@ -1,43 +1,57 @@
-import * as factory from "./factory.controller";
+import * as factory from "../middlewares/factory";
 import Notification from "../models/notification.model";
 import {
-  getMyNotificationServices,
-  updateNotificationServices,
-  updateAllNotificationServices,
-  deleteSelectedNotificationServices,
-} from "../services/notification";
+  getMyNotificationMiddleware,
+  updateNotificationMiddleware,
+  updateAllNotificationMiddleware,
+  deleteSelectedNotificationMiddleware,
+  updateViewNotificationMiddleware,
+
+} from "../middlewares/notification";
 
 // /**
 //  * Get current user notification middleware
 //  */
 export const getMyNotification = [
-  getMyNotificationServices.findNotification,
-  getMyNotificationServices.generateResponse,
+  getMyNotificationMiddleware.findNotification,
+  getMyNotificationMiddleware.generateResponse,
 ];
 
 /**
  * Update read status of a notification middleware
  */
 export const updateNotification = [
-  updateNotificationServices.findAndUpdateNotification,
-  updateNotificationServices.generateResponse,
+  updateNotificationMiddleware.findAndUpdateNotification,
+  updateNotificationMiddleware.generateResponse,
 ];
 
 /**
  * Update all notification middleware
  */
 export const updateAllNotification = [
-  updateAllNotificationServices.findAndUpdateAllNotification,
-  updateAllNotificationServices.generateResponse,
+  updateAllNotificationMiddleware.findAndUpdateAllNotification,
+  updateAllNotificationMiddleware.generateResponse,
 ];
 
 /**
  * An array of middleware functions that delete a selected notification and generate a response.
  */
 export const deleteSelectedNotification = [
-  deleteSelectedNotificationServices.findAndDeleteSelectedNotification,
-  deleteSelectedNotificationServices.generateResponse,
+  deleteSelectedNotificationMiddleware.findAndDeleteSelectedNotification,
+  deleteSelectedNotificationMiddleware.generateResponse,
 ];
+
+/**
+ * @description
+ * Update view status of a notification
+ */
+
+export const updateViewNotification = [
+  updateViewNotificationMiddleware.findAndUpdateNotification,
+  updateViewNotificationMiddleware.generateResponse,
+];
+
+
 
 export const getAllNotifications = factory.getAll(Notification);
 

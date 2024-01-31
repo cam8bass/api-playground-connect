@@ -8,8 +8,9 @@ const router = Router();
 
 router.use(
   authController.protect,
-  authController.accountIsActive,
-  authController.accountIsLocked,
+  authController.checkAccountActive,
+  authController.checkAccountLocked,
+  authController.checkAccountDisabled,
   authController.restrictTo("admin")
 );
 router.get("/getUserApiKeys/:idUser", adminController.getSelectedUserApiKeys);

@@ -1,6 +1,7 @@
 import { Query, Schema, model } from "mongoose";
 import {
   CustomQuery,
+  NotificationDetailInterface,
   NotificationInterface,
   NotificationModelInterface,
 } from "../shared/interfaces";
@@ -74,11 +75,20 @@ const notificationSchema = new Schema<
           message: validationMessage.VALIDATE_FIELD("un type de notification"),
           required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("type")],
         },
+        view: {
+          type: Boolean,
+          default: false,
+          validate: [
+            validator.isBoolean,
+            validationMessage.VALIDATE_FIELD("une valeur booléenne"),
+          ],
+        },
       },
     ],
   },
   {
     id: false,
+    timestamps:true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -94,17 +104,17 @@ notificationSchema.pre<
 });
 
 /**
- * Creates a new notification for a user.
- * @param {ObjectId} idUser - The id of the user to create the notification for.
- * @param {notificationType} type - The type of notification to create.
- * @param {string} message - The message of the notification.
+ * Creates a new notification for a given user
+ * @param {Types.ObjectId} idUser - The id of the user to create the notification for
+ * @param {notificationType} type - The type of notification to create
+ * @param {string} message - The message of the notification
+ * @returns {Promise<NotificationDetailInterface | null>} - The created notification, or null if there was an error
  */
-
 notificationSchema.statics.createNotification = async function (
   idUser: Types.ObjectId,
   type: notificationType,
   message: string
-): Promise<NotificationInterface | null> {
+): Promise<NotificationDetailInterface | null> {
   // TODO: A voir pour améliorer
   if (!message || !type || !idUser) return null;
 
@@ -121,10 +131,8 @@ notificationSchema.statics.createNotification = async function (
     { upsert: true, new: true }
   );
 
-  return notification;
+  return notification.notifications.pop() ?? null;
 };
-
-// TODO: A VOIR
 notificationSchema.statics.searchAndSendAdminNotification = async function (
   type: notificationType,
   message: string

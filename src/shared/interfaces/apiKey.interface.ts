@@ -1,7 +1,6 @@
 import { Document, Types } from "mongoose";
 import { apiNameType } from "../types/types";
 
-
 export interface ApiKeyInterface extends Document {
   user: {
     _id: Types.ObjectId;
@@ -9,6 +8,7 @@ export interface ApiKeyInterface extends Document {
   };
   apiKeys: [KeyInterface];
   createAt: Date;
+  updateAt: Date;
   _id: Types.ObjectId;
 
   // METHODS

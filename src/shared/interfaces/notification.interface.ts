@@ -5,6 +5,8 @@ export interface NotificationInterface extends Document {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   notifications: NotificationDetailInterface[];
+  createAt: Date;
+  updateAt: Date;
 }
 
 export interface NotificationModelInterface
@@ -13,7 +15,7 @@ export interface NotificationModelInterface
     idUser: Types.ObjectId,
     type: notificationType,
     message: string
-  ): Promise<NotificationInterface>;
+  ): Promise<NotificationDetailInterface>;
   searchAndSendAdminNotification(
     type: notificationType,
     message: string
@@ -27,4 +29,5 @@ export interface NotificationDetailInterface {
   createAt: Date;
   readAt: Date;
   _id: Types.ObjectId;
+  view: boolean;
 }

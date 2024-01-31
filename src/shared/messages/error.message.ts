@@ -2,6 +2,8 @@ import { Types } from "mongoose";
 import { ErrorMessageInterface } from "../interfaces";
 
 export const errorMessage: ErrorMessageInterface = {
+  ERROR_ACCOUNT_DISABLED:
+    "Votre compte est désactivé. Pour le réactiver, veuillez vous reconnecter à votre compte.",
   ERROR_EMPTY_USER_MODIFICATION:
     "Désolé, mais aucune modification n'a été prise en compte. Veuillez saisir des champs valides pour effectuer des modifications.",
   ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE:
@@ -64,7 +66,7 @@ export const errorMessage: ErrorMessageInterface = {
   ERROR_SEND_EMAIL: (
     action: string,
     idUser: Types.ObjectId,
-    email: string,
+    email: string
   ) => `Une erreur s'est produite lors de l'envoi de l'e-mail relatif à l'action suivante : ${action} pour l'utilisateur ${idUser} identifié par l'adresse e-mail ${email}.
   `,
 };

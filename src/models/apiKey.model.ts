@@ -4,51 +4,53 @@ import { apiNameType } from "../shared/types/types";
 import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import { validationMessage } from "../shared/messages";
 
-const apiKeySchema = new Schema<ApiKeyInterface>({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User",
-    required: [true, validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur")],
-    unique: true,
-  },
-  apiKeys: [
-    {
-      apiName: {
-        type: String,
-        enum: {
-          values: ["Api-travel", "Api-test1", "Api-test2"],
-          message: validationMessage.VALIDATE_FIELD("un nom d'API"),
-        },
-        trim: true,
-        required: [
-          true,
-          validationMessage.VALIDATE_REQUIRED_FIELD("nom de l'api"),
-        ],
-      },
-      apiKey: {
-        type: String,
-        unique: true,
-        trim: true,
-      },
-      apiKeyExpire: {
-        type: Date,
-        trim: true,
-        default: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
-      },
-      active: {
-        type: Boolean,
-        default: false,
-      },
-      renewalToken: { type: String },
-      renewalTokenExpire: { type: Date },
-      createAt: { type: Date, default: Date.now() },
+const apiKeySchema = new Schema<ApiKeyInterface>(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [
+        true,
+        validationMessage.VALIDATE_REQUIRED_FIELD("utilisateur"),
+      ],
+      unique: true,
     },
-  ],
-  createAt: {
-    type: Date,
-    default: Date.now(),
+    apiKeys: [
+      {
+        apiName: {
+          type: String,
+          enum: {
+            values: ["Api-travel", "Api-test1", "Api-test2"],
+            message: validationMessage.VALIDATE_FIELD("un nom d'API"),
+          },
+          trim: true,
+          required: [
+            true,
+            validationMessage.VALIDATE_REQUIRED_FIELD("nom de l'api"),
+          ],
+        },
+        apiKey: {
+          type: String,
+          unique: true,
+          trim: true,
+        },
+        apiKeyExpire: {
+          type: Date,
+          trim: true,
+          default: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+        },
+        active: {
+          type: Boolean,
+          default: false,
+        },
+        renewalToken: { type: String },
+        renewalTokenExpire: { type: Date },
+        createAt: { type: Date, default: new Date(Date.now()) },
+      },
+    ],
   },
-});
+  { timestamps: true }
+);
 
 apiKeySchema.post(/^find/, async function (docs: ApiKeyInterface[]) {
   if (!Array.isArray(docs)) {
