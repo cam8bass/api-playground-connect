@@ -3,11 +3,18 @@ import nodemailer, { TransportOptions, Transporter } from "nodemailer";
 import { MailOptions } from "nodemailer/lib/stream-transport";
 import client from "../../infisical";
 
-export default class EmailManager {
+export  class EmailManager {
   private transporter: Transporter;
   private emailUsername: string;
   private emailPassword: string;
 
+  /**
+   * Sets up the email transporter.
+   *
+   * This function retrieves the email username and password from AWS Secrets Manager and sets up the Nodemailer transporter.
+   *
+   * @async
+   */
   private async setupTransporter() {
     if (!this.emailUsername) {
       const { secretValue } = await client.getSecret("EMAIL_USERNAME");
@@ -29,6 +36,12 @@ export default class EmailManager {
     } as TransportOptions);
   }
 
+  /**
+   * Sends an email using the configured transporter.
+   *
+   * @param {SendEmailOptionsInterface} options - The options for the email, including the recipients, subject, and body text.
+  
+   */
   private async sendEmail(options: SendEmailOptionsInterface) {
     if (!this.transporter) {
       await this.setupTransporter();
@@ -61,6 +74,12 @@ export default class EmailManager {
     `;
   };
 
+  /**
+   * Sends an email using the configured transporter.
+   *
+   * @param {SendEmailOptionsInterface} options - The options for the email, including the recipients, subject, and body text.
+   * @returns {Promise<boolean>} A promise that resolves to a boolean indicating whether the email was sent successfully.
+   */
   public static async send(
     options: SendEmailOptionsInterface
   ): Promise<boolean> {

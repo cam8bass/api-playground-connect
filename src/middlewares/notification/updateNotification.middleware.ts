@@ -1,9 +1,8 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import Notification from "../../models/notification.model";
-import { NotificationInterface, UserInterface } from "../../shared/interfaces";
+import { UserInterface, NotificationInterface } from "../../shared/interfaces";
+import { catchAsync, jsonResponse } from "../../shared/utils";
+import { Notification } from "../../models";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -19,7 +18,7 @@ interface CustomRequestInterface extends Request {
 export const findAndUpdateNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { idNotification } = req.params;
-    const {  currentUser } = req;
+    const { currentUser } = req;
     const updatedNotification = await Notification.findOneAndUpdate(
       {
         user: new Types.ObjectId(currentUser._id),
@@ -32,7 +31,7 @@ export const findAndUpdateNotification = catchAsync(
       {
         $set: {
           "notifications.$.read": true,
-          "notifications.$.view":true,
+          "notifications.$.view": true,
           "notifications.$.readAt": new Date(Date.now()),
         },
       },
@@ -57,5 +56,3 @@ export const generateResponse = catchAsync(
     res.status(200).json(jsonResponse({ data: updatedNotification }));
   }
 );
-
-

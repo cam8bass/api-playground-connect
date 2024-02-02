@@ -2,6 +2,9 @@ import mongoose from "mongoose";
 import { nodeEnv } from "../types/types";
 import client from "../../infisical";
 
+/**
+ * @description Connects to the MongoDB database using the provided connection string and options.
+ */
 async function connectToDB(): Promise<void> {
   try {
     const { secretValue: DATABASE } = await client.getSecret("DATABASE");

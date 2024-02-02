@@ -15,7 +15,8 @@ router.use(
 );
 router.get("/getUserApiKeys/:idUser", adminController.getSelectedUserApiKeys);
 router.get("/getInactiveApiKeys", adminController.getAllInactiveApiKeys);
-router.get("/dashboardUsers", adminController.getUsersStats);
+
+router.get("/getAllUserOverview", adminController.getAllUserOverview);
 
 // USER ROUTES
 

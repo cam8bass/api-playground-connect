@@ -1,23 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
 import { Types } from "mongoose";
-import ApiKey from "../../models/apiKey.model";
-import {
-  warningMessage,
-  errorMessage,
-  subjectEmail,
-  bodyEmail,
-} from "../../shared/messages";
+import { ApiKey,Notification } from "../../models";
+import { UserInterface, ApiKeyInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import AppError from "../../shared/utils/AppError.utils";
-import EmailManager from "../../shared/utils/EmailManager.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import Notification from "../../models/notification.model";
-import {
-  ApiKeyInterface,
-  NotificationDetailInterface,
-  UserInterface,
-} from "../../shared/interfaces";
+import { catchAsync, AppError, EmailManager, jsonResponse } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;

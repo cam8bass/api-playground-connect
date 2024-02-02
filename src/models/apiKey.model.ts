@@ -1,8 +1,10 @@
-import { Query, Schema, model } from "mongoose";
+import { Schema, Query, model } from "mongoose";
 import { ApiKeyInterface, CustomQuery } from "../shared/interfaces";
-import { apiNameType } from "../shared/types/types";
-import ApiKeyManager from "../shared/utils/createApiKey.utils";
 import { validationMessage } from "../shared/messages";
+import { apiNameType } from "../shared/types/types";
+import { ApiKeyManager } from "../shared/utils";
+
+
 
 const apiKeySchema = new Schema<ApiKeyInterface>(
   {
@@ -45,7 +47,7 @@ const apiKeySchema = new Schema<ApiKeyInterface>(
         },
         renewalToken: { type: String },
         renewalTokenExpire: { type: Date },
-        createAt: { type: Date, default: new Date(Date.now()) },
+        createdAt: { type: Date, default: new Date(Date.now()) },
       },
     ],
   },
@@ -94,6 +96,6 @@ apiKeySchema.methods.checkUserApiKeys = function (
   return true;
 };
 
-const ApiKey = model<ApiKeyInterface>("ApiKey", apiKeySchema);
+export const ApiKey = model<ApiKeyInterface>("ApiKey", apiKeySchema);
 
-export default ApiKey;
+

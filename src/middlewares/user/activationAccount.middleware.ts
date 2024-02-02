@@ -1,26 +1,11 @@
 import { NextFunction, Response, Request } from "express";
 import { Types } from "mongoose";
-import User from "../../models/user.model";
-import {
-  UserInterface,
-  NotificationDetailInterface,
-} from "../../shared/interfaces";
-import {
-  validationMessage,
-  warningMessage,
-  errorMessage,
-  subjectEmail,
-  bodyEmail,
-} from "../../shared/messages";
+import { User,Notification } from "../../models";
+import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { validationMessage, warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import AppError from "../../shared/utils/AppError.utils";
-import EmailManager from "../../shared/utils/EmailManager.utils";
-import { fieldErrorMessages } from "../../shared/utils/fieldErrorMessage.utils";
-import { formatUserResponse } from "../../shared/utils/formatResponse.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import { createHashRandomToken } from "../../shared/utils/reset.utils";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import Notification from "../../models/notification.model";
+import { catchAsync, fieldErrorMessages, AppError, createHashRandomToken, EmailManager, jsonResponse, formatUserResponse } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   token?: string;

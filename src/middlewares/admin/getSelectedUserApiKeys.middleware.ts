@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import ApiKey from "../../models/apiKey.model";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
+import { ApiKey } from "../../models";
 import { ApiKeyInterface } from "../../shared/interfaces";
+import { catchAsync, jsonResponse } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   apiKeys?: ApiKeyInterface;

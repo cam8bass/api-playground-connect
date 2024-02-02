@@ -1,8 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
 import { UserInterface } from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
-import AppError from "../../shared/utils/AppError.utils";
+import { catchAsync, AppError } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   currentUser: UserInterface;

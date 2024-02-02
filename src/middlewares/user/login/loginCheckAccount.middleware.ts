@@ -1,14 +1,9 @@
-import { NextFunction, Response, Request } from "express";
-import catchAsync from "../../../shared/utils/catchAsync.utils";
-import User from "../../../models/user.model";
+import { NextFunction, Request, Response } from "express";
+import { User } from "../../../models";
 import { UserInterface } from "../../../shared/interfaces";
-import {
-  validationMessage,
-  warningMessage,
-  errorMessage,
-} from "../../../shared/messages";
-import AppError from "../../../shared/utils/AppError.utils";
-import { fieldErrorMessages } from "../../../shared/utils/fieldErrorMessage.utils";
+import { validationMessage, warningMessage, errorMessage } from "../../../shared/messages";
+import { catchAsync, fieldErrorMessages, AppError } from "../../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;
@@ -115,4 +110,3 @@ export const updateLoginFailure = catchAsync(
     next();
   }
 );
-

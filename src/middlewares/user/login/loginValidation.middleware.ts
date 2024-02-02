@@ -1,12 +1,8 @@
 import { NextFunction, Response, Request } from "express";
-import catchAsync from "../../../shared/utils/catchAsync.utils";
 import { Types } from "mongoose";
-import {
-  NotificationDetailInterface,
-  UserInterface,
-} from "../../../shared/interfaces";
-import { formatUserResponse } from "../../../shared/utils/formatResponse.utils";
-import { jsonResponse } from "../../../shared/utils/jsonResponse.utils";
+import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
+import { catchAsync, jsonResponse, formatUserResponse } from "../../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;

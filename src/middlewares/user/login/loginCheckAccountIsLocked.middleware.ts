@@ -1,13 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../../shared/utils/catchAsync.utils";
-import Notification from "../../../models/notification.model";
-import {
-  NotificationDetailInterface,
-  UserInterface,
-} from "../../../shared/interfaces";
-import { notificationMessage } from "../../../shared/messages/notification.message";
+import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../../shared/messages";
-import AppError from "../../../shared/utils/AppError.utils";
+import { notificationMessage } from "../../../shared/messages/notification.message";
+import { catchAsync, AppError } from "../../../shared/utils";
+import { Notification } from "../../../models";
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;

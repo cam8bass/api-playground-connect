@@ -1,12 +1,12 @@
 import * as factory from "../middlewares/factory";
-import Notification from "../models/notification.model";
+import { Notification } from "../models";
 import {
   getMyNotificationMiddleware,
   updateNotificationMiddleware,
   updateAllNotificationMiddleware,
   deleteSelectedNotificationMiddleware,
   updateViewNotificationMiddleware,
-
+  deleteAllNotificationMiddleware,
 } from "../middlewares/notification";
 
 // /**
@@ -51,13 +51,14 @@ export const updateViewNotification = [
   updateViewNotificationMiddleware.generateResponse,
 ];
 
-
-
 export const getAllNotifications = factory.getAll(Notification);
 
 export const getNotification = factory.getOne(Notification);
 
-export const deleteAllNotifications = factory.deleteOne(
-  Notification,
-  "notification"
-);
+/**
+ * Delete all notifications to user middleware
+ */
+export const deleteAllNotification = [
+  deleteAllNotificationMiddleware.findAndDeleteAllUserNotifications,
+  deleteAllNotificationMiddleware.generateResponse,
+];

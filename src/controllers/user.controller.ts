@@ -179,17 +179,6 @@ export const signUp = [
   signupMiddleware.generateResponse,
 ];
 
-// FIXME: OLD VERSION
-// /**
-//  * The sign up middleware array
-//  */
-// export const signUp = [
-//   signupMiddleware.filteredBody,
-//   signupMiddleware.createUser,
-//   signupMiddleware.createUserNotification,
-//   signupMiddleware.generateResponse,
-// ];
-
 /**
  * Export update password middleware
  */

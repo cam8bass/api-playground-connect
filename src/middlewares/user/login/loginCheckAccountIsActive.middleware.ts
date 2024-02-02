@@ -1,21 +1,9 @@
 import { NextFunction, Response, Request } from "express";
-import catchAsync from "../../../shared/utils/catchAsync.utils";
-import Notification from "../../../models/notification.model";
-import {
-  NotificationDetailInterface,
-  UserInterface,
-} from "../../../shared/interfaces";
-import {
-  warningMessage,
-  errorMessage,
-  subjectEmail,
-  bodyEmail,
-} from "../../../shared/messages";
+import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
+import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../../shared/messages";
 import { notificationMessage } from "../../../shared/messages/notification.message";
-import AppError from "../../../shared/utils/AppError.utils";
-import EmailManager from "../../../shared/utils/EmailManager.utils";
-import { createResetRandomToken } from "../../../shared/utils/reset.utils";
-import { jsonResponse } from "../../../shared/utils/jsonResponse.utils";
+import { catchAsync, AppError, createResetRandomToken, EmailManager, jsonResponse } from "../../../shared/utils";
+import { Notification } from "../../../models";
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;

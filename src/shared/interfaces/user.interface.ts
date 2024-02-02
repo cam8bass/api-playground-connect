@@ -29,8 +29,8 @@ export interface UserInterface extends Document {
 
   role: userRoleType;
   loginFailures: number;
-  createAt: Date;
-  updateAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 
   // METHODS
 

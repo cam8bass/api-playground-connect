@@ -1,13 +1,13 @@
-import { Types, Schema, model, Query } from "mongoose";
-import { CustomQuery, UserInterface } from "../shared/interfaces";
+import { CookieOptions } from "express";
+import { Schema, Query, Types, model } from "mongoose";
 import validator from "validator";
+import client from "../infisical";
+import { UserInterface, CustomQuery } from "../shared/interfaces";
+import { validationMessage } from "../shared/messages";
+import { userRoleType, nodeEnv,resetType } from "../shared/types/types";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { nodeEnv, resetType, userRoleType } from "../shared/types/types";
-import { CookieOptions, Request, Response } from "express";
-
-import client from "../infisical";
-import { validationMessage } from "../shared/messages";
+import { Response, Request } from "express";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -332,8 +332,6 @@ userSchema.methods.updateLoginFailure = async function (
   await this.save({ validateBeforeSave: false });
 };
 
-
-
 /**
  * Checks if the user's password was changed after the given timestamp.
  * @param {number} tokenTimestamp - The timestamp of the password change token.
@@ -406,6 +404,4 @@ userSchema.methods.changeUserPassword = async function (
   await this.save();
 };
 
-const User = model<UserInterface>("User", userSchema);
-
-export default User;
+export const User = model<UserInterface>("User", userSchema);

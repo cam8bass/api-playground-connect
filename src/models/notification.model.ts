@@ -1,15 +1,14 @@
-import { Query, Schema, model } from "mongoose";
+import { Schema, Query, Types, model } from "mongoose";
+import validator from "validator";
 import {
-  CustomQuery,
-  NotificationDetailInterface,
   NotificationInterface,
   NotificationModelInterface,
+  CustomQuery,
+  NotificationDetailInterface,
 } from "../shared/interfaces";
 import { validationMessage } from "../shared/messages";
-import validator from "validator";
 import { notificationType } from "../shared/types/types";
-import { Types } from "mongoose";
-import User from "./user.model";
+import { User } from "./user.model";
 
 const notificationSchema = new Schema<
   NotificationInterface,
@@ -45,7 +44,7 @@ const notificationSchema = new Schema<
             validationMessage.VALIDATE_ONLY_STRING("message"),
           ],
         },
-        createAt: {
+        createdAt: {
           type: Date,
           default: Date.now(),
           validate: [
@@ -88,7 +87,7 @@ const notificationSchema = new Schema<
   },
   {
     id: false,
-    timestamps:true,
+    timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   }
@@ -146,9 +145,7 @@ notificationSchema.statics.searchAndSendAdminNotification = async function (
   });
 };
 
-const Notification = model<NotificationInterface, NotificationModelInterface>(
-  "Notification",
-  notificationSchema
-);
-
-export default Notification;
+export const Notification = model<
+  NotificationInterface,
+  NotificationModelInterface
+>("Notification", notificationSchema);

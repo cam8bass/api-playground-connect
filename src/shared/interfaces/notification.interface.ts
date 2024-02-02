@@ -5,8 +5,8 @@ export interface NotificationInterface extends Document {
   _id: Types.ObjectId;
   user: Types.ObjectId;
   notifications: NotificationDetailInterface[];
-  createAt: Date;
-  updateAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export interface NotificationModelInterface
@@ -26,7 +26,7 @@ export interface NotificationDetailInterface {
   type: notificationType;
   message: string;
   read: boolean;
-  createAt: Date;
+  createdAt: Date;
   readAt: Date;
   _id: Types.ObjectId;
   view: boolean;

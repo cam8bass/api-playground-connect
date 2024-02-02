@@ -1,7 +1,7 @@
-import { Response } from "express";
 import { AppErrorInterface } from "../shared/interfaces";
-import AppError from "../shared/utils/AppError.utils";
 import { errorMessage } from "../shared/messages";
+import { AppError } from "../shared/utils";
+import { Response } from "express";
 
 export const handleCastError = (err: any): AppError => {
   const url = `Désolé, une erreur est survenue. L'url attend une donnée de type ${err.path}. Veuillez vérifier: ${err.value} ou essayer une autre requête`;

@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import ApiKey from "../../models/apiKey.model";
-import User from "../../models/user.model";
+import { User, ApiKey, Notification } from "../../models";
 import {
+  UserInterface,
   ApiKeyInterface,
   NotificationDetailInterface,
-  UserInterface,
 } from "../../shared/interfaces";
 import {
   errorMessage,
@@ -14,13 +12,15 @@ import {
   bodyEmail,
 } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import AppError from "../../shared/utils/AppError.utils";
-import EmailManager from "../../shared/utils/EmailManager.utils";
-import ApiKeyManager from "../../shared/utils/createApiKey.utils";
-import { fieldErrorMessages } from "../../shared/utils/fieldErrorMessage.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import { createHashRandomToken } from "../../shared/utils/reset.utils";
-import Notification from "../../models/notification.model";
+import {
+  catchAsync,
+  fieldErrorMessages,
+  AppError,
+  createHashRandomToken,
+  ApiKeyManager,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;
@@ -180,7 +180,7 @@ export const findAndUpdateRenewalApiKey = catchAsync(
       {
         $set: {
           "apiKeys.$.apiKey": newApiKeyHash,
-          "apiKeys.$.createAt": new Date(Date.now()),
+          "apiKeys.$.createdAt": new Date(Date.now()),
           "apiKeys.$.apiKeyExpire": new Date(
             Date.now() + 365 * 24 * 60 * 60 * 1000
           ),

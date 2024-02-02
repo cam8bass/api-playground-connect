@@ -1,12 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import client from "../../infisical";
-import User from "../../models/user.model";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import { warningMessage, errorMessage } from "../../shared/messages";
-import AppError from "../../shared/utils/AppError.utils";
-
 import { UserInterface } from "../../shared/interfaces";
+import client from "../../infisical";
+import { User } from "../../models";
+import { warningMessage, errorMessage } from "../../shared/messages";
+import { catchAsync, AppError } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;

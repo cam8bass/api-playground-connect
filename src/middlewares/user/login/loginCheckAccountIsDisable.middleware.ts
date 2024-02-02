@@ -1,18 +1,10 @@
-import { NextFunction, Response, Request } from "express";
-import catchAsync from "../../../shared/utils/catchAsync.utils";
-import Notification from "../../../models/notification.model";
-import User from "../../../models/user.model";
-import {
-  NotificationDetailInterface,
-  UserInterface,
-} from "../../../shared/interfaces";
-import {
-  errorMessage,
-  subjectEmail,
-  bodyEmail,
-} from "../../../shared/messages";
-import EmailManager from "../../../shared/utils/EmailManager.utils";
+import { NextFunction } from "express";
+import { User,Notification } from "../../../models";
+import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
+import { subjectEmail, bodyEmail, errorMessage } from "../../../shared/messages";
 import { notificationMessage } from "../../../shared/messages/notification.message";
+import { catchAsync, EmailManager } from "../../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;
@@ -113,7 +105,7 @@ export const createUserNotification = catchAsync(
         notification = await Notification.createNotification(
           user._id,
           "fail",
-          notificationMessage.ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT
+          errorMessage.ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT
         );
       } else {
         notification = await Notification.createNotification(

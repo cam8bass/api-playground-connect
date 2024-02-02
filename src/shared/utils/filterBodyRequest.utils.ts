@@ -1,7 +1,12 @@
 import { ApiKeyInterface, UserInterface } from "../interfaces";
 
-
-const bodyFilter = <T extends UserInterface | ApiKeyInterface>(
+/**
+ * Filters out unwanted properties from an object
+ * @param {Partial<T>} requestBody - The object to filter
+ * @param {...(keyof T)[]} fields - The properties to keep
+ * @returns {Partial<T>} The filtered object
+ */
+export const bodyFilter = <T extends UserInterface | ApiKeyInterface>(
   requestBody: Partial<T>,
   ...fields: (keyof T)[]
 ): Partial<T> => {
@@ -17,4 +22,4 @@ const bodyFilter = <T extends UserInterface | ApiKeyInterface>(
   return filteredBody;
 };
 
-export default bodyFilter;
+

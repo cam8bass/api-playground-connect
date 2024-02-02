@@ -1,15 +1,9 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import {
-  UserInterface,
-  ApiKeyInterface,
-  NotificationInterface,
-} from "../../shared/interfaces";
-
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
 import { Model, Types } from "mongoose";
+import { UserInterface, ApiKeyInterface, NotificationInterface } from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
-import AppError from "../../shared/utils/AppError.utils";
+import { catchAsync, AppError, jsonResponse } from "../../shared/utils";
+
 
 export const getOne = <
   T extends UserInterface | ApiKeyInterface | NotificationInterface

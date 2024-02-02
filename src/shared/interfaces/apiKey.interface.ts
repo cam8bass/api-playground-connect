@@ -7,8 +7,8 @@ export interface ApiKeyInterface extends Document {
     email: string;
   };
   apiKeys: [KeyInterface];
-  createAt: Date;
-  updateAt: Date;
+  createdAt: Date;
+  updatedAt: Date;
   _id: Types.ObjectId;
 
   // METHODS
@@ -26,5 +26,5 @@ export interface KeyInterface {
   renewalToken: string;
   renewalTokenExpire: Date;
   _id: Types.ObjectId;
-  createAt: Date;
+  createdAt: Date;
 }

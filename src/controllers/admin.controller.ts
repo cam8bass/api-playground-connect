@@ -1,13 +1,15 @@
-import User from "../models/user.model";
-import ApiKey from "../models/apiKey.model";
 import * as factory from "../middlewares/factory";
-
+import { User, ApiKey } from "../models";
 import {
   updateUserMiddleware,
   activeApiKeyMiddleware,
   getAllInactiveApiKeysMiddleware,
-  getUserStatsMiddleware,
+  getAllUserOverviewMiddleware,
   getSelectedUserApiKeysMiddleware,
+  createApiKeyMiddleware,
+  createNewUserMiddleware,
+  deleteUserMiddleware,
+  deleteAllApiKeysToUserMiddleware,
 } from "../middlewares/admin";
 
 // USERS
@@ -15,9 +17,29 @@ export const getAllUsers = factory.getAll(User);
 
 export const getUser = factory.getOne(User);
 
-export const createUser = factory.createOne(User, "user");
+/**
+ * Admin delete user middleware
+ */
+export const deleteUser = [
+  deleteUserMiddleware.findUserAndDelete,
+  deleteUserMiddleware.findAndDeleteUserApiKeys,
+  deleteUserMiddleware.findAndDeleteUserNotifications,
+  deleteUserMiddleware.sendEmail,
+  deleteUserMiddleware.createAdminNotification,
+  deleteUserMiddleware.generateResponse,
+];
 
-export const deleteUser = factory.deleteOne(User, "user");
+/**
+ * Admin create new user middleware
+ */
+
+export const createUser = [
+  createNewUserMiddleware.filteredBody,
+  createNewUserMiddleware.createNewUser,
+  createNewUserMiddleware.createAdminNotification,
+  createNewUserMiddleware.createUserNotification,
+  createNewUserMiddleware.generateResponse,
+];
 
 /**
  * Update user middleware
@@ -33,9 +55,9 @@ export const updateUser = [
 /**
  * getUsersStats - This is an array of functions that are used to find the total number of users, active accounts, inactive accounts, disabled accounts, and locked accounts.
  */
-export const getUsersStats = [
-  getUserStatsMiddleware.findUsersStats,
-  getUserStatsMiddleware.generateReponse,
+export const getAllUserOverview = [
+  getAllUserOverviewMiddleware.findUsersStats,
+  getAllUserOverviewMiddleware.generateReponse,
 ];
 
 // API KEYS
@@ -43,9 +65,30 @@ export const getAllApiKeys = factory.getAll(ApiKey);
 
 export const getApiKey = factory.getOne(ApiKey);
 
-export const createApiKey = factory.createOne(ApiKey, "apiKey");
+/**
+ * Admin delete API key middleware
+ */
+export const deleteAllApiKeysFromUser = [
+  deleteAllApiKeysToUserMiddleware.findAndDeleteApiKeys,
+  deleteAllApiKeysToUserMiddleware.createAdminNotification,
+  deleteAllApiKeysToUserMiddleware.createUserNotification,
+  deleteAllApiKeysToUserMiddleware.generateResponse,
+];
 
-export const deleteAllApiKeysFromUser = factory.deleteOne(ApiKey);
+/**
+ * Create new api key middleware
+ */
+export const createApiKey = [
+  createApiKeyMiddleware.validateFields,
+  createApiKeyMiddleware.findAndCheckUserApiKeys,
+  createApiKeyMiddleware.createNewApiKey,
+  createApiKeyMiddleware.encryptNewApiKey,
+  createApiKeyMiddleware.addNewApiKeyUser,
+  createApiKeyMiddleware.sendEmail,
+  createApiKeyMiddleware.createAdminNotification,
+  createApiKeyMiddleware.createUserNotification,
+  createApiKeyMiddleware.generateResponse,
+];
 
 /**
  * Active api key middleware
@@ -56,11 +99,13 @@ export const activeApiKey = [
   activeApiKeyMiddleware.createApiKeyHash,
   activeApiKeyMiddleware.findUserAndUpdateIfActive,
   activeApiKeyMiddleware.sendEmailIfActive,
+  activeApiKeyMiddleware.createAdminNotificationIfActive,
   activeApiKeyMiddleware.createUserNotificationIfActive,
   activeApiKeyMiddleware.generateResponseIfActive,
   activeApiKeyMiddleware.findAndUpdateUserIfInactive,
   activeApiKeyMiddleware.findAndDeleteIfInactive,
   activeApiKeyMiddleware.sendEmailIfInactive,
+  activeApiKeyMiddleware.createAdminNotificationIfInactive,
   activeApiKeyMiddleware.createUserNotificationIfInactive,
   activeApiKeyMiddleware.generateReponseIfInactive,
 ];

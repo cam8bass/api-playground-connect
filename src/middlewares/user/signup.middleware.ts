@@ -1,23 +1,10 @@
 import { NextFunction, Response, Request } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import Notification from "../../models/notification.model";
-import User from "../../models/user.model";
-import {
-  UserInterface,
-  NotificationDetailInterface,
-} from "../../shared/interfaces";
+import { User,Notification } from "../../models";
+import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { subjectEmail, bodyEmail, errorMessage, warningMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import bodyFilter from "../../shared/utils/filterBodyRequest.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import { createResetRandomToken } from "../../shared/utils/reset.utils";
-import {
-  subjectEmail,
-  bodyEmail,
-  errorMessage,
-  warningMessage,
-} from "../../shared/messages";
-import EmailManager from "../../shared/utils/EmailManager.utils";
-import AppError from "../../shared/utils/AppError.utils";
+import { catchAsync, bodyFilter, createResetRandomToken, EmailManager, AppError, jsonResponse } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   filteredBody?: Partial<UserInterface>;

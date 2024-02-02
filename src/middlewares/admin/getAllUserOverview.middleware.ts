@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import User from "../../models/user.model";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
+import { User } from "../../models";
+import { catchAsync, jsonResponse } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   data?: any;

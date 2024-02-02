@@ -1,13 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import {
-  UserInterface,
-  ApiKeyInterface,
-  NotificationInterface,
-} from "../../shared/interfaces";
-import FilterQuery from "../../shared/utils/FilterQuery.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
 import { Model } from "mongoose";
+import { UserInterface, ApiKeyInterface, NotificationInterface } from "../../shared/interfaces";
+import { catchAsync, FilterQuery, jsonResponse } from "../../shared/utils";
 
 export const getAll = <
   T extends UserInterface | ApiKeyInterface | NotificationInterface

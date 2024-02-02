@@ -2,7 +2,15 @@ import { Types } from "mongoose";
 import { notificationMessageInterface } from "../interfaces";
 
 export const notificationMessage: notificationMessageInterface = {
-  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT:"Nous avons rencontré une erreur lors de l'envoi de l'e-mail de réactivation du compte. Les administrateurs ont été notifiés. Malgré cela, votre compte est désormais activé. Nous sommes ravis de vous accueillir à nouveau.", 
+  NOTIFICATION_SUCCESS_ADMIN_DELETE_USER: "L'utilisateur a été supprimé avec succès",
+  NOTIFICATION_ADMIN_CREATE_NEW_USER:"Votre compte a été créé par un administrateur et est désormais opérationnel. Nous vous recommandons toutefois de modifier le mot de passe de votre compte.",
+  NOTIFICATION_ADMIN_CREATE_NEW_API_KEY:"Un administrateur a créé une nouvelle clé d'API. Veuillez vérifier votre boîte de réception, l'API est maintenant prête à être utilisée.",
+  NOTIFICATION_SUCCESS_ADMIN_CREATE_NEW_API_KEY:"La nouvelle clé d'api a été créée avec succès", 
+  NOTIFICATION_ADMIN_REFUSE_API_KEY_CREATION:
+    "La création de votre clé d'API a été refusée. Un e-mail vous a été adressé à cet effet.",
+  NOTIFICATION_ADMIN_ACCEPT_API_KEY_CREATION:
+    "La création de votre clé d'api a été accepté , un email vous a été adréssé a cette effet.",
+
   NOTIFICATION_UNLOCK_USER_ACCOUNT: "Votre compte a été débloqué avec succès ",
   NOTIFICATION_ADMIN_SUCCESS_DELETE_SELECTED_APIKEY:
     "La clé d'api a été supprimée avec succès",
@@ -16,8 +24,8 @@ export const notificationMessage: notificationMessageInterface = {
   NOTIFICATION_PASSWORD_MODIFIED:
     "Votre mot de passe a été modifié avec succès.",
   NOTIFICATION_ACTIVATION_ACCOUNT: "Votre compte a été activé avec succès.",
-  NOTIFICATION_DELETE_ACCOUNT:
-    "Le compte de l'utilisateur a été supprimé avec succès",
+  NOTIFICATION_ADMIN_DELETE_ALL_USER_APIKEYS:"L'ensemble de vos clés d'API a été supprimé par un administrateur. Si vous souhaitez plus de détails, veuillez nous contacter. Nous sommes là pour vous.",
+
   NOTIFICATION_DELETE_USER_APIKEYS:
     "L'ensemble des clés d'API de l'utilisateur ont été supprimées avec succès",
   NOTIFICATION_DELETE_NOTIFICATION:
@@ -40,7 +48,7 @@ export const notificationMessage: notificationMessageInterface = {
   NOTIFICATION_ADMIN_REFUSAL_API_KEY:
     "Le refus d'activation de la clé d'API a été effectué avec succès.",
 
-    NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION: (userEmail: string): string =>
+  NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION: (userEmail: string): string =>
     `Un nouvel e-mail de confirmation concernant l'activation de votre compte a été envoyé à ${userEmail}. Veuillez vérifier votre boîte de réception.
     `,
   NOTIFICATION_SENT_EMAIL_ACTIVATION: (userEmail: string): string =>

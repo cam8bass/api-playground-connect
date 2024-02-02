@@ -6,7 +6,6 @@ import adminRouter from "./routes/admin.routes";
 import notificationRouter from "./routes/notification.routes";
 import errorController from "./controllers/error.controller";
 import dotenv from "dotenv";
-import AppError from "./shared/utils/AppError.utils";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
 import hpp from "hpp";
@@ -15,6 +14,7 @@ import { rateLimit } from "express-rate-limit";
 import { nodeEnv } from "./shared/types/types";
 import cors from "cors";
 import { errorMessage, warningMessage } from "./shared/messages";
+import { AppError } from "./shared/utils";
 
 dotenv.config({ path: "./config.env" });
 const nodeEnv = process.env.NODE_ENV as nodeEnv;

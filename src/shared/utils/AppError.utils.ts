@@ -1,7 +1,7 @@
 import { AppErrorInterface } from "../interfaces";
 import { errorStatusType } from "../types/types";
 
-export default class AppError extends Error implements AppErrorInterface {
+export class AppError extends Error implements AppErrorInterface {
   public status: errorStatusType;
   public statusCode: number;
   public isOperational: boolean;

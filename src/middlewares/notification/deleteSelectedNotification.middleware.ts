@@ -1,9 +1,7 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import Notification from "../../models/notification.model";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import { NotificationInterface, UserInterface } from "../../shared/interfaces";
-
+import { UserInterface, NotificationInterface } from "../../shared/interfaces";
+import { catchAsync, jsonResponse } from "../../shared/utils";
+import { Notification } from "../../models";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -20,8 +18,8 @@ interface CustomRequestInterface extends Request {
  */
 export const findAndDeleteSelectedNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const {  currentUser } = req; 
-    const { idNotification } = req.params; 
+    const { currentUser } = req;
+    const { idNotification } = req.params;
 
     // delete the selected notification
     const updatedNotification = await Notification.findOneAndUpdate(
@@ -51,5 +49,3 @@ export const generateResponse = catchAsync(
     res.status(200).json(jsonResponse({ data: updatedNotification }));
   }
 );
-
-

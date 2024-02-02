@@ -1,19 +1,11 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
-import Notification from "../../models/notification.model";
 import { Types } from "mongoose";
-import User from "../../models/user.model";
-import {
-  UserInterface,
-  NotificationInterface,
-  NotificationDetailInterface,
-} from "../../shared/interfaces";
+import { User,Notification } from "../../models";
+import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import AppError from "../../shared/utils/AppError.utils";
-import bodyFilter from "../../shared/utils/filterBodyRequest.utils";
-import { formatUserResponse } from "../../shared/utils/formatResponse.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
+import { catchAsync, AppError, bodyFilter, jsonResponse, formatUserResponse } from "../../shared/utils";
+
 
 interface CustomRequestInterface extends Request {
   filteredBody?: Partial<UserInterface>;

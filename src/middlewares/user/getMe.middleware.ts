@@ -1,11 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
-import catchAsync from "../../shared/utils/catchAsync.utils";
 import client from "../../infisical";
-import User from "../../models/user.model";
+import { User } from "../../models";
 import { UserInterface } from "../../shared/interfaces";
-import { formatUserResponse } from "../../shared/utils/formatResponse.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
+import { catchAsync, jsonResponse, formatUserResponse } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   decoded?: jwt.JwtPayload;

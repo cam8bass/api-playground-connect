@@ -3,6 +3,9 @@ import connectToDB from "./shared/services/connectDb.service";
 import http from "http";
 import { nodeEnv } from "./shared/types/types";
 
+/**
+ * Starts the server.
+ */
 async function startServer() {
   let server: http.Server;
 

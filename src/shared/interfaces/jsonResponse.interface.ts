@@ -15,18 +15,3 @@ export interface jsonResponseOptionsInterface {
   limit?: number;
 }
 
-// FIXME: OLD VERSION
-// export interface jsonResponseInterface {
-//   status: string;
-//   notification?: NotificationDetailInterface;
-//   data?: any;
-//   results?: number;
-//   limit?: number;
-// }
-
-// export interface jsonResponseOptionsInterface {
-//   notification?: NotificationDetailInterface;
-//   data?: any;
-//   results?: number;
-//   limit?: number;
-// }

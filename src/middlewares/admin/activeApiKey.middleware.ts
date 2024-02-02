@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
 import { Types } from "mongoose";
-import ApiKey from "../../models/apiKey.model";
+import { ApiKey, Notification } from "../../models";
 import {
   UserInterface,
   ApiKeyInterface,
@@ -14,11 +13,13 @@ import {
   bodyEmail,
 } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import AppError from "../../shared/utils/AppError.utils";
-import EmailManager from "../../shared/utils/EmailManager.utils";
-import ApiKeyManager from "../../shared/utils/createApiKey.utils";
-import { jsonResponse } from "../../shared/utils/jsonResponse.utils";
-import Notification from "../../models/notification.model";
+import {
+  catchAsync,
+  AppError,
+  ApiKeyManager,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -182,7 +183,7 @@ export const sendEmailIfActive = catchAsync(
  * @param {Response} res - The response object.
  * @param {NextFunction} next - The next middleware function.
  */
-export const createUserNotificationIfActive = catchAsync(
+export const createAdminNotificationIfActive = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { active, sendEmail, apiKey, currentUser } = req;
 
@@ -211,6 +212,21 @@ export const createUserNotificationIfActive = catchAsync(
       if (notification) {
         req.notification.push(notification);
       }
+    }
+    next();
+  }
+);
+
+export const createUserNotificationIfActive = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { active, apiKey } = req;
+
+    if (active === true) {
+      await Notification.createNotification(
+        apiKey.user._id,
+        "success",
+        notificationMessage.NOTIFICATION_ADMIN_ACCEPT_API_KEY_CREATION
+      );
     }
     next();
   }
@@ -339,7 +355,7 @@ export const sendEmailIfInactive = catchAsync(
  * @param {function} next - Express next middleware function
  * @returns {void}
  */
-export const createUserNotificationIfInactive = catchAsync(
+export const createAdminNotificationIfInactive = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { active, sendEmail, apiKey, currentUser } = req;
     let notification: NotificationDetailInterface;
@@ -372,6 +388,21 @@ export const createUserNotificationIfInactive = catchAsync(
   }
 );
 
+export const createUserNotificationIfInactive = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { active, apiKey } = req;
+
+    if (active === false) {
+      await Notification.createNotification(
+        apiKey.user._id,
+        "success",
+        notificationMessage.NOTIFICATION_ADMIN_ACCEPT_API_KEY_CREATION
+      );
+    }
+    next();
+  }
+);
+
 /**
  * Generate response if the active field is false.
  * @param {object} req - Express request object
@@ -393,21 +424,3 @@ export const generateReponseIfInactive = catchAsync(
     }
   }
 );
-
-/**
- * Active api key middleware
- */
-export const activeApiKey = [
-  validateField,
-  createNewApiKey,
-  createApiKeyHash,
-  findUserAndUpdateIfActive,
-  sendEmailIfActive,
-  createUserNotificationIfActive,
-  generateResponseIfActive,
-  findAndUpdateUserIfInactive,
-  findAndDeleteIfInactive,
-  sendEmailIfInactive,
-  createUserNotificationIfInactive,
-  generateReponseIfInactive,
-];

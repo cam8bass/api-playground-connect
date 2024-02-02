@@ -14,7 +14,7 @@ router.get("/myNotifications", notificationController.getMyNotification);
 
 router.delete(
   "/deleteAllNotifications/:id",
-  notificationController.deleteAllNotifications
+  notificationController.deleteAllNotification
 );
 
 router.patch(

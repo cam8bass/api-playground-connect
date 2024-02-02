@@ -2,6 +2,7 @@ import { Types } from "mongoose";
 import { ErrorMessageInterface } from "../interfaces";
 
 export const errorMessage: ErrorMessageInterface = {
+  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT:"Nous avons rencontré une erreur lors de l'envoi de l'e-mail de réactivation du compte. Les administrateurs ont été notifiés. Malgré cela, votre compte est désormais activé. Nous sommes ravis de vous accueillir à nouveau.", 
   ERROR_ACCOUNT_DISABLED:
     "Votre compte est désactivé. Pour le réactiver, veuillez vous reconnecter à votre compte.",
   ERROR_EMPTY_USER_MODIFICATION:

@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import catchAsync from "../../shared/utils/catchAsync.utils";
+import { catchAsync } from "../../shared/utils";
+
 
 
 /**
