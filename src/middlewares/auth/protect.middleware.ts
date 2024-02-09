@@ -3,7 +3,7 @@ import jwt, { JwtPayload } from "jsonwebtoken";
 import { UserInterface } from "../../shared/interfaces";
 import client from "../../infisical";
 import { User } from "../../models";
-import { warningMessage, errorMessage } from "../../shared/messages";
+import {  errorMessage } from "../../shared/messages";
 import { catchAsync, AppError } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -34,8 +34,9 @@ export const checkTokenExistence = catchAsync(
 
     if (!token) {
       return next(
-        new AppError(401, warningMessage.WARNING_TOKEN, {
-          request: errorMessage.ERROR_LOGIN_REQUIRED,
+        new AppError(req, {
+          statusCode: 401,
+          message: errorMessage.ERROR_LOGIN_REQUIRED,
         })
       );
     }
@@ -84,8 +85,9 @@ export const findAndCheckUser = catchAsync(
       user.checkEmailChangedAfterToken(decoded.iat)
     ) {
       return next(
-        new AppError(401, warningMessage.WARNING_TOKEN, {
-          request: errorMessage.ERROR_LOGIN_REQUIRED,
+        new AppError(req, {
+          statusCode: 401,
+          message: errorMessage.ERROR_LOGIN_REQUIRED,
         })
       );
     }
@@ -95,4 +97,3 @@ export const findAndCheckUser = catchAsync(
     next();
   }
 );
-

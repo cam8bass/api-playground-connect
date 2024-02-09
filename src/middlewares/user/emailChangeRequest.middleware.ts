@@ -1,11 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, createResetRandomToken, AppError, EmailManager, jsonResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  createResetRandomToken,
+  AppError,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   emailResetTokenData?: {
@@ -61,13 +74,13 @@ export const findUserAndUpdateResetToken = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_LOGIN_REQUIRED,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_LOGIN_REQUIRED,
+          },
+        })
       );
     }
 
@@ -140,14 +153,6 @@ export const createAdminNotification = catchAsync(
           currentUser.email
         )
       );
-
-      await currentUser.deleteEmailResetToken();
-
-      return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_RESET_EMAIL,
-        })
-      );
     }
 
     next();
@@ -186,8 +191,9 @@ export const generateErrorSendEmail = catchAsync(
 
     if (!sendEmail) {
       return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_RESET_EMAIL,
+        new AppError(req, {
+          statusCode: 503,
+          message: errorMessage.ERROR_SENT_EMAIL_RESET_EMAIL,
         })
       );
     }
@@ -240,4 +246,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-

@@ -1,8 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UserInterface } from "../../shared/interfaces";
-import { warningMessage, errorMessage } from "../../shared/messages";
+import {  errorMessage } from "../../shared/messages";
 import { catchAsync, AppError } from "../../shared/utils";
-
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -20,8 +19,9 @@ export const checkUserIsLoggedIn = catchAsync(
     const { currentUser } = req;
     if (!currentUser) {
       return next(
-        new AppError(401, warningMessage.WARNING_TOKEN, {
-          request: errorMessage.ERROR_LOGIN_REQUIRED,
+        new AppError(req, {
+          statusCode: 401,
+          message: errorMessage.ERROR_LOGIN_REQUIRED,
         })
       );
     }
@@ -46,8 +46,9 @@ export const checkIfAccountIsLocked = catchAsync(
 
       if (accountIsLocked) {
         return next(
-          new AppError(401, warningMessage.WARNING_ACCOUNT_BLOCKED, {
-            request: errorMessage.ERROR_ACCOUNT_LOCKED,
+          new AppError(req, {
+            statusCode: 403,
+            message: errorMessage.ERROR_ACCOUNT_LOCKED,
           })
         );
       }

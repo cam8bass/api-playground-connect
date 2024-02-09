@@ -1,12 +1,26 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { ApiKey,Notification } from "../../models";
-import { UserInterface, ApiKeyInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { ApiKey, Notification } from "../../models";
+import {
+  UserInterface,
+  ApiKeyInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, createResetRandomToken, AppError, EmailManager, jsonResponse,createResetUrl } from "../../shared/utils";
-
-
+import {
+  catchAsync,
+  createResetRandomToken,
+  AppError,
+  EmailManager,
+  jsonResponse,
+  createResetUrl,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   randomToken?: {
@@ -72,13 +86,13 @@ export const findAndUpdateRenewalApiKey = catchAsync(
 
     if (!apiKey) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-          {
-            request: errorMessage.ERROR_API_KEY_EXPIRE,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+          fields: {
+            form: errorMessage.ERROR_API_KEY_EXPIRE,
+          },
+        })
       );
     }
     req.apiKey = apiKey;
@@ -197,8 +211,9 @@ export const generateErrorIfNotSendEmail = catchAsync(
 
     if (!sendEmail) {
       return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_RENEWAL_API_KEY,
+        new AppError(req, {
+          statusCode: 503,
+          message: errorMessage.ERROR_SENT_EMAIL_RENEWAL_API_KEY,
         })
       );
     }
@@ -251,18 +266,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-// /**
-//  * api key renewal request middleware
-//  */
-// export const apiKeyRenewalRequest = [
-//   createResetToken,
-//   findAndUpdateRenewalApiKey,
-//   createResetUrlWithResetToken,
-//   sendEmail,
-//   createAdminNotification,
-//   findAndUpdateRenewalToken,
-//   generateErrorIfNotSendEmail,
-//   createUserNotification,
-//   generateResponse,
-// ];

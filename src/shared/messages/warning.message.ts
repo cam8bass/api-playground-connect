@@ -1,9 +1,9 @@
 import { WarningMessageInterface } from "../interfaces";
 
 export const warningMessage:WarningMessageInterface = {
-  WARNING_ACCOUNT_DISABLED:"Le compte de l'utilisateur est désactivé. Il doit se reconnecter pour démarrer la procédure de réactivation du compte.",
-  WARNING__EMAIL:
-    "Une erreur s'est produite lors de l'envoi de l'e-mail à l'adresse spécifiée. Veuillez vérifier l'adresse e-mail que vous avez fournie et assurez-vous qu'elle est correcte. Si l'adresse e-mail est correcte et que le problème persiste, cela peut être dû à un problème avec notre service d'envoi d'e-mails.",
+  // WARNING_ACCOUNT_DISABLED:"Le compte de l'utilisateur est désactivé. Il doit se reconnecter pour démarrer la procédure de réactivation du compte.",
+  // WARNING__EMAIL:
+  //   "Une erreur s'est produite lors de l'envoi de l'e-mail à l'adresse spécifiée. Veuillez vérifier l'adresse e-mail que vous avez fournie et assurez-vous qu'elle est correcte. Si l'adresse e-mail est correcte et que le problème persiste, cela peut être dû à un problème avec notre service d'envoi d'e-mails.",
   WARNING__REQUIRE_FIELD:
     "Certains champs requis sont manquants dans la requête. Veuillez vous assurer que tous les champs obligatoires sont présents dans les données soumises.",
 
@@ -27,8 +27,8 @@ export const warningMessage:WarningMessageInterface = {
 
   WARNING_PAGE_NOT_FOUND:
     "La page ou la route demandée n'existe pas sur le serveur. Veuillez vérifier l'URL.",
-  WARNING_TOKEN:
-    "Aucun token d'authentification valide n'a été trouvé. L'accès à cette ressource est interdit en raison d'un problème lié au token d'authentification. Cela peut être dû à l'absence de token, à un rôle utilisateur incorrect, à l'expiration du token, à un changement de mot de passe sans renouvellement du token ou à une modification de l'adresse e-mail sans renouvellement du token.",
+  // WARNING_TOKEN:
+  //   "Aucun token d'authentification valide n'a été trouvé. L'accès à cette ressource est interdit en raison d'un problème lié au token d'authentification. Cela peut être dû à l'absence de token, à un rôle utilisateur incorrect, à l'expiration du token, à un changement de mot de passe sans renouvellement du token ou à une modification de l'adresse e-mail sans renouvellement du token.",
   WARNING_DOCUMENT_NOT_FOUND: (field: string): string =>
     `Aucun(e) ${field} n'a été trouvé correspondant aux critères de recherche spécifiés.`,
 };

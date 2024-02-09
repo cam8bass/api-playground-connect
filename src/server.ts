@@ -22,6 +22,7 @@ async function startServer() {
 
   server.on("error", (error: any) => {
     if (nodeEnv === "development") {
+    
       console.error("💥 Server startup error:", error);
     } else if (nodeEnv === "production") {
       console.error("💥 Server startup error:", error.name, error.message);

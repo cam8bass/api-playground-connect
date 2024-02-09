@@ -1,11 +1,27 @@
 import { NextFunction, Response, Request } from "express";
 import { Types } from "mongoose";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { validationMessage, warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  validationMessage,
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, fieldErrorMessages, AppError, createHashRandomToken, EmailManager, jsonResponse, formatUserResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  fieldErrorMessages,
+  AppError,
+  createHashRandomToken,
+  EmailManager,
+  jsonResponse,
+  formatUserResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   token?: string;
@@ -35,7 +51,11 @@ export const validateFields = catchAsync(
       const errors = fieldErrorMessages({ email, password }, requiredFields);
 
       return next(
-        new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -80,13 +100,13 @@ export const findUserWithToken = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_LINK_ACTIVATION,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_LINK_ACTIVATION,
+          },
+        })
       );
     }
 
@@ -109,8 +129,12 @@ export const verifyPasswordField = catchAsync(
 
     if (!(await user.checkUserPassword(password, user.password))) {
       return next(
-        new AppError(401, warningMessage.WARNING_INVALID_FIELD, {
-          password: errorMessage.ERROR_WRONG_PASSWORD,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_INVALID_FIELD,
+          fields: {
+            password: errorMessage.ERROR_WRONG_PASSWORD,
+          },
         })
       );
     }
@@ -265,4 +289,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-

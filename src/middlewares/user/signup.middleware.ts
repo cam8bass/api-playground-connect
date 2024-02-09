@@ -1,10 +1,24 @@
 import { NextFunction, Response, Request } from "express";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { subjectEmail, bodyEmail, errorMessage, warningMessage } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  subjectEmail,
+  bodyEmail,
+  errorMessage,
+  warningMessage,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, bodyFilter, createResetRandomToken, EmailManager, AppError, jsonResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  bodyFilter,
+  createResetRandomToken,
+  EmailManager,
+  AppError,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   filteredBody?: Partial<UserInterface>;
@@ -146,8 +160,9 @@ export const generateErrorSendEmail = catchAsync(
 
     if (!sendEmail) {
       return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_ACTIVATION,
+        new AppError(req, {
+          statusCode: 503,
+          message: errorMessage.ERROR_SENT_EMAIL_ACTIVATION,
         })
       );
     }
@@ -195,4 +210,3 @@ export const generateResponse = catchAsync(
     res.status(200).json(jsonResponse({ notification }));
   }
 );
-

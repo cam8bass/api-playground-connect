@@ -31,8 +31,9 @@ app.use(cors({ origin: ["http://localhost:5173"], credentials: true })); // FIXM
 //     windowMs: 1000 * 60 * 60,
 //     handler: (req, res, next) => {
 //       next(
-//         new AppError(429, errorMessage.ERROR_RATE_LIMIT, {
-//           request: errorMessage.ERROR_RATE_LIMIT,
+//         new AppError(req, {
+//           statusCode: 429,
+//           message: errorMessage.ERROR_RATE_LIMIT,
 //         })
 //       );
 //     },
@@ -54,8 +55,9 @@ app.use("/playground-connect/v1/admin", adminRouter);
 app.use("/playground-connect/v1/notification", notificationRouter);
 app.use("*", (req: Request, res: Response, next: NextFunction) => {
   return next(
-    new AppError(404, warningMessage.WARNING_PAGE_NOT_FOUND, {
-      app: errorMessage.ERROR_PAGE_NOT_FOUND,
+    new AppError(req, {
+      statusCode: 404,
+      message: errorMessage.ERROR_PAGE_NOT_FOUND,
     })
   );
 });

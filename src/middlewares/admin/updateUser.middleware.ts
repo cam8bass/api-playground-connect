@@ -1,11 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, bodyFilter, AppError, jsonResponse, formatUserResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  bodyFilter,
+  AppError,
+  jsonResponse,
+  formatUserResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -62,8 +70,12 @@ export const takeModifiedFields = catchAsync(
 
     if (Object.entries(filteredBody).length === 0) {
       return next(
-        new AppError(400, warningMessage.WARNING_EMPTY_MODIFICATION, {
-          request: errorMessage.ERROR_EMPTY_USER_MODIFICATION,
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING_EMPTY_MODIFICATION,
+          fields: {
+            form: errorMessage.ERROR_EMPTY_USER_MODIFICATION,
+          },
         })
       );
     }
@@ -92,13 +104,13 @@ export const findAndUpdateUser = catchAsync(
 
     if (!selectedUser) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_NO_SEARCH_RESULTS,
+          },
+        })
       );
     }
 
@@ -152,13 +164,4 @@ export const generateResponse = catchAsync(
   }
 );
 
-// /**
-//  * Update user middleware
-//  */
-// export const updateUser = [
-//   filteredRequestBody,
-//   takeModifiedFields,
-//   findAndUpdateUser,
-//   createUserNotification,
-//   generateResponse,
-// ];
+

@@ -4,7 +4,6 @@ import { warningMessage, errorMessage } from "../../shared/messages";
 import { userRoleType } from "../../shared/types/types";
 import { catchAsync, AppError } from "../../shared/utils";
 
-
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
 }
@@ -21,8 +20,9 @@ export const checkUserRole = (...userRole: userRoleType[]) =>
       const { currentUser } = req;
       if (!userRole.includes(currentUser.role)) {
         return next(
-          new AppError(401, warningMessage.WARNING_TOKEN, {
-            request: errorMessage.ERROR_ACCESS_DENIED,
+          new AppError(req, {
+            statusCode: 403,
+            message: errorMessage.ERROR_ACCESS_DENIED,
           })
         );
       }

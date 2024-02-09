@@ -17,13 +17,13 @@ export const findAndDeleteAllUserNotifications = catchAsync(
 
     if (!notification) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("notifications"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("notifications"),
+          fields: {
+            form: errorMessage.ERROR_NO_SEARCH_RESULTS,
+          },
+        })
       );
     }
     next();

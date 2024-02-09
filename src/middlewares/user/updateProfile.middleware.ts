@@ -1,11 +1,19 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, AppError, bodyFilter, jsonResponse, formatUserResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  AppError,
+  bodyFilter,
+  jsonResponse,
+  formatUserResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   filteredBody?: Partial<UserInterface>;
@@ -27,8 +35,12 @@ export const checkPasswordPresence = catchAsync(
 
     if (password) {
       return next(
-        new AppError(400, warningMessage.WARNING_MANIPULATE_FIELD, {
-          request: errorMessage.ERROR_WRONG_PASSWORD_ROUTE,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_MANIPULATE_FIELD,
+          fields: {
+            form: errorMessage.ERROR_WRONG_PASSWORD_ROUTE,
+          },
         })
       );
     }
@@ -53,8 +65,12 @@ export const filteredRequestBody = catchAsync(
 
     if (Object.entries(filteredBody).length === 0) {
       return next(
-        new AppError(400, warningMessage.WARNING_EMPTY_MODIFICATION, {
-          request: errorMessage.ERROR_EMPTY_USER_MODIFICATION,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_EMPTY_MODIFICATION,
+          fields: {
+            form: errorMessage.ERROR_EMPTY_USER_MODIFICATION,
+          },
         })
       );
     }
@@ -85,13 +101,10 @@ export const findAndUpdateUserProfile = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_LOGIN_REQUIRED,
-          }
-        )
+        new AppError(req, {
+          statusCode: 401,
+          message: errorMessage.ERROR_LOGIN_REQUIRED,
+        })
       );
     }
 
@@ -184,4 +197,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-

@@ -1,10 +1,27 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { validationMessage, warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  validationMessage,
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, fieldErrorMessages, AppError, createHashRandomToken, EmailManager, jsonResponse, formatUserResponse } from "../../shared/utils";
+import {
+  catchAsync,
+  fieldErrorMessages,
+  AppError,
+  createHashRandomToken,
+  EmailManager,
+  jsonResponse,
+  formatUserResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   tokenHash?: string;
@@ -42,7 +59,11 @@ export const validateFields = catchAsync(
       );
 
       return next(
-        new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -86,13 +107,13 @@ export const findUser = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_CONFIRM_CHANGE_EMAIL_REQUEST,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_CONFIRM_CHANGE_EMAIL_REQUEST,
+          },
+        })
       );
     }
     req.user = user;
@@ -115,8 +136,12 @@ export const verifyPasswordField = catchAsync(
 
     if (!(await user.checkUserPassword(password, user.password))) {
       return next(
-        new AppError(400, warningMessage.WARNING_INVALID_FIELD, {
-          password: errorMessage.ERROR_WRONG_PASSWORD,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_INVALID_FIELD,
+          fields: {
+            password: errorMessage.ERROR_WRONG_PASSWORD,
+          },
         })
       );
     }
@@ -279,4 +304,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-

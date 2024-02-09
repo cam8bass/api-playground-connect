@@ -1,10 +1,24 @@
 import { NextFunction, Response, Request } from "express";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { warningMessage, validationMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  warningMessage,
+  validationMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, AppError, createResetRandomToken, EmailManager, jsonResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  AppError,
+  createResetRandomToken,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   randomToken?: {
@@ -31,8 +45,12 @@ export const validateField = catchAsync(
 
     if (!email) {
       return next(
-        new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, {
-          email: validationMessage.VALIDATE_REQUIRED_FIELD("adresse email"),
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: {
+            email: validationMessage.VALIDATE_REQUIRED_FIELD("adresse email"),
+          },
         })
       );
     }
@@ -78,13 +96,13 @@ export const findAndUpdateUser = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          400,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_WRONG_EMAIL,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_WRONG_EMAIL,
+          },
+        })
       );
     }
     req.user = user;
@@ -190,8 +208,9 @@ export const generateErrorSendEmail = catchAsync(
     const { sendEmail } = req;
     if (!sendEmail) {
       return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_RESET_PASSWORD,
+        new AppError(req, {
+          statusCode: 503,
+          message: errorMessage.ERROR_SENT_EMAIL_RESET_PASSWORD,
         })
       );
     }
@@ -244,5 +263,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-

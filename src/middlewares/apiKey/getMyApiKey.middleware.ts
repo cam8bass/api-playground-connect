@@ -51,7 +51,3 @@ export const generateReponse = catchAsync(
   }
 );
 
-// /**
-//  * Get user api key middleware
-//  */
-// export const getMyApiKey = [findApiKeys, generateReponse];

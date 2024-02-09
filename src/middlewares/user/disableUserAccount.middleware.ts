@@ -48,13 +48,10 @@ export const findUser = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_LOGIN_REQUIRED,
-          }
-        )
+        new AppError(req, {
+          statusCode: 401,
+          message: errorMessage.ERROR_LOGIN_REQUIRED,
+        })
       );
     }
 

@@ -1,9 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import { Model, Types } from "mongoose";
-import { UserInterface, ApiKeyInterface, NotificationInterface } from "../../shared/interfaces";
+import {
+  UserInterface,
+  ApiKeyInterface,
+  NotificationInterface,
+} from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
 import { catchAsync, AppError, jsonResponse } from "../../shared/utils";
-
 
 export const getOne = <
   T extends UserInterface | ApiKeyInterface | NotificationInterface
@@ -17,13 +20,13 @@ export const getOne = <
 
     if (!doc) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("document"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
+        new AppError(req, {
+          statusCode:422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("document"),
+          fields: {
+            form: errorMessage.ERROR_NO_SEARCH_RESULTS,
+          },
+        })
       );
     }
     res.status(200).json(
@@ -32,5 +35,3 @@ export const getOne = <
       })
     );
   });
-
-

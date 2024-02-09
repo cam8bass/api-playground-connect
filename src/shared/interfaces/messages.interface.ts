@@ -51,8 +51,8 @@ export interface ValidationMessageInterface {
 }
 
 export interface WarningMessageInterface {
-  WARNING_ACCOUNT_DISABLED: string;
-  WARNING__EMAIL: string;
+  // WARNING_ACCOUNT_DISABLED: string;
+  // WARNING__EMAIL: string;
   WARNING__REQUIRE_FIELD: string;
   WARNING_INVALID_FIELD: string;
   WARNING_INACTIVE_ACCOUNT: string;
@@ -61,7 +61,7 @@ export interface WarningMessageInterface {
   WARNING_DUPLICATE_DOCUMENT: string;
   WARNING_ACCOUNT_BLOCKED: string;
   WARNING_PAGE_NOT_FOUND: string;
-  WARNING_TOKEN: string;
+  // WARNING_TOKEN: string;
   WARNING_DOCUMENT_NOT_FOUND: (field: string) => string;
 }
 

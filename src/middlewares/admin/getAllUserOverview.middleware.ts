@@ -65,7 +65,3 @@ export const generateReponse = catchAsync(
   }
 );
 
-// /**
-//  * getUsersStats - This is an array of functions that are used to find the total number of users, active accounts, inactive accounts, disabled accounts, and locked accounts.
-//  */
-// export const getUsersStats = [findUsersStats, generateReponse];

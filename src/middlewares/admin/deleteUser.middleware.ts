@@ -42,14 +42,15 @@ export const findUserAndDelete = catchAsync(
       .lean();
 
     if (!user) {
+  
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_NO_SEARCH_RESULTS,
+          },
+        })
       );
     }
 

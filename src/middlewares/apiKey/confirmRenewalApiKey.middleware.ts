@@ -52,7 +52,11 @@ export const verifyFields = catchAsync(
       const errors = fieldErrorMessages({ email, password }, requiredFields);
 
       return next(
-        new AppError(401, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -74,13 +78,13 @@ export const findUser = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_WRONG_LOGIN,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_WRONG_LOGIN,
+          },
+        })
       );
     }
 
@@ -102,8 +106,12 @@ export const checkUserPassword = catchAsync(
 
     if (!(await user.checkUserPassword(password, user.password))) {
       return next(
-        new AppError(401, warningMessage.WARNING_INVALID_FIELD, {
-          password: errorMessage.ERROR_WRONG_LOGIN,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_INVALID_FIELD,
+          fields: {
+            password: errorMessage.ERROR_WRONG_LOGIN,
+          },
         })
       );
     }
@@ -196,13 +204,13 @@ export const findAndUpdateRenewalApiKey = catchAsync(
 
     if (!apiKey) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-          {
-            request: errorMessage.ERROR_CONFIRM_RENEWAL_REQUEST,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+          fields: {
+            form: errorMessage.ERROR_CONFIRM_RENEWAL_REQUEST,
+          },
+        })
       );
     }
 
@@ -310,19 +318,4 @@ export const generateResponse = catchAsync(
   }
 );
 
-// /**
-//  * user confirm renewal api key middleware
-//  */
-// export const confirmRenewalApiKey = [
-//   verifyFields,
-//   findUser,
-//   checkUserPassword,
-//   createRenewalToken,
-//   createNewApiKey,
-//   createNewApiKeyHash,
-//   findAndUpdateRenewalApiKey,
-//   sendEmail,
-//   createAdminNotification,
-//   createUserNotification,
-//   generateResponse,
-// ];
+

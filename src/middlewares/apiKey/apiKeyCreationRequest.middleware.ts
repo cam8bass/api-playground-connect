@@ -1,11 +1,24 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { ApiKey,Notification } from "../../models";
-import { UserInterface, ApiKeyInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { ApiKey, Notification } from "../../models";
+import {
+  UserInterface,
+  ApiKeyInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, AppError, EmailManager, jsonResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  AppError,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -29,8 +42,12 @@ export const verifyField = catchAsync(
 
     if (!apiName) {
       return next(
-        new AppError(400, warningMessage.WARNING_INVALID_FIELD, {
-          apiName: errorMessage.ERROR_EMPTY_FIELD("api"),
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING_INVALID_FIELD,
+          fields: {
+            apiName: errorMessage.ERROR_EMPTY_FIELD("api"),
+          },
         })
       );
     }
@@ -57,8 +74,12 @@ export const findUserAndCheckApiKeys = catchAsync(
 
     if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
       return next(
-        new AppError(400, warningMessage.WARNING_DUPLICATE_DOCUMENT, {
-          request: errorMessage.ERROR_DUPLICATE_API_KEY,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DUPLICATE_DOCUMENT,
+          fields: {
+            form: errorMessage.ERROR_DUPLICATE_API_KEY,
+          },
         })
       );
     }
@@ -248,8 +269,9 @@ export const generateErrorIfNotSendEmail = catchAsync(
 
     if (!sendEmail) {
       return next(
-        new AppError(500, warningMessage.WARNING__EMAIL, {
-          request: errorMessage.ERROR_SENT_EMAIL_CREATE_API_KEY,
+        new AppError(req, {
+          statusCode: 503,
+          message: errorMessage.ERROR_SENT_EMAIL_CREATE_API_KEY,
         })
       );
     }
@@ -334,21 +356,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-// /**
-//  * user api key creation request middleware
-//  */
-// export const apiKeyCreationRequest = [
-//   verifyField,
-//   findUserAndCheckApiKeys,
-//   findAndUpdateNewApiKey,
-//   searchIdNewApi,
-//   sendEmail,
-//   createAdminNotificationIfErrorSendEmail,
-//   findAndDeleteApiKeyIfNotSendEmail,
-//   findAndDeleteDocumentIfLastApiKey,
-//   generateErrorIfNotSendEmail,
-//   createAdminNotification,
-//   createUserNotification,
-//   generateResponse,
-// ];

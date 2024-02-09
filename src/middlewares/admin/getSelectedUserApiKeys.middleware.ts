@@ -40,7 +40,3 @@ export const generateResponse = catchAsync(
   }
 );
 
-// /**
-//  * An array of middleware functions that are used to fetch the ApiKeys and generate a response
-//  */
-// export const getSelectedUserApiKeys = [findUserApiKeys, generateResponse];

@@ -39,7 +39,3 @@ export const generateResponse = catchAsync(
   }
 );
 
-// /**
-//  * Get all inactive api keys middleware
-//  */
-// export const getAllInactiveApiKeys = [findAllInactiveApiKeys, generateResponse];

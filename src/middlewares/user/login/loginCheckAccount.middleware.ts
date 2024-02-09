@@ -1,9 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import { User } from "../../../models";
 import { UserInterface } from "../../../shared/interfaces";
-import { validationMessage, warningMessage, errorMessage } from "../../../shared/messages";
-import { catchAsync, fieldErrorMessages, AppError } from "../../../shared/utils";
-
+import {
+  validationMessage,
+  warningMessage,
+  errorMessage,
+} from "../../../shared/messages";
+import {
+  catchAsync,
+  fieldErrorMessages,
+  AppError,
+} from "../../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;
@@ -31,7 +38,11 @@ export const validateFields = catchAsync(
       const errors = fieldErrorMessages({ email, password }, requiredFields);
 
       return next(
-        new AppError(401, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -56,13 +67,13 @@ export const verifyUser = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_WRONG_LOGIN,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_WRONG_LOGIN,
+          },
+        })
       );
     }
 

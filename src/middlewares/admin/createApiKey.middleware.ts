@@ -39,7 +39,7 @@ interface CustomRequestInterface extends Request {
  */
 export const validateFields = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const {  idUser, apiName } = req.body;
+    const { idUser, apiName } = req.body;
 
     if (!idUser || !apiName) {
       const requiredFields = {
@@ -50,7 +50,11 @@ export const validateFields = catchAsync(
       const errors = fieldErrorMessages({ idUser, apiName }, requiredFields);
 
       return next(
-        new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -74,10 +78,13 @@ export const findAndCheckUserApiKeys = catchAsync(
     }).select("apiKeys.apiName");
 
     if (userApiKeys && !userApiKeys.checkUserApiKeys(userApiKeys, apiName)) {
-
       return next(
-        new AppError(400, warningMessage.WARNING_DUPLICATE_DOCUMENT, {
-          request: errorMessage.ERROR_DUPLICATE_API_KEY,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DUPLICATE_DOCUMENT,
+          fields: {
+            form: errorMessage.ERROR_DUPLICATE_API_KEY,
+          },
         })
       );
     }
@@ -130,7 +137,7 @@ export const encryptNewApiKey = catchAsync(
  */
 export const addNewApiKeyUser = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const {  idUser, apiName } = req.body;
+    const { idUser, apiName } = req.body;
     const { newApiKeyHash } = req;
 
     const apiKey = await ApiKey.findOneAndUpdate<ApiKeyInterface>(
@@ -251,11 +258,11 @@ export const createUserNotification = catchAsync(
  */
 export const generateResponse = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { notification,apiKey } = req;
+    const { notification, apiKey } = req;
 
     res.status(200).json(
       jsonResponse({
-        data:apiKey,
+        data: apiKey,
         notification,
       })
     );

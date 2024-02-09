@@ -48,8 +48,10 @@ export const validateField = catchAsync(
       typeof active !== "boolean"
     ) {
       return next(
-        new AppError(500, warningMessage.WARNING__REQUIRE_FIELD, {
-          active: errorMessage.ERROR_EMPTY_FIELD("active"),
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: { active: errorMessage.ERROR_EMPTY_FIELD("active") },
         })
       );
     }
@@ -136,13 +138,11 @@ export const findUserAndUpdateIfActive = catchAsync(
 
       if (!apiKey) {
         return next(
-          new AppError(
-            404,
-            warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-            {
-              request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-            }
-          )
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+            fields: { form: errorMessage.ERROR_NO_SEARCH_RESULTS },
+          })
         );
       }
 
@@ -288,13 +288,11 @@ export const findAndUpdateUserIfInactive = catchAsync(
 
       if (!apiKey) {
         return next(
-          new AppError(
-            404,
-            warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-            {
-              request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-            }
-          )
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+            fields: { form: errorMessage.ERROR_NO_SEARCH_RESULTS },
+          })
         );
       }
 

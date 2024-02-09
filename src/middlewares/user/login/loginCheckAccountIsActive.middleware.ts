@@ -1,8 +1,22 @@
 import { NextFunction, Response, Request } from "express";
-import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
-import { warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../../shared/messages";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../../shared/interfaces";
+import {
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../../shared/messages";
 import { notificationMessage } from "../../../shared/messages/notification.message";
-import { catchAsync, AppError, createResetRandomToken, EmailManager, jsonResponse } from "../../../shared/utils";
+import {
+  catchAsync,
+  AppError,
+  createResetRandomToken,
+  EmailManager,
+  jsonResponse,
+} from "../../../shared/utils";
 import { Notification } from "../../../models";
 
 interface CustomRequestInterface extends Request {
@@ -35,8 +49,12 @@ export const checkIfTokenExpire = catchAsync(
 
       if (!activationTokenIsExpire) {
         return next(
-          new AppError(404, warningMessage.WARNING_INACTIVE_ACCOUNT, {
-            request: errorMessage.ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE,
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_INACTIVE_ACCOUNT,
+            fields: {
+              form: errorMessage.ERROR_ACTIVATION_ACCOUNT_TOKEN_NOT_EXPIRE,
+            },
           })
         );
       }
@@ -211,8 +229,9 @@ export const generateErrorSendEmail = catchAsync(
     if (!user.active) {
       if (activationTokenIsExpire && !sendEmail) {
         return next(
-          new AppError(500, warningMessage.WARNING__EMAIL, {
-            request: errorMessage.ERROR_SENT_EMAIL_ACTIVATION,
+          new AppError(req, {
+            statusCode: 503,
+            message: errorMessage.ERROR_SENT_EMAIL_ACTIVATION,
           })
         );
       }

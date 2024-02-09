@@ -1,5 +1,8 @@
 import { NextFunction, Request, Response } from "express";
-import { UserInterface, NotificationDetailInterface } from "../../../shared/interfaces";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../../shared/messages";
 import { notificationMessage } from "../../../shared/messages/notification.message";
 import { catchAsync, AppError } from "../../../shared/utils";
@@ -91,8 +94,12 @@ export const generateErrorIfAccountLocked = catchAsync(
 
     if (accountIsLocked) {
       return next(
-        new AppError(401, warningMessage.WARNING_ACCOUNT_BLOCKED, {
-          request: errorMessage.ERROR_ACCOUNT_LOCKED,
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_ACCOUNT_BLOCKED,
+          fields: {
+            form: errorMessage.ERROR_ACCOUNT_LOCKED,
+          },
         })
       );
     }
@@ -114,9 +121,9 @@ export const generateErrorWrongPassword = catchAsync(
     const { passwordIsCorrect } = req;
     if (!passwordIsCorrect) {
       return next(
-        new AppError(401, warningMessage.WARNING_INVALID_FIELD, {
+        new AppError(req,{statusCode:422,message: warningMessage.WARNING_INVALID_FIELD,fields: {
           password: errorMessage.ERROR_WRONG_LOGIN,
-        })
+        }})
       );
     }
 
@@ -152,5 +159,3 @@ export const createUserNotification = catchAsync(
     next();
   }
 );
-
-

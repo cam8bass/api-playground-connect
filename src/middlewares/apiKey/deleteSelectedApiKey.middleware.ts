@@ -1,11 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { Types } from "mongoose";
-import { ApiKey,Notification } from "../../models";
-import { UserInterface, ApiKeyInterface, NotificationDetailInterface } from "../../shared/interfaces";
+import { ApiKey, Notification } from "../../models";
+import {
+  UserInterface,
+  ApiKeyInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
 import { warningMessage, errorMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
 import { catchAsync, AppError, jsonResponse } from "../../shared/utils";
-
 
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
@@ -52,8 +55,12 @@ export const checkIdUserForAdmin = catchAsync(
     if (currentUser.role === "admin") {
       if (!idUser) {
         return next(
-          new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, {
-            request: errorMessage.ERROR_EMPTY_FIELD("utilisateur"),
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING__REQUIRE_FIELD,
+            fields: {
+              idUser: errorMessage.ERROR_EMPTY_FIELD("utilisateur"),
+            },
           })
         );
       }
@@ -92,13 +99,13 @@ export const findApiKeyAndUpdate = catchAsync(
 
     if (!apiKey) {
       return next(
-        new AppError(
-          404,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-          {
-            request: errorMessage.ERROR_NO_SEARCH_RESULTS,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+          fields: {
+            form: errorMessage.ERROR_NO_SEARCH_RESULTS,
+          },
+        })
       );
     }
     req.apiKey = apiKey;
@@ -182,15 +189,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-// /**
-//  * Deleting a selected API key middleware
-//  */
-// export const deleteSelectedApiKey = [
-//   defineIdUser,
-//   checkIdUserForAdmin,
-//   findApiKeyAndUpdate,
-//   checkAndDeleteIfLastApiKey,
-//   createUserNotification,
-//   generateResponse,
-// ];

@@ -1,10 +1,25 @@
 import { NextFunction, Response, Request } from "express";
-import { User,Notification } from "../../models";
-import { UserInterface, NotificationDetailInterface } from "../../shared/interfaces";
-import { validationMessage, warningMessage, errorMessage, subjectEmail, bodyEmail } from "../../shared/messages";
+import { User, Notification } from "../../models";
+import {
+  UserInterface,
+  NotificationDetailInterface,
+} from "../../shared/interfaces";
+import {
+  validationMessage,
+  warningMessage,
+  errorMessage,
+  subjectEmail,
+  bodyEmail,
+} from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
-import { catchAsync, fieldErrorMessages, AppError, createHashRandomToken, EmailManager, jsonResponse } from "../../shared/utils";
-
+import {
+  catchAsync,
+  fieldErrorMessages,
+  AppError,
+  createHashRandomToken,
+  EmailManager,
+  jsonResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
   resetToken?: string;
@@ -41,7 +56,11 @@ export const validateFields = catchAsync(
       );
 
       return next(
-        new AppError(400, warningMessage.WARNING__REQUIRE_FIELD, errors)
+        new AppError(req, {
+          statusCode: 400,
+          message: warningMessage.WARNING__REQUIRE_FIELD,
+          fields: errors,
+        })
       );
     }
 
@@ -85,13 +104,13 @@ export const findUserByResetToken = catchAsync(
 
     if (!user) {
       return next(
-        new AppError(
-          401,
-          warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
-          {
-            request: errorMessage.ERROR_REQUEST_EXPIRED,
-          }
-        )
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("utilisateur"),
+          fields: {
+            form: errorMessage.ERROR_REQUEST_EXPIRED,
+          },
+        })
       );
     }
 
@@ -222,5 +241,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-
