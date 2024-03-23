@@ -2,7 +2,13 @@ import { Types } from "mongoose";
 import { ErrorMessageInterface } from "../interfaces";
 
 export const errorMessage: ErrorMessageInterface = {
-  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT:"Nous avons rencontré une erreur lors de l'envoi de l'e-mail de réactivation du compte. Les administrateurs ont été notifiés. Malgré cela, votre compte est désormais activé. Nous sommes ravis de vous accueillir à nouveau.", 
+
+  ERROR_REQUEST_PARAMETERS_CORRUPTED:"Votre lien est corrompu. Veuillez réessayer ou renouveler votre demande.",
+
+  ERROR_INVALID_REQUEST_PARAMETERS:"Votre lien est incorrect, veuillez renouveler votre demande.",
+  ERROR_TOKEN_MANIPULATED:"Le lien a été modifié, veuillez renouveler votre demande.",
+  ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT:
+    "Nous avons rencontré une erreur lors de l'envoi de l'e-mail de réactivation du compte. Les administrateurs ont été notifiés. Malgré cela, votre compte est désormais activé. Nous sommes ravis de vous accueillir à nouveau.",
   ERROR_ACCOUNT_DISABLED:
     "Votre compte est désactivé. Pour le réactiver, veuillez vous reconnecter à votre compte.",
   ERROR_EMPTY_USER_MODIFICATION:
@@ -32,7 +38,11 @@ export const errorMessage: ErrorMessageInterface = {
   ERROR_CONFIRM_RENEWAL_REQUEST:
     "Une erreur est survenue lors du renouvellement de votre clé d'API. Veuillez vérifier que vos identifiants sont corrects ou que votre demande n'a pas expiré. De plus, veuillez noter que la clé d'activation liée à cette demande doit être préalablement activée.",
   ERROR_CONFIRM_CHANGE_EMAIL_REQUEST:
-    "Une erreur est survenue lors du changement de votre adresse e-mail. Veuillez vérifier que vos identifiants sont corrects ou que votre demande n'a pas expiré. Si votre demande a expiré, veuillez renouveler votre requête.",
+    "Un problème est survenu lors de la modification de votre adresse e-mail. Nous vous prions de vérifier que vos identifiants sont exacts.",
+  ERROR_CONFIRM_CHANGE_EMAIL_REQUEST_JWT_EXPIRED:
+    "Votre lien a expiré. Veuillez renouveler votre demande pour générer la procédure de changement de votre adresse e-mail.",
+  ERROR_JWT_TOKEN_EXPIRED_ACTIVATION_ACCOUNT:
+    "Votre lien d'activation a expiré. veuillez retourner à la page de connexion et essayer de vous connecter avec vos identifiants. Un nouveau lien d'activation vous sera envoyé.",
   ERROR_LINK_ACTIVATION:
     "Une erreur est survenue lors de l'activation de votre compte. Veuillez vérifier que vos identifiants sont corrects. Dans le cas où le lien d'activation aurait expiré, veuillez retourner à la page de connexion et essayer de vous connecter avec vos identifiants. Un nouveau lien d'activation vous sera envoyé.",
   ERROR_SENT_EMAIL_ACTIVATION:
@@ -55,7 +65,7 @@ export const errorMessage: ErrorMessageInterface = {
   ERROR_WRONG_PASSWORD_ROUTE:
     "Pour modifier votre mot de passe, veuillez vous rediriger vers la section prévu à cet effet.",
 
-  ERROR_API_KEY_EXPIRE:
+  ERROR_API_KEY_NOT_FOUND:
     "Désolé, nous ne trouvons pas de clé d'API pouvant être renouvelée pour le moment. Veuillez vérifier si votre clé d'API est expirée ou en attente de validation. Si ce n'est pas le cas, veuillez contacter notre équipe de support pour obtenir une assistance supplémentaire. Merci de votre compréhension.",
   ERROR_DUPLICATE_API_KEY: "Vous disposez déjà d'une clé pour cette API.",
   ERROR_RATE_LIMIT:

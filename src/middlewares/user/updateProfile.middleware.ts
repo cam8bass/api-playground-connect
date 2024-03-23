@@ -13,6 +13,8 @@ import {
   bodyFilter,
   jsonResponse,
   formatUserResponse,
+  createJsonWebToken,
+  createJwtCookie,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -21,6 +23,7 @@ interface CustomRequestInterface extends Request {
   modifiedFields?: any[];
   notification?: NotificationDetailInterface[];
   user?: UserInterface;
+  token?: string;
 }
 
 /**
@@ -114,21 +117,42 @@ export const findAndUpdateUserProfile = catchAsync(
 );
 
 /**
- * Create and send a new access token to the user.
- * @param {Request} req - The request object.
- * @param {Response} res - The response object.
- * @param {NextFunction} next - The next middleware function.
+ * Create json web token
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next middleware function
+ * @returns {void}
  */
-export const createAndSendToken = catchAsync(
+export const createJwtToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { user } = req;
 
-    await user.createAndSendToken(res, new Types.ObjectId(user._id), user.role);
+    const token = await createJsonWebToken(
+      { idUser: user._id, role: user.role, authToken: true },
+      { expiresIn: "30d" }
+    );
+    req.token = token;
 
     next();
   }
 );
 
+/**
+ * Create cookie with json web token
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next middleware function
+ * @returns {void}
+ */
+export const createCookie = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { token } = req;
+
+    await createJwtCookie(res, token);
+
+    next();
+  }
+);
 /**
  * Get the list of modified fields in the user's profile.
  * @param {Request} req - The request object.

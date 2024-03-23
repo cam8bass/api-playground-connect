@@ -1,6 +1,11 @@
 import { Types } from "mongoose";
 
 export interface ErrorMessageInterface {
+  ERROR_INVALID_REQUEST_PARAMETERS: string;
+  ERROR_REQUEST_PARAMETERS_CORRUPTED: string;
+  ERROR_TOKEN_MANIPULATED: string;
+  ERROR_CONFIRM_CHANGE_EMAIL_REQUEST_JWT_EXPIRED: string;
+  ERROR_JWT_TOKEN_EXPIRED_ACTIVATION_ACCOUNT: string;
   ERROR_SEND_EMAIL_RE_ENABLE_ACCOUNT: string;
   ERROR_ACCOUNT_DISABLED: string;
   ERROR_EMPTY_USER_MODIFICATION: string;
@@ -27,7 +32,7 @@ export interface ErrorMessageInterface {
   ERROR_WRONG_EMAIL: string;
   ERROR_SENT_EMAIL_RENEWAL_API_KEY: string;
   ERROR_WRONG_PASSWORD_ROUTE: string;
-  ERROR_API_KEY_EXPIRE: string;
+  ERROR_API_KEY_NOT_FOUND: string;
   ERROR_DUPLICATE_API_KEY: string;
   ERROR_EMPTY_FIELD: (...field: string[]) => string;
   ERROR_MODIFIED_FIELD: (field: string) => string;
@@ -51,8 +56,7 @@ export interface ValidationMessageInterface {
 }
 
 export interface WarningMessageInterface {
-  // WARNING_ACCOUNT_DISABLED: string;
-  // WARNING__EMAIL: string;
+  WARNING_JWT_NOT_EXPIRED: string;
   WARNING__REQUIRE_FIELD: string;
   WARNING_INVALID_FIELD: string;
   WARNING_INACTIVE_ACCOUNT: string;
@@ -61,7 +65,7 @@ export interface WarningMessageInterface {
   WARNING_DUPLICATE_DOCUMENT: string;
   WARNING_ACCOUNT_BLOCKED: string;
   WARNING_PAGE_NOT_FOUND: string;
-  // WARNING_TOKEN: string;
+
   WARNING_DOCUMENT_NOT_FOUND: (field: string) => string;
 }
 

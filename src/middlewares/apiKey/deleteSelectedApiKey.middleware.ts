@@ -33,7 +33,7 @@ export const defineIdUser = catchAsync(
       currentUser.role === "user"
         ? new Types.ObjectId(currentUser._id)
         : currentUser.role === "admin"
-        ? new Types.ObjectId(req.params.id)
+        ? new Types.ObjectId(req.params.idUser)
         : null;
 
     req.idUser = idUser;
@@ -52,6 +52,7 @@ export const defineIdUser = catchAsync(
 export const checkIdUserForAdmin = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { currentUser, idUser } = req;
+
     if (currentUser.role === "admin") {
       if (!idUser) {
         return next(
@@ -80,7 +81,7 @@ export const checkIdUserForAdmin = catchAsync(
 export const findApiKeyAndUpdate = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { idUser } = req;
-    const idApi = new Types.ObjectId(req.params.idApi);
+    const { idApi } = req.params;
 
     const apiKey = await ApiKey.findOneAndUpdate(
       {

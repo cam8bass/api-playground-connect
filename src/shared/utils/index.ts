@@ -7,8 +7,9 @@ export { bodyFilter } from "./filterBodyRequest.utils";
 export { FilterQuery } from "./FilterQuery.utils";
 export { formatUser, formatUserResponse } from "./formatResponse.utils";
 export { jsonResponse } from "./jsonResponse.utils";
+export { createResetUrl } from "./reset.utils";
+export * from "./jwt.utils";
 export {
   createHashRandomToken,
   createResetRandomToken,
-  createResetUrl,
-} from "./reset.utils";
+} from "./randomToken.utils";

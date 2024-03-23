@@ -3,8 +3,7 @@ import { ApiKeyInterface, CustomQuery } from "../shared/interfaces";
 import { validationMessage } from "../shared/messages";
 import { apiNameType } from "../shared/types/types";
 import { ApiKeyManager } from "../shared/utils";
-
-
+import { Types } from "mongoose";
 
 const apiKeySchema = new Schema<ApiKeyInterface>(
   {
@@ -45,6 +44,7 @@ const apiKeySchema = new Schema<ApiKeyInterface>(
           type: Boolean,
           default: false,
         },
+
         renewalToken: { type: String },
         renewalTokenExpire: { type: Date },
         createdAt: { type: Date, default: new Date(Date.now()) },
@@ -96,6 +96,50 @@ apiKeySchema.methods.checkUserApiKeys = function (
   return true;
 };
 
+apiKeySchema.methods.saveRenewalToken = async function (
+  idApi: Types.ObjectId,
+  resetHashToken: string,
+  dateExpire: Date
+): Promise<void> {
+  await this.updateOne(
+    {
+      apiKeys: {
+        $elemMatch: {
+          _id: idApi,
+          apiKeyExpire: { $gte: new Date(Date.now()) },
+          active: true,
+        },
+      },
+    },
+    {
+      $set: {
+        "apiKeys.$.renewalTokenExpire": dateExpire,
+        "apiKeys.$.renewalToken": resetHashToken,
+      },
+    }
+  );
+};
+
+apiKeySchema.methods.deleteRenewalTokenExpire = async function (
+  idApi: Types.ObjectId
+): Promise<void> {
+  await this.updateOne(
+    {
+      apiKeys: {
+        $elemMatch: {
+          _id: idApi,
+          apiKeyExpire: { $gte: new Date(Date.now()) },
+          active: true,
+        },
+      },
+    },
+    {
+      $unset: {
+        "apiKeys.$.renewalTokenExpire": "",
+        "apiKeys.$.renewalToken": "",
+      },
+    }
+  );
+};
+
 export const ApiKey = model<ApiKeyInterface>("ApiKey", apiKeySchema);
-
-

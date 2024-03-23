@@ -1,10 +1,9 @@
-
 {
   "name": "api-playground-connect",
   "version": "1.0.0",
   "scripts": {
     "start": "NODE_ENV=production ts-node src/server.js",
-    "dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/server.ts",
+    "dev": "ts-node-dev --respawn --transpile-only --no-notify src/server.ts",
     "build": "tsc -p tsconfig.json && node copy-files.js",
     "debug": "NODE_ENV=production ndb ts-node ./src/server.ts"
   },
@@ -48,6 +47,7 @@
     "nodemon": "^2.0.22",
     "ts-loader": "^9.4.2",
     "ts-node": "^10.9.1",
+    "ts-node-dev": "^2.0.0",
     "typescript": "^5.0.4"
   }
 }

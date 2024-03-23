@@ -11,19 +11,24 @@ import cookieParser from "cookie-parser";
 import hpp from "hpp";
 import mongoSanitize from "express-mongo-sanitize";
 import { rateLimit } from "express-rate-limit";
-import { nodeEnv } from "./shared/types/types";
+import { nodeEnvType } from "./shared/types/types";
 import cors from "cors";
-import { errorMessage, warningMessage } from "./shared/messages";
+import { errorMessage } from "./shared/messages";
 import { AppError } from "./shared/utils";
 
 dotenv.config({ path: "./config.env" });
-const nodeEnv = process.env.NODE_ENV as nodeEnv;
+const nodeEnv = process.env.NODE_ENV as nodeEnvType;
 
 const app = express();
 
 // 1) MIDDLEWARE
 app.use(helmet());
-app.use(cors({ origin: ["http://localhost:5173"], credentials: true })); // FIXME: A modifier pour la production
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://192.168.1.40:5173"],
+    credentials: true,
+  })
+); // FIXME: A modifier pour la production
 
 // app.use(
 //   rateLimit({
@@ -53,14 +58,15 @@ app.use("/playground-connect/v1/users", userRouter);
 app.use("/playground-connect/v1/apiKeys", apiKeyRouter);
 app.use("/playground-connect/v1/admin", adminRouter);
 app.use("/playground-connect/v1/notification", notificationRouter);
-app.use("*", (req: Request, res: Response, next: NextFunction) => {
-  return next(
+app.all("*", (req: Request, res: Response, next: NextFunction) => {
+  next(
     new AppError(req, {
       statusCode: 404,
       message: errorMessage.ERROR_PAGE_NOT_FOUND,
     })
   );
 });
+
 // ERRORS
 app.use(errorController);
 export default app;

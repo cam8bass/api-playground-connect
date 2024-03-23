@@ -24,9 +24,7 @@ import {
 export const jsonResponse = (
   options: jsonResponseOptionsInterface = {}
 ): jsonResponseInterface => {
-  const jsonResponse: jsonResponseInterface = {
-    status: "success",
-  };
+  const jsonResponse: jsonResponseInterface = { status: "success" };
 
   if (options.notification) {
     jsonResponse.notification = options.notification;

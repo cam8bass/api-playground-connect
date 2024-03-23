@@ -5,21 +5,22 @@ import { Response, Request } from "express";
 export interface UserInterface extends Document {
   firstname: string;
   lastname: string;
+
   email: string;
   emailChangeAt: Date;
-  emailResetToken: string;
-  emailResetTokenExpire: Date;
+  emailToken: string;
+  emailTokenExpire: Date;
 
   password: string;
   passwordConfirm: string;
   passwordChangeAt: Date;
-  passwordResetToken: string;
-  passwordResetTokenExpire: Date;
+  passwordToken: string;
+  passwordTokenExpire: Date;
 
   active: boolean;
-  activationAccountToken: string;
-  activationAccountTokenExpire: Date;
   activationAccountAt: Date;
+  activationToken: string;
+  activationTokenExpire: Date;
 
   accountLocked: boolean;
   accountLockedExpire: Date;
@@ -34,18 +35,16 @@ export interface UserInterface extends Document {
 
   // METHODS
 
-  prepareAccountActivation: (
+  saveActivationToken: (
     resetHashToken: string,
     dateExpire: Date
   ) => Promise<void>;
-
-  createAndSendToken: (
-    res: Response,
-    userId: Types.ObjectId,
-    role: userRoleType
-  ) => Promise<string>;
+  savePasswordToken: (
+    resetHashToken: string,
+    dateExpire: Date
+  ) => Promise<void>;
   deleteActivationToken: () => Promise<void>;
-  deletePasswordResetToken: () => Promise<void>;
+  deletePasswordToken: () => Promise<void>;
 
   checkPasswordChangedAfterToken: (timestampToken: number) => boolean;
   createResetUrl: (
@@ -53,11 +52,8 @@ export interface UserInterface extends Document {
     resetToken: string,
     resetType: resetType
   ) => string;
-  changeUserPassword: (
-    newPassword: string,
-    newPasswordConfirm: string
-  ) => Promise<void>;
-  deleteEmailResetToken: () => Promise<void>;
+
+  deleteEmailToken: () => Promise<void>;
   checkEmailChangedAfterToken: (timestampToken: number) => boolean;
   updateLoginFailure: (passwordIsCorrect: boolean) => Promise<void>;
   unlockAccount: () => Promise<void>;
@@ -66,4 +62,8 @@ export interface UserInterface extends Document {
     inputPassword: string,
     userPassword: string
   ) => Promise<boolean>;
+  changeUserPassword: (
+    newPassword: string,
+    newPasswordConfirm: string
+  ) => Promise<void>;
 }

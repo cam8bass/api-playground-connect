@@ -5,6 +5,7 @@ import {
   checkAccountLockedMiddleware,
   checkAccountDisabledMiddleware,
   findUserAccountMiddleware,
+  checkRequestParamsMiddleware,
 } from "../middlewares/auth";
 import { userRoleType } from "../shared/types/types";
 
@@ -20,7 +21,8 @@ export const findUserAccount = [findUserAccountMiddleware.findUser];
  */
 export const protect = [
   protectMiddleware.checkTokenExistence,
-  protectMiddleware.verifyAndDecodeToken,
+  protectMiddleware.decodeJwt,
+  protectMiddleware.checkCorrectToken,
   protectMiddleware.findAndCheckUser,
 ];
 
@@ -57,4 +59,12 @@ export const checkAccountLocked = [
 export const checkAccountDisabled = [
   checkAccountDisabledMiddleware.checkUserIsLoggedIn,
   checkAccountDisabledMiddleware.checkUserIsDisable,
+];
+
+/**
+ * @description
+ * Check if request parameters are correct
+ */
+export const checkRequestParams = [
+  checkRequestParamsMiddleware.checkRequestParams,
 ];

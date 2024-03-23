@@ -4,7 +4,6 @@ import { ApiKey } from "../../models";
 import { UserInterface, ApiKeyInterface } from "../../shared/interfaces";
 import { catchAsync, jsonResponse } from "../../shared/utils";
 
-
 interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
   apiKeys?: ApiKeyInterface;
@@ -20,7 +19,7 @@ interface CustomRequestInterface extends Request {
  */
 export const findApiKeys = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const {  currentUser } = req;
+    const { currentUser } = req;
     const idUser = new Types.ObjectId(currentUser._id);
 
     const apiKeys = await ApiKey.findOne({ user: idUser })
@@ -50,4 +49,3 @@ export const generateReponse = catchAsync(
     res.status(200).json(jsonResponse({ data: apiKeys }));
   }
 );
-

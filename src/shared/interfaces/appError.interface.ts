@@ -12,8 +12,8 @@ export interface AppErrorConfigInterface {
 }
 
 export interface AppErrorContextInterface {
-  user?: Types.ObjectId;
-  url?: string;
+  user: Types.ObjectId | null;
+  url: string | null;
 }
 
 export interface AppErrorInterface extends Error {
@@ -27,10 +27,3 @@ export interface AppErrorInterface extends Error {
   fields?: object;
   context?: AppErrorContextInterface;
 }
-
-// export interface AppErrorInterface extends Error {
-//   status: errorStatusType;
-//   statusCode: number;
-//   isOperational: boolean;
-//   errors: object;
-// }

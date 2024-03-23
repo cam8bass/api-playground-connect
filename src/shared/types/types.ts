@@ -1,4 +1,4 @@
-export type nodeEnv = "development" | "production";
+export type nodeEnvType = "development" | "production";
 export type userRoleType = "user" | "admin";
 export type errorStatusType = "fail" | "error";
 export type resetType = "password" | "email" | "activation" | "apiKey";
@@ -13,8 +13,6 @@ export type subjectEmailApiKey =
 
 export type notificationType = "success" | "fail" | "error";
 
-// TODO: A voir
-
 export type errorCategoriesType =
   | "external"
   | "validation"
@@ -23,3 +21,5 @@ export type errorCategoriesType =
   | "security";
 
 export type errorPriorityType = "critical" | "warning" | "info";
+
+export type requestStatusType = "success" | "fail" | "error";

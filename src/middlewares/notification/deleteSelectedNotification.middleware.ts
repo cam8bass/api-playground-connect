@@ -19,12 +19,12 @@ interface CustomRequestInterface extends Request {
 export const findAndDeleteSelectedNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { currentUser } = req;
-    const { idNotification } = req.params;
+    const { id } = req.params;
 
     // delete the selected notification
     const updatedNotification = await Notification.findOneAndUpdate(
       { user: currentUser._id },
-      { $pull: { notifications: { _id: idNotification } } },
+      { $pull: { notifications: { _id: id } } },
       { new: true }
     );
 

@@ -15,11 +15,11 @@ import {
 import { notificationMessage } from "../../shared/messages/notification.message";
 import {
   catchAsync,
-  createResetRandomToken,
   AppError,
   EmailManager,
   jsonResponse,
   createResetUrl,
+createResetRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -50,6 +50,66 @@ export const createResetToken = catchAsync(
       resetHashToken,
       dateExpire,
     };
+
+    next();
+  }
+);
+
+
+
+export const findUserApiKeys = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { currentUser } = req;
+
+    const apiKey = await ApiKey.findOne({ user: currentUser._id });
+
+    if (!apiKey) {
+      return next(
+        new AppError(req, {
+          statusCode: 422,
+          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
+          fields: {
+            form: errorMessage.ERROR_API_KEY_NOT_FOUND,
+          },
+        })
+      );
+    }
+
+    req.apiKey = apiKey;
+
+    next();
+  }
+);
+
+/**
+ * Checks if the email token is expired
+ * @param req The request object
+ * @param res The response object
+ * @param next The next middleware function
+ */
+export const checkIfTokenExpire = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { idApi } = req.params;
+    const { apiKey } = req;
+
+    const selectedApiKey = apiKey.apiKeys.find(
+      (el) => el._id === new Types.ObjectId(idApi)
+    );
+    if (selectedApiKey) {
+      const renewalTokenIsExpire =
+        selectedApiKey.renewalTokenExpire < new Date(Date.now());
+
+      if (!renewalTokenIsExpire) {
+        return next(
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_JWT_NOT_EXPIRED,
+            fields: { form: warningMessage.WARNING_JWT_NOT_EXPIRED },
+          })
+        );
+      }
+    }
+
     next();
   }
 );
@@ -60,45 +120,18 @@ export const createResetToken = catchAsync(
  * @param {Response} res - The response object.
  * @param {NextFunction} next - The next function.
  */
-export const findAndUpdateRenewalApiKey = catchAsync(
+export const findApiKeyAndAddTokenExpire = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const idApi = new Types.ObjectId(req.params.idApi);
-    const { currentUser, randomToken } = req;
+    const { idApi } = req.params;
+    const { apiKey,randomToken  } = req;
 
-    const apiKey = await ApiKey.findOneAndUpdate(
-      {
-        user: new Types.ObjectId(currentUser._id),
-        apiKeys: {
-          $elemMatch: {
-            _id: idApi,
-            apiKeyExpire: { $gte: new Date(Date.now()) },
-            active: true,
-          },
-        },
-      },
-      {
-        $set: {
-          "apiKeys.$.renewalToken": randomToken.resetHashToken,
-          "apiKeys.$.renewalTokenExpire": randomToken.dateExpire,
-        },
-      }
-    ).select("_id");
+    await apiKey.saveRenewalToken(new Types.ObjectId(idApi),randomToken.resetHashToken,randomToken.dateExpire);
 
-    if (!apiKey) {
-      return next(
-        new AppError(req, {
-          statusCode: 422,
-          message: warningMessage.WARNING_DOCUMENT_NOT_FOUND("clé d'api"),
-          fields: {
-            form: errorMessage.ERROR_API_KEY_EXPIRE,
-          },
-        })
-      );
-    }
-    req.apiKey = apiKey;
     next();
   }
 );
+
+
 
 /**
  * createResetUrlWithResetToken creates a reset URL with the reset token and stores it in the request object.
@@ -169,31 +202,13 @@ export const createAdminNotification = catchAsync(
  * @param {Response} res - The response object.
  * @param {NextFunction} next - The next function.
  */
-export const findAndUpdateRenewalToken = catchAsync(
+export const deleteRenewalToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { sendEmail, currentUser } = req;
-    const idApi = new Types.ObjectId(req.params.idApi);
+    const { sendEmail, apiKey } = req;
+    const { idApi } = req.params;
 
     if (!sendEmail) {
-      await ApiKey.findOneAndUpdate(
-        {
-          user: new Types.ObjectId(currentUser._id),
-
-          apiKeys: {
-            $elemMatch: {
-              _id: idApi,
-              apiKeyExpire: { $gte: new Date(Date.now()) },
-              active: true,
-            },
-          },
-        },
-        {
-          $unset: {
-            "apiKeys.$.renewalTokenExpire": "",
-            "apiKeys.$.renewalToken": "",
-          },
-        }
-      );
+      await apiKey.deleteRenewalToken(new Types.ObjectId(idApi));
     }
     next();
   }

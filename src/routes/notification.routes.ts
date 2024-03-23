@@ -14,11 +14,13 @@ router.get("/myNotifications", notificationController.getMyNotification);
 
 router.delete(
   "/deleteAllNotifications/:id",
+  authController.checkRequestParams,
   notificationController.deleteAllNotification
 );
 
 router.patch(
-  "/updateNotification/:idNotification",
+  "/updateNotification/:id",
+  authController.checkRequestParams,
   notificationController.updateNotification
 );
 
@@ -28,12 +30,14 @@ router.patch(
 );
 
 router.patch(
-  "/deleteSelectedNotification/:idNotification",
+  "/deleteSelectedNotification/:id",
+  authController.checkRequestParams,
   notificationController.deleteSelectedNotification
 );
 
 router.patch(
-  "/updateViewNotification/:idNotification",
+  "/updateViewNotification/:id",
+  authController.checkRequestParams,
   notificationController.updateViewNotification
 );
 

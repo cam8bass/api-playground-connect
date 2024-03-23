@@ -5,14 +5,20 @@ import apiKeyRouter from "./apiKey.routes";
 
 const router = Router();
 
-// SIGNUP
 router.post("/signup", userController.signUp);
+router.post("/login", userController.login);
 
 router.get("/me", userController.getMe);
 
-// RESET PASSWORD
+router.post(
+  "/forgotPassword",
+  authController.findUserAccount,
+  authController.checkAccountLocked,
+  userController.forgotPassword
+);
 router.patch(
   "/resetPassword/:token",
+  authController.checkRequestParams,
   authController.findUserAccount,
   authController.checkAccountLocked,
   userController.resetPassword
@@ -21,29 +27,20 @@ router.patch(
 // RESET EMAIL
 router.patch(
   "/resetEmail/:token",
+  authController.checkRequestParams,
   authController.findUserAccount,
   authController.checkAccountLocked,
   userController.confirmChangeEmail
 );
 
-// FORGOT PASSWORD
-router.post(
-  "/forgotPassword",
-  authController.findUserAccount,
-  authController.checkAccountLocked,
-  userController.forgotPassword
-);
-
 // ACTIVATION ACCOUNT
 router.patch(
   "/activationAccount/:token",
+  authController.checkRequestParams,
   authController.findUserAccount,
   authController.checkAccountLocked,
   userController.confirmActivationAccount
 );
-
-// LOGIN
-router.post("/login", userController.login);
 
 // === NEED AUTH ===
 
@@ -74,6 +71,6 @@ router.use(authController.restrictTo("user"));
 
 // NESTED ROUTES
 // DELETE SELECTED API KEY
-router.use("/:id", apiKeyRouter);
+router.use("/:idUser", authController.checkRequestParams, apiKeyRouter);
 
 export default router;

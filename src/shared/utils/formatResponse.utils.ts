@@ -49,11 +49,8 @@ export function formatUser(
       loginFailures: user.loginFailures,
       disableAccountAt: user.disableAccountAt,
       emailChangeAt: user.emailChangeAt,
-      emailResetTokenExpire: user.emailResetTokenExpire,
       passwordChangeAt: user.passwordChangeAt,
-      passwordResetTokenExpire: user.passwordResetTokenExpire,
       activationAccountAt: user.activationAccountAt,
-      activationAccountTokenExpire: user.activationAccountTokenExpire,
       accountLockedExpire: user.accountLockedExpire,
     };
   }

@@ -1,5 +1,5 @@
 import { NextFunction, Response, Request } from "express";
-import { Types } from "mongoose";
+
 import { User, Notification } from "../../models";
 import {
   UserInterface,
@@ -19,6 +19,8 @@ import {
   AppError,
   EmailManager,
   jsonResponse,
+  createJsonWebToken,
+  createJwtCookie,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -26,6 +28,7 @@ interface CustomRequestInterface extends Request {
   currentUser?: UserInterface;
   sendEmail?: boolean;
   notification?: NotificationDetailInterface[];
+  token?: string;
 }
 
 /**
@@ -81,9 +84,7 @@ export const findUserUpdatePassword = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { currentUser } = req;
 
-    const user = await User.findById(
-      new Types.ObjectId(currentUser._id)
-    ).select(
+    const user = await User.findById(currentUser._id).select(
       "+password role email loginFailures accountLockedExpire accountLocked"
     );
 
@@ -151,16 +152,39 @@ export const changePasswordUser = catchAsync(
 );
 
 /**
- * Create and send token to change password
+ * Create json web token
  * @param {object} req - request object
  * @param {object} res - response object
  * @param {function} next - next middleware function
  * @returns {void}
  */
-export const createAndSendToken = catchAsync(
+export const createJwtToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { user } = req;
-    await user.createAndSendToken(res, new Types.ObjectId(user._id), user.role);
+
+    const token = await createJsonWebToken(
+      { idUser: user._id, role: user.role,authToken:true },
+      { expiresIn: "30d" }
+    );
+    req.token = token;
+
+    next();
+  }
+);
+
+/**
+ * Create cookie with json web token
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next middleware function
+ * @returns {void}
+ */
+export const createCookie = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { token } = req;
+
+    await createJwtCookie(res, token);
+
     next();
   }
 );

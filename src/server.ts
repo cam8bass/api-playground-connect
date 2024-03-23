@@ -1,7 +1,7 @@
 import app from "./main";
 import connectToDB from "./shared/services/connectDb.service";
 import http from "http";
-import { nodeEnv } from "./shared/types/types";
+import {  nodeEnvType } from "./shared/types/types";
 
 /**
  * Starts the server.
@@ -9,7 +9,7 @@ import { nodeEnv } from "./shared/types/types";
 async function startServer() {
   let server: http.Server;
 
-  const nodeEnv = process.env.NODE_ENV as nodeEnv;
+  const nodeEnv = process.env.NODE_ENV as nodeEnvType;
 
   const { PORT } = process.env;
 

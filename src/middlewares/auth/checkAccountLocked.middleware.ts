@@ -21,7 +21,7 @@ export const checkUserIsLoggedIn = catchAsync(
       return next(
         new AppError(req, {
           statusCode: 401,
-          message: errorMessage.ERROR_LOGIN_REQUIRED,
+          message: errorMessage.ERROR_ACCESS_DENIED,
         })
       );
     }

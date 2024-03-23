@@ -3,7 +3,6 @@ import { ApiKey } from "../../models";
 import { ApiKeyInterface } from "../../shared/interfaces";
 import { catchAsync, jsonResponse } from "../../shared/utils";
 
-
 interface CustomRequestInterface extends Request {
   apiKeys?: ApiKeyInterface;
 }
@@ -39,4 +38,3 @@ export const generateResponse = catchAsync(
     res.status(200).json(jsonResponse({ data: apiKeys }));
   }
 );
-

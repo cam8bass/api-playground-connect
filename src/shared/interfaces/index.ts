@@ -7,3 +7,4 @@ export * from "./customQuery.interface";
 export * from "./email.interface";
 export * from "./jsonResponse.interface"
 export * from "./notification.interface"
+export * from "./jwt.interface"

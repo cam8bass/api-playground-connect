@@ -4,20 +4,15 @@ import {
   UserInterface,
   NotificationDetailInterface,
 } from "../../shared/interfaces";
-import {
-  subjectEmail,
-  bodyEmail,
-  errorMessage,
-  warningMessage,
-} from "../../shared/messages";
+import { subjectEmail, bodyEmail, errorMessage } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
 import {
   catchAsync,
   bodyFilter,
-  createResetRandomToken,
   EmailManager,
   AppError,
   jsonResponse,
+  createResetRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -82,8 +77,8 @@ export const createUser = catchAsync(
       password: filteredBody.password,
       passwordConfirm: filteredBody.passwordConfirm,
       active: false,
-      activationAccountToken: randomToken.resetHashToken,
-      activationAccountTokenExpire: randomToken.dateExpire,
+      activationToken: randomToken.resetHashToken,
+      activationTokenExpire: randomToken.dateExpire,
     });
 
     req.user = user;
@@ -95,11 +90,7 @@ export const createResetUrl = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { user, randomToken } = req;
 
-    const resetUrl = user.createResetUrl(
-      req,
-      randomToken.resetToken,
-      "activation"
-    );
+    const resetUrl = user.createResetUrl(req, randomToken.resetToken, "activation");
 
     req.resetUrl = resetUrl;
 
@@ -136,18 +127,6 @@ export const createAdminNotification = catchAsync(
           user.email
         )
       );
-    }
-
-    next();
-  }
-);
-
-export const deleteToken = catchAsync(
-  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, sendEmail } = req;
-
-    if (!sendEmail) {
-      await user.deleteActivationToken();
     }
 
     next();

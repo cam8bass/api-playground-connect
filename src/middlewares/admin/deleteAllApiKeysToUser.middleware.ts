@@ -24,9 +24,9 @@ interface CustomRequestInterface extends Request {
  */
 export const findAndDeleteApiKeys = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { id } = req.params;
+    const { idApi } = req.params;
 
-    const apiKey = await ApiKey.findOneAndDelete({ _id: id })
+    const apiKey = await ApiKey.findOneAndDelete({ _id: idApi })
       .select("email")
       .lean();
 

@@ -1,27 +1,26 @@
 import { NextFunction, Request, Response } from "express";
-import { Types } from "mongoose";
-import { User, Notification } from "../../models";
+import { Notification, User } from "../../models";
 import {
   UserInterface,
   NotificationDetailInterface,
 } from "../../shared/interfaces";
 import {
-  warningMessage,
   errorMessage,
   subjectEmail,
   bodyEmail,
+  warningMessage,
 } from "../../shared/messages";
 import { notificationMessage } from "../../shared/messages/notification.message";
 import {
   catchAsync,
-  createResetRandomToken,
   AppError,
   EmailManager,
   jsonResponse,
+  createResetRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
-  emailResetTokenData?: {
+  randomToken?: {
     resetToken: string;
     resetHashToken: string;
     dateExpire: Date;
@@ -31,6 +30,35 @@ interface CustomRequestInterface extends Request {
   notification?: NotificationDetailInterface[];
   sendEmail?: boolean;
 }
+
+/**
+ * Checks if the email token is expired
+ * @param req The request object
+ * @param res The response object
+ * @param next The next middleware function
+ */
+export const checkIfTokenExpire = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { currentUser } = req;
+
+    if (currentUser.emailTokenExpire) {
+      const emailTokenIsExpire =
+        currentUser.emailTokenExpire < new Date(Date.now());
+
+      if (!emailTokenIsExpire) {
+        return next(
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_JWT_NOT_EXPIRED,
+            fields: { form: warningMessage.WARNING_JWT_NOT_EXPIRED },
+          })
+        );
+      }
+    }
+
+    next();
+  }
+);
 
 /**
  * Creates a random token for email reset
@@ -43,7 +71,7 @@ export const createResetToken = catchAsync(
   async (req: CustomRequestInterface, _res: Response, next: NextFunction) => {
     const { resetToken, resetHashToken, dateExpire } = createResetRandomToken();
 
-    req.emailResetTokenData = {
+    req.randomToken = {
       resetToken,
       resetHashToken,
       dateExpire,
@@ -62,15 +90,12 @@ export const createResetToken = catchAsync(
  */
 export const findUserAndUpdateResetToken = catchAsync(
   async (req: CustomRequestInterface, _res: Response, next: NextFunction) => {
-    const { emailResetTokenData, currentUser } = req;
+    const { randomToken, currentUser } = req;
 
-    const user = await User.findByIdAndUpdate(
-      new Types.ObjectId(currentUser._id),
-      {
-        emailResetToken: emailResetTokenData.resetHashToken,
-        emailResetTokenExpire: emailResetTokenData.dateExpire,
-      }
-    ).select("email");
+    const user = await User.findByIdAndUpdate(currentUser._id, {
+      emailToken: randomToken.resetHashToken,
+      emailTokenExpire: randomToken.dateExpire,
+    }).select("email");
 
     if (!user) {
       return next(
@@ -97,11 +122,11 @@ export const findUserAndUpdateResetToken = catchAsync(
  */
 export const createResetUrl = catchAsync(
   async (req: CustomRequestInterface, _res: Response, next: NextFunction) => {
-    const { emailResetTokenData, currentUser } = req;
+    const { randomToken, currentUser } = req;
 
     const resetUrl = currentUser.createResetUrl(
       req,
-      emailResetTokenData.resetToken,
+      randomToken.resetToken,
       "email"
     );
     req.resetUrl = resetUrl;
@@ -159,19 +184,12 @@ export const createAdminNotification = catchAsync(
   }
 );
 
-/**
- * Deletes the reset token
- * @param {object} req - The request object
- * @param {object} res - The response object
- * @param {function} next - The next function
- * @returns {undefined}
- */
-export const deleteResetToken = catchAsync(
+export const deleteEmailToken = catchAsync(
   async (req: CustomRequestInterface, _res: Response, next: NextFunction) => {
     const { sendEmail, currentUser } = req;
 
     if (!sendEmail) {
-      await currentUser.deleteEmailResetToken();
+      await currentUser.deleteEmailToken();
     }
 
     next();

@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { nodeEnv } from "../types/types";
+import { nodeEnvType } from "../types/types";
 import client from "../../infisical";
 
 /**
@@ -8,7 +8,6 @@ import client from "../../infisical";
 async function connectToDB(): Promise<void> {
   try {
     const { secretValue: DATABASE } = await client.getSecret("DATABASE");
-
     const { secretValue: DATABASE_PASSWORD } = await client.getSecret(
       "DATABASE_PASSWORD"
     );
@@ -34,7 +33,7 @@ async function connectToDB(): Promise<void> {
 
     console.log("✅ Database connected");
   } catch (error) {
-    const nodeEnv = process.env.NODE_ENV as nodeEnv;
+    const nodeEnv = process.env.NODE_ENV as nodeEnvType;
 
     if (nodeEnv === "development") {
       console.error("💥 Database connection error:", error);

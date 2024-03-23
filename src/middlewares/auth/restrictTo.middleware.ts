@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserInterface } from "../../shared/interfaces";
-import { warningMessage, errorMessage } from "../../shared/messages";
+import { errorMessage } from "../../shared/messages";
 import { userRoleType } from "../../shared/types/types";
 import { catchAsync, AppError } from "../../shared/utils";
 

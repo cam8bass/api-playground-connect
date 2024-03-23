@@ -2,11 +2,15 @@ import { NextFunction, Request, Response } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import client from "../../infisical";
 import { User } from "../../models";
-import { UserInterface } from "../../shared/interfaces";
-import { catchAsync, jsonResponse, formatUserResponse } from "../../shared/utils";
+import { JwtDecodedInterface, UserInterface } from "../../shared/interfaces";
+import {
+  catchAsync,
+  jsonResponse,
+  formatUserResponse,
+} from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
-  decoded?: jwt.JwtPayload;
+  decoded?: JwtDecodedInterface;
   token?: string;
   user?: UserInterface;
 }
@@ -77,7 +81,7 @@ export const findUser = catchAsync(
     const { decoded } = req;
 
     const user = await User.findOne({
-      _id: decoded.id,
+      _id: decoded.idUser,
     });
 
     if (
@@ -103,9 +107,8 @@ export const generateResponse = catchAsync(
   async (req: CustomRequestInterface, res: Response) => {
     const { user } = req;
 
-    res
+    return res
       .status(200)
       .json(jsonResponse({ data: formatUserResponse(user, "user") }));
   }
 );
-

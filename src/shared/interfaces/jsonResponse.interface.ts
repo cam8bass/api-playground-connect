@@ -1,7 +1,8 @@
+import { requestStatusType } from "../types/types";
 import { NotificationDetailInterface } from "./notification.interface";
 
 export interface jsonResponseInterface {
-  status: string;
+  status: requestStatusType;
   notification?: NotificationDetailInterface[];
   data?: any;
   results?: number;
@@ -14,4 +15,3 @@ export interface jsonResponseOptionsInterface {
   results?: number;
   limit?: number;
 }
-

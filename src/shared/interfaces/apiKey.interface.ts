@@ -16,6 +16,13 @@ export interface ApiKeyInterface extends Document {
     userapiKeys: ApiKeyInterface,
     apiName: apiNameType
   ) => boolean;
+
+  saveRenewalToken: (
+    idApi: Types.ObjectId,
+    resetHashToken: string,
+    dateExpire: Date
+  ) => Promise<void>;
+  deleteRenewalToken: (idApi: Types.ObjectId) => Promise<void>;
 }
 
 export interface KeyInterface {

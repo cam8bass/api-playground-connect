@@ -1,7 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { catchAsync } from "../../shared/utils";
-
-
+import { catchAsync, jsonResponse } from "../../shared/utils";
 
 /**
  * Deletes the JWT cookie from the response.
@@ -28,6 +26,6 @@ export const deleteCookie = catchAsync(
  */
 export const generateReponse = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    res.status(200).end();
+    return res.status(204).end();
   }
 );

@@ -13,22 +13,21 @@ import { notificationMessage } from "../../../shared/messages/notification.messa
 import {
   catchAsync,
   AppError,
-  createResetRandomToken,
   EmailManager,
   jsonResponse,
+  createResetRandomToken,
 } from "../../../shared/utils";
 import { Notification } from "../../../models";
 
 interface CustomRequestInterface extends Request {
   user?: UserInterface;
   sendEmail?: boolean;
+  resetUrl?: string;
   randomToken?: {
     resetToken: string;
     resetHashToken: string;
     dateExpire: Date;
   };
-  resetUrl?: string;
-  activationTokenIsExpire?: boolean;
   notification?: NotificationDetailInterface[];
 }
 
@@ -45,7 +44,7 @@ export const checkIfTokenExpire = catchAsync(
 
     if (!user.active) {
       const activationTokenIsExpire =
-        user.activationAccountTokenExpire < new Date(Date.now());
+        user.activationTokenExpire < new Date(Date.now());
 
       if (!activationTokenIsExpire) {
         return next(
@@ -58,7 +57,6 @@ export const checkIfTokenExpire = catchAsync(
           })
         );
       }
-      req.activationTokenIsExpire = activationTokenIsExpire;
     }
 
     next();
@@ -75,14 +73,12 @@ export const checkIfTokenExpire = catchAsync(
  */
 export const createResetToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, activationTokenIsExpire } = req;
+    const { user } = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        const { resetToken, resetHashToken, dateExpire } =
-          createResetRandomToken();
+      const { resetToken, resetHashToken, dateExpire } =
+        createResetRandomToken();
 
-        req.randomToken = { resetToken, resetHashToken, dateExpire };
-      }
+      req.randomToken = { resetToken, resetHashToken, dateExpire };
     }
     next();
   }
@@ -98,14 +94,9 @@ export const createResetToken = catchAsync(
  */
 export const findAndUpdateNewToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, randomToken, activationTokenIsExpire } = req;
+    const { user ,randomToken} = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        await user.prepareAccountActivation(
-          randomToken.resetHashToken,
-          randomToken.dateExpire
-        );
-      }
+      await user.saveActivationToken(randomToken.resetHashToken,randomToken.dateExpire);
     }
 
     next();
@@ -122,17 +113,11 @@ export const findAndUpdateNewToken = catchAsync(
  */
 export const createResetUrl = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, randomToken, activationTokenIsExpire } = req;
+    const { user, randomToken } = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        const resetUrl = user.createResetUrl(
-          req,
-          randomToken.resetToken,
-          "activation"
-        );
+      const resetUrl = user.createResetUrl(req, randomToken.resetToken, "activation");
 
-        req.resetUrl = resetUrl;
-      }
+      req.resetUrl = resetUrl;
     }
 
     next();
@@ -149,17 +134,15 @@ export const createResetUrl = catchAsync(
  */
 export const sendEmail = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, resetUrl, activationTokenIsExpire } = req;
+    const { user, resetUrl } = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        const sendEmail = await EmailManager.send({
-          to: user.email,
-          subject: subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
-          text: bodyEmail.SEND_RESET_URL(resetUrl, 10),
-        });
+      const sendEmail = await EmailManager.send({
+        to: user.email,
+        subject: subjectEmail.SUBJECT_MODIFIED_STATUS("Activation"),
+        text: bodyEmail.SEND_RESET_URL(resetUrl, 10),
+      });
 
-        req.sendEmail = sendEmail;
-      }
+      req.sendEmail = sendEmail;
     }
 
     next();
@@ -176,9 +159,9 @@ export const sendEmail = catchAsync(
  */
 export const createAdminNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { sendEmail, user, activationTokenIsExpire } = req;
+    const { sendEmail, user } = req;
     if (!user.active) {
-      if (activationTokenIsExpire && !sendEmail) {
+      if (!sendEmail) {
         await Notification.searchAndSendAdminNotification(
           "error",
           errorMessage.ERROR_SEND_EMAIL(
@@ -204,9 +187,9 @@ export const createAdminNotification = catchAsync(
  */
 export const deleteToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, sendEmail, activationTokenIsExpire } = req;
+    const { user, sendEmail } = req;
     if (!user.active) {
-      if (activationTokenIsExpire && !sendEmail) {
+      if (!sendEmail) {
         await user.deleteActivationToken();
       }
     }
@@ -225,9 +208,9 @@ export const deleteToken = catchAsync(
  */
 export const generateErrorSendEmail = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, sendEmail, activationTokenIsExpire } = req;
+    const { user, sendEmail } = req;
     if (!user.active) {
-      if (activationTokenIsExpire && !sendEmail) {
+      if (!sendEmail) {
         return next(
           new AppError(req, {
             statusCode: 503,
@@ -251,20 +234,18 @@ export const generateErrorSendEmail = catchAsync(
  */
 export const createUserNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, activationTokenIsExpire } = req;
+    const { user } = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        const notification = await Notification.createNotification(
-          user._id,
-          "success",
-          notificationMessage.NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION(user.email)
-        );
+      const notification = await Notification.createNotification(
+        user._id,
+        "success",
+        notificationMessage.NOTIFICATION_SENT_NEW_EMAIL_ACTIVATION(user.email)
+      );
 
-        req.notification = req.notification || [];
+      req.notification = req.notification || [];
 
-        if (notification) {
-          req.notification.push(notification);
-        }
+      if (notification) {
+        req.notification.push(notification);
       }
     }
     next();
@@ -273,11 +254,9 @@ export const createUserNotification = catchAsync(
 
 export const generateResponse = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, activationTokenIsExpire, notification } = req;
+    const { user, notification } = req;
     if (!user.active) {
-      if (activationTokenIsExpire) {
-        res.status(200).json(jsonResponse({ notification }));
-      }
+      res.status(200).json(jsonResponse({ notification }));
     }
 
     next();

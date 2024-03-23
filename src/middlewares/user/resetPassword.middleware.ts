@@ -16,9 +16,11 @@ import {
   catchAsync,
   fieldErrorMessages,
   AppError,
-  createHashRandomToken,
   EmailManager,
   jsonResponse,
+  createJsonWebToken,
+  createJwtCookie,
+  createHashRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -26,6 +28,7 @@ interface CustomRequestInterface extends Request {
   user?: UserInterface;
   sendEmail?: boolean;
   notification?: NotificationDetailInterface[];
+  token?: string;
 }
 
 /**
@@ -38,9 +41,9 @@ interface CustomRequestInterface extends Request {
  */
 export const validateFields = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { password, passwordConfirm } = req.body;
+    const { email, password, passwordConfirm } = req.body;
 
-    if (!password || !passwordConfirm) {
+    if (!password || !passwordConfirm || !email) {
       const requiredFields = {
         password: validationMessage.VALIDATE_REQUIRED_FIELD(
           "nouveau mot de passe"
@@ -48,10 +51,11 @@ export const validateFields = catchAsync(
         passwordConfirm: validationMessage.VALIDATE_REQUIRED_FIELD(
           "nouveau mot de passe de confirmation"
         ),
+        email: validationMessage.VALIDATE_REQUIRED_FIELD("adresse email"),
       };
 
       const errors = fieldErrorMessages(
-        { password, passwordConfirm },
+        { password, passwordConfirm, email },
         requiredFields
       );
 
@@ -78,7 +82,8 @@ export const validateFields = catchAsync(
  */
 export const generateHashRandomToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const resetToken = createHashRandomToken(req.params.token);
+    const { token } = req.params;
+    const resetToken = createHashRandomToken(token);
 
     req.resetToken = resetToken;
     next();
@@ -96,10 +101,11 @@ export const generateHashRandomToken = catchAsync(
 export const findUserByResetToken = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { resetToken } = req;
-
+    const { email } = req.body;
     const user = await User.findOne({
-      passwordResetToken: resetToken,
-      passwordResetTokenExpire: { $gte: new Date(Date.now()) },
+      email,
+      passwordToken: resetToken,
+      passwordTokenExpire: { $gte: new Date(Date.now()) },
     }).select("role email");
 
     if (!user) {
@@ -133,6 +139,44 @@ export const changeUserPassword = catchAsync(
     const { user } = req;
 
     await user.changeUserPassword(password, passwordConfirm);
+
+    next();
+  }
+);
+
+/**
+ * Create json web token
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next middleware function
+ * @returns {void}
+ */
+export const createJwtToken = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { user } = req;
+
+    const token = await createJsonWebToken(
+      { idUser: user._id, role: user.role, authToken: true },
+      { expiresIn: "30d" }
+    );
+    req.token = token;
+
+    next();
+  }
+);
+
+/**
+ * Create cookie with json web token
+ * @param {object} req - request object
+ * @param {object} res - response object
+ * @param {function} next - next middleware function
+ * @returns {void}
+ */
+export const createCookie = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { token } = req;
+
+    await createJwtCookie(res, token);
 
     next();
   }

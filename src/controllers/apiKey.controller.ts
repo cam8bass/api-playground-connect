@@ -37,11 +37,13 @@ export const apiKeyCreationRequest = [
  */
 export const apiKeyRenewalRequest = [
   apiKeyRenewalRequestMiddleware.createResetToken,
-  apiKeyRenewalRequestMiddleware.findAndUpdateRenewalApiKey,
+  apiKeyRenewalRequestMiddleware.findUserApiKeys,
+  apiKeyRenewalRequestMiddleware.checkIfTokenExpire,
+  apiKeyRenewalRequestMiddleware.findApiKeyAndAddTokenExpire,
   apiKeyRenewalRequestMiddleware.createResetUrlWithResetToken,
   apiKeyRenewalRequestMiddleware.sendEmail,
   apiKeyRenewalRequestMiddleware.createAdminNotification,
-  apiKeyRenewalRequestMiddleware.findAndUpdateRenewalToken,
+  apiKeyRenewalRequestMiddleware.deleteRenewalToken,
   apiKeyRenewalRequestMiddleware.generateErrorIfNotSendEmail,
   apiKeyRenewalRequestMiddleware.createUserNotification,
   apiKeyRenewalRequestMiddleware.generateResponse,
@@ -75,4 +77,3 @@ export const deleteSelectedApiKey = [
   deleteSelectedApiKeyMiddleware.createUserNotification,
   deleteSelectedApiKeyMiddleware.generateResponse,
 ];
-

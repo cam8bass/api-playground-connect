@@ -15,9 +15,9 @@ import { notificationMessage } from "../../shared/messages/notification.message"
 import {
   catchAsync,
   AppError,
-  createResetRandomToken,
   EmailManager,
   jsonResponse,
+createResetRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -26,6 +26,7 @@ interface CustomRequestInterface extends Request {
     resetHashToken: string;
     dateExpire: Date;
   };
+
   user?: UserInterface;
   resetUrl?: string;
   sendEmail?: boolean;
@@ -58,6 +59,7 @@ export const validateField = catchAsync(
     next();
   }
 );
+
 /**
  * Generate reset token
  * @param {object} req - request object
@@ -80,19 +82,11 @@ export const generateResetRandomToken = catchAsync(
  * @param {function} next - next function
  * @returns {void}
  */
-export const findAndUpdateUser = catchAsync(
+export const findUser = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { email } = req.body;
-    const { randomToken } = req;
-    const user = await User.findOneAndUpdate(
-      {
-        email,
-      },
-      {
-        passwordResetToken: randomToken.resetHashToken,
-        passwordResetTokenExpire: randomToken.dateExpire,
-      }
-    ).select("email");
+
+    const user = await User.findOne({ email });
 
     if (!user) {
       return next(
@@ -110,6 +104,40 @@ export const findAndUpdateUser = catchAsync(
     next();
   }
 );
+
+export const checkIfResetToken = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { user } = req;
+    if (user.passwordTokenExpire) {
+      const passwordTokenIsExpire =
+        user.passwordTokenExpire < new Date(Date.now());
+
+      if (!passwordTokenIsExpire) {
+        return next(
+          new AppError(req, {
+            statusCode: 422,
+            message: warningMessage.WARNING_JWT_NOT_EXPIRED,
+            fields: {
+              form: warningMessage.WARNING_JWT_NOT_EXPIRED,
+            },
+          })
+        );
+      }
+    }
+
+    next();
+  }
+);
+
+export const AddTokenExpire = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { user, randomToken} = req;
+    await user.savePasswordToken(randomToken.resetHashToken,randomToken.dateExpire);
+    next();
+  }
+);
+
+
 
 /**
  * Generate reset url
@@ -153,24 +181,6 @@ export const sendEmail = catchAsync(
 );
 
 /**
- * Delete reset token
- * @param {object} req - request object
- * @param {object} res - response object
- * @param {function} next - next function
- * @returns {void}
- */
-export const deleteResetToken = catchAsync(
-  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user, sendEmail } = req;
-
-    if (!sendEmail) {
-      await user.deletePasswordResetToken();
-    }
-    next();
-  }
-);
-
-/**
  * Create admin notification
  * @param {object} req - request object
  * @param {object} res - response object
@@ -179,7 +189,7 @@ export const deleteResetToken = catchAsync(
  */
 export const createAdminNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { user } = req;
+    const { user, sendEmail } = req;
 
     if (!sendEmail) {
       await Notification.searchAndSendAdminNotification(
@@ -190,6 +200,18 @@ export const createAdminNotification = catchAsync(
           user.email
         )
       );
+    }
+
+    next();
+  }
+);
+
+export const deletePasswordToken = catchAsync(
+  async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
+    const { user, sendEmail } = req;
+
+    if (!sendEmail) {
+      await user.deletePasswordToken();
     }
 
     next();

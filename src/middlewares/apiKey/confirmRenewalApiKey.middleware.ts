@@ -16,10 +16,10 @@ import {
   catchAsync,
   fieldErrorMessages,
   AppError,
-  createHashRandomToken,
   ApiKeyManager,
   EmailManager,
   jsonResponse,
+  createHashRandomToken,
 } from "../../shared/utils";
 
 interface CustomRequestInterface extends Request {
@@ -176,10 +176,11 @@ export const findAndUpdateRenewalApiKey = catchAsync(
     const apiKey = await ApiKey.findOneAndUpdate(
       {
         user: user._id,
-        "apiKeys.renewalToken": renewalToken,
+
         apiKeys: {
           $elemMatch: {
             apiKeyExpire: { $gte: new Date(Date.now()) },
+            renewalToken,
             renewalTokenExpire: { $gte: new Date(Date.now()) },
             active: true,
           },
@@ -317,5 +318,3 @@ export const generateResponse = catchAsync(
     );
   }
 );
-
-

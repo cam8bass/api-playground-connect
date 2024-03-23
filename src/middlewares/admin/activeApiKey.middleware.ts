@@ -110,8 +110,8 @@ export const createApiKeyHash = catchAsync(
 export const findUserAndUpdateIfActive = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { active, newApiKeyHash } = req;
-    const idUser = new Types.ObjectId(req.params.id);
-    const idApi = new Types.ObjectId(req.params.idApi);
+    const {idUser} = req.params;
+    const { idApi } = req.params;
 
     if (active === true) {
       const apiKey = await ApiKey.findOneAndUpdate(
@@ -264,8 +264,8 @@ export const generateResponseIfActive = catchAsync(
 export const findAndUpdateUserIfInactive = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
     const { active } = req;
-    const idUser = new Types.ObjectId(req.params.id);
-    const idApi = new Types.ObjectId(req.params.idApi);
+    const {idUser} = req.params;
+    const {idApi} = req.params;
 
     if (active === false) {
       const apiKey = await ApiKey.findOneAndUpdate(

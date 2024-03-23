@@ -35,6 +35,8 @@ export class AppError extends Error implements AppErrorInterface {
     const { message, statusCode, fields } = errorConfig;
 
     super(message);
+    this.name = "AppError";
+
     this._id = uuidv4();
     this.createdAt = new Date();
     this.context = this.setContext(req);
@@ -56,17 +58,15 @@ export class AppError extends Error implements AppErrorInterface {
   private setPriority(): void {
     switch (this.categories) {
       case "external":
-        this.priority = "warning";
-        break;
       case "request":
         this.priority = "warning";
         break;
+
       case "security":
-        this.priority = "critical";
-        break;
       case "server":
         this.priority = "critical";
         break;
+
       case "validation":
         this.priority = "info";
         break;
@@ -119,7 +119,10 @@ export class AppError extends Error implements AppErrorInterface {
     url: string;
     user: Types.ObjectId | null;
   } {
-    return { url: req.url, user: req.currentUser?._id ?? null };
+    return {
+      url: req.url ? req.url : null,
+      user: req.currentUser && req.currentUser._id ? req.currentUser._id : null,
+    };
   }
 
   /**

@@ -17,14 +17,14 @@ interface CustomRequestInterface extends Request {
  */
 export const findAndUpdateNotification = catchAsync(
   async (req: CustomRequestInterface, res: Response, next: NextFunction) => {
-    const { idNotification } = req.params;
+    const { id } = req.params;
     const { currentUser } = req;
     const updatedNotification = await Notification.findOneAndUpdate(
       {
         user: new Types.ObjectId(currentUser._id),
         notifications: {
           $elemMatch: {
-            _id: idNotification,
+            _id: id,
           },
         },
       },

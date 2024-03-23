@@ -13,7 +13,11 @@ router.use(
   authController.checkAccountDisabled,
   authController.restrictTo("admin")
 );
-router.get("/getUserApiKeys/:idUser", adminController.getSelectedUserApiKeys);
+router.get(
+  "/getUserApiKeys/:idUser",
+  authController.checkRequestParams,
+  adminController.getSelectedUserApiKeys
+);
 router.get("/getInactiveApiKeys", adminController.getAllInactiveApiKeys);
 
 router.get("/getAllUserOverview", adminController.getAllUserOverview);
@@ -27,9 +31,9 @@ router
 
 router
   .route("/users/:id")
-  .get(adminController.getUser)
-  .patch(adminController.updateUser)
-  .delete(adminController.deleteUser);
+  .get(authController.checkRequestParams, adminController.getUser)
+  .patch(authController.checkRequestParams, adminController.updateUser)
+  .delete(authController.checkRequestParams, adminController.deleteUser);
 
 // API KEYS ROUTES
 router
@@ -38,25 +42,35 @@ router
   .post(adminController.createApiKey);
 
 router
-  .route("/apiKeys/:id")
-  .get(adminController.getApiKey)
-  .delete(adminController.deleteAllApiKeysFromUser);
+  .route("/apiKeys/:idApi")
+  .get(authController.checkRequestParams, adminController.getApiKey)
+  .delete(
+    authController.checkRequestParams,
+    adminController.deleteAllApiKeysFromUser
+  );
 
 // ACTIVE API KEY
 router.patch(
-  "/users/:id/apiKeys/activeApiKey/:idApi",
+  "/users/:idUser/apiKeys/activeApiKey/:idApi",
+  authController.checkRequestParams,
   adminController.activeApiKey
 );
 
 // DELETE SELECTED API KEY FOR USER
 router.delete(
-  "/users/:id/apiKeys/deleteApiKey/:idApi",
+  "/users/:idUser/apiKeys/deleteApiKey/:idApi",
+  authController.checkRequestParams,
   apiKeyController.deleteSelectedApiKey
 );
 
 // NOTIFICATIONS ROUTES
 router.route("/notifications").get(notificationController.getAllNotifications);
 
-router.route("/notifications/:id").get(notificationController.getNotification);
+router
+  .route("/notifications/:id")
+  .get(
+    authController.checkRequestParams,
+    notificationController.getNotification
+  );
 
 export default router;

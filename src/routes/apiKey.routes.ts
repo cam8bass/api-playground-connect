@@ -7,6 +7,7 @@ const router = Router({ mergeParams: true });
 // API KEY CONFIRM RENEWAL
 router.patch(
   "/confirmRenewal/:token",
+  authController.checkRequestParams,
   authController.findUserAccount,
   authController.checkAccountActive,
   authController.checkAccountLocked,
@@ -27,9 +28,13 @@ router
   .get(apiKeyController.getMyApikey);
 
 // DELETE SELECTED API KEY
-router.delete("/deleteApiKey/:idApi", apiKeyController.deleteSelectedApiKey);
+router.delete(
+  "/deleteApiKey/:idApi",
+  authController.checkRequestParams,
+  apiKeyController.deleteSelectedApiKey
+);
 
 // API KEY RENEWAL REQUEST
-router.patch("/renewal/:idApi", apiKeyController.apiKeyRenewalRequest);
+router.patch("/renewal/:idApi", authController.checkRequestParams, apiKeyController.apiKeyRenewalRequest);
 
 export default router;

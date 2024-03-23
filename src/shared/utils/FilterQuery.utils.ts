@@ -141,5 +141,3 @@ export class FilterQuery<T extends Document> {
     return this;
   }
 }
-
-

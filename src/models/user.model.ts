@@ -1,13 +1,11 @@
-import { CookieOptions } from "express";
 import { Schema, Query, Types, model } from "mongoose";
 import validator from "validator";
-import client from "../infisical";
 import { UserInterface, CustomQuery } from "../shared/interfaces";
 import { validationMessage } from "../shared/messages";
-import { userRoleType, nodeEnv,resetType } from "../shared/types/types";
+import { resetType } from "../shared/types/types";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
-import { Response, Request } from "express";
+
+import { Request } from "express";
 
 const userSchema = new Schema<UserInterface>(
   {
@@ -57,8 +55,8 @@ const userSchema = new Schema<UserInterface>(
       ],
     },
     emailChangeAt: { type: Date },
-    emailResetToken: { type: String },
-    emailResetTokenExpire: { type: Date },
+    emailToken: { type: String },
+    emailTokenExpire: { type: Date },
     // PASSWORD
     password: {
       type: String,
@@ -94,16 +92,16 @@ const userSchema = new Schema<UserInterface>(
       },
     },
     passwordChangeAt: { type: Date },
-    passwordResetToken: { type: String },
-    passwordResetTokenExpire: { type: Date },
+    passwordToken: { type: String },
+    passwordTokenExpire: { type: Date },
     // ACCOUNT
     active: {
       type: Boolean,
       default: false,
     },
-    activationAccountToken: { type: String },
-    activationAccountTokenExpire: { type: Date },
     activationAccountAt: { type: Date },
+    activationToken: { type: String },
+    activationTokenExpire: { type: Date },
 
     accountLockedExpire: { type: Date },
 
@@ -167,112 +165,57 @@ userSchema.pre("save", function (next) {
 });
 
 /**
- * Creates and sends a JSON Web Token (JWT) to the user.
- * @param {Response} res - The response object.
- * @param {Types.ObjectId} userId - The ID of the user.
- * @param {userRoleType} role - The role of the user.
- */
-userSchema.methods.createAndSendToken = async function (
-  res: Response,
-  userId: Types.ObjectId,
-  role: userRoleType
-): Promise<void> {
-  const nodeEnv = process.env.NODE_ENV as nodeEnv;
-  const { secretValue: jwtSecret } = await client.getSecret("JWT_SECRET");
-
-  /**
-   * Creates a JSON Web Token (JWT) using the provided information.
-   * @param {object} payload - The payload of the JWT.
-   * @param {string} secret - The secret used to sign the JWT.
-   * @param {object} options - The options for the JWT.
-   */
-  const token = jwt.sign({ id: userId, role }, jwtSecret, {
-    expiresIn: process.env.JWT_EXPIRE,
-  });
-
-  /**
-   * Sets the options for the cookie containing the JWT.
-   * @property {Date} expires - The expiration date of the cookie.
-   * @property {boolean} httpOnly - Indicates whether the cookie can be accessed by JavaScript.
-   * @property {string} domain - The domain of the cookie.
-   * @property {string} path - The path of the cookie.
-   */
-  const cookieOptions: CookieOptions = {
-    expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-    httpOnly: true,
-    domain: "localhost",
-    path: "/",
-  };
-
-  /**
-   * Sets the secure and sameSite properties of the cookie if the environment is production.
-   */
-  if (nodeEnv === "production") {
-    cookieOptions.secure = true;
-    cookieOptions.sameSite = "strict";
-  }
-
-  /**
-   * Sets the JWT as a cookie with the specified options.
-   * @param {string} name - The name of the cookie.
-   * @param {string} value - The value of the cookie.
-   * @param {CookieOptions} options - The options for the cookie.
-   */
-  res.cookie("jwt", token, cookieOptions);
-};
-
-/**
  * Updates the user's account activation information.
- * @param {string} resetHashToken - The activation token.
- * @param {Date} dateExpire - The expiration date of the token.
+
  */
-userSchema.methods.prepareAccountActivation = async function (
-  this: UserInterface,
+userSchema.methods.saveActivationToken = async function (
   resetHashToken: string,
   dateExpire: Date
 ): Promise<void> {
   await this.updateOne({
-    activationAccountToken: resetHashToken,
-    activationAccountTokenExpire: new Date(dateExpire),
+    activationToken: resetHashToken,
+    activationTokenExpire: dateExpire,
+  });
+};
+
+userSchema.methods.savePasswordToken = async function (
+  resetHashToken: string,
+  dateExpire: Date
+): Promise<void> {
+  await this.updateOne({
+    passwordToken: resetHashToken,
+    passwordTokenExpire: dateExpire,
   });
 };
 
 /**
  * Deletes the activation account token from the user document.
- * @param {UserInterface} this - The user document.
  */
-userSchema.methods.deleteActivationToken = async function (
-  this: UserInterface
-): Promise<void> {
+userSchema.methods.deleteActivationToken = async function (): Promise<void> {
   await this.updateOne({
-    $unset: { activationAccountToken: "", activationAccountTokenExpire: "" },
+    $unset: { activationTokenExpire: "", activationToken: "" },
   });
 };
 
 /**
  * Deletes the password reset token from the user document.
- * @param {UserInterface} this - The user document.
  */
-userSchema.methods.deletePasswordResetToken = async function (
-  this: UserInterface
-): Promise<void> {
+userSchema.methods.deletePasswordToken = async function (): Promise<void> {
   await this.updateOne({
     $unset: {
-      passwordResetToken: "",
-      passwordResetTokenExpire: "",
+      passwordTokenExpire: "",
+      passwordToken: "",
     },
   });
 };
 
-/**
- * Deletes the email reset token from the user document.
- * @param {UserInterface} this - The user document.
- */
-userSchema.methods.deleteEmailResetToken = async function (
-  this: UserInterface
-) {
+// /**
+//  * Deletes the email reset token from the user document.
+//  * @param {UserInterface} this - The user document.
+//  */
+userSchema.methods.deleteEmailToken = async function (this: UserInterface) {
   await this.updateOne({
-    $unset: { emailResetToken: "", emailResetTokenExpire: "" },
+    $unset: { emailToken: "", emailTokenExpire: "" },
   });
 };
 
@@ -397,10 +340,10 @@ userSchema.methods.changeUserPassword = async function (
 ): Promise<void> {
   this.password = newPassword;
   this.passwordConfirm = newPasswordConfirm;
+  this.passwordChangeAt = new Date(Date.now());
 
-  this.passwordResetToken = undefined;
-  this.passwordResetTokenExpire = undefined;
-
+  this.passwordToken = undefined;
+  this.passwordTokenExpire = undefined;
   await this.save();
 };
 

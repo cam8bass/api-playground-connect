@@ -4,8 +4,9 @@ export { Notification } from "./notification.model";
 export {
   handleCastError,
   handleDuplicateError,
-  handleErrorDev,
-  handleErrorProd,
+  // handleErrorDev,
+  // handleErrorProd,
+  handleError,
   handleJsonWebTokenError,
   handleTokenExpiredError,
   handleValidationError,
